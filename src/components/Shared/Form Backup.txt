@@ -1,0 +1,248 @@
+.form-page-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    padding: 5vh 20px;
+    box-sizing: border-box;
+}
+
+.form-container {
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+}
+
+.form-container .logo-link {
+    display: inline-block;
+    margin-bottom: 40px;
+}
+
+.form-title-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.form-title {
+    margin: 0;
+    font-size: 2rem;
+    color: #f0e68c;
+    letter-spacing: 2px;
+    font-weight: 700;
+}
+
+.title-icon-svg {
+    height: 20px;
+    fill: #aaa;
+}
+
+.title-icon-svg.right {
+    transform: scaleX(-1);
+}
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: #aaa;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid #444;
+    border-radius: 8px;
+    color: #e0e0e0;
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.password-wrapper {
+    position: relative;
+}
+
+.password-wrapper input {
+    padding-right: 50px;
+}
+
+.toggle-password-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: inherit;
+    fill: #aaa;
+}
+
+.caps-lock-warning {
+    display: none;
+    color: #f0e68c;
+    font-size: 0.75rem;
+    margin-top: 5px;
+}
+
+.forgot-password-link {
+    display: block;
+    text-align: right;
+    font-size: 0.8rem;
+    color: #aaa;
+    text-decoration: none;
+    margin-top: -10px;
+    margin-bottom: 20px;
+}
+
+.forgot-password-link:hover {
+    color: #f0e68c;
+}
+
+.terms-text {
+    font-size: 0.8rem;
+    color: #aaa;
+    max-width: 400px;
+    margin: 30px auto;
+}
+
+.form-page-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    padding: 5vh 20px;
+    box-sizing: border-box;
+}
+
+.form-container {
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+}
+
+.form-container .logo-link {
+    display: inline-block;
+    margin-bottom: 40px;
+}
+
+.form-title-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.form-title {
+    margin: 0;
+    font-size: 2rem;
+    color: #f0e68c;
+    letter-spacing: 2px;
+    font-weight: 700;
+}
+
+.title-icon-svg {
+    height: 20px;
+    fill: #aaa;
+}
+
+.title-icon-svg.right {
+    transform: scaleX(-1);
+}
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: #aaa;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid #444;
+    border-radius: 8px;
+    color: #e0e0e0;
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.password-wrapper {
+    position: relative;
+}
+
+.password-wrapper input {
+    padding-right: 50px;
+}
+
+.toggle-password-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: inherit;
+    fill: #aaa;
+}
+
+.caps-lock-warning {
+    display: none;
+    color: #f0e68c;
+    font-size: 0.75rem;
+    margin-top: 5px;
+}
+
+.forgot-password-link {
+    display: block;
+    text-align: right;
+    font-size: 0.8rem;
+    color: #aaa;
+    text-decoration: none;
+    margin-top: -10px;
+    margin-bottom: 20px;
+}
+
+.forgot-password-link:hover {
+    color: #f0e68c;
+}
+
+.terms-text {
+    font-size: 0.8rem;
+    color: #aaa;
+    max-width: 400px;
+    margin: 30px auto;
+}
+
+/* --- ADICIONE ESTE CÓDIGO NO FINAL DO ARQUIVO --- */
+
+/* Estilos específicos para a página de recuperação de senha */
+#forgot-password-page .fantasy-subtitle {
+    color: #e0e0e0; /* Cor branca/principal */
+    font-size: 1.2rem; /* Tamanho intermediário */
+    font-weight: 700;
+    text-align: left;
+    margin: -15px 0 25px 0;
+}
+
+#forgot-password-page .form-instruction {
+    font-size: 0.9rem;
+    color: #ccc;
+    text-align: left;
+    margin: 0 0 30px 0;
+}
+

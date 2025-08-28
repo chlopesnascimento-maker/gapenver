@@ -1,0 +1,238 @@
+/* Estilos base do cabeçalho */
+.app-header {
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 15px 30px;
+    border-bottom: 1px solid #444;
+    backdrop-filter: blur(5px);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.header-left, .header-center, .header-right {
+    flex: 1;
+}
+
+.header-center {
+    text-align: center;
+}
+
+.header-right {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 25px;
+}
+
+.header-right a {
+    color: #e0e0e0;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+    cursor: inherit;
+}
+
+.header-right a:hover {
+    color: #f0e68c;
+}
+
+.search-icon-svg {
+    height: 22px;
+    fill: #e0e0e0;
+    transition: fill 0.3s ease;
+}
+
+.search-icon-svg:hover {
+    fill: #f0e68c;
+}
+
+/* Estilos para o novo avatar e menu dropdown */
+.avatar-container {
+  position: relative; /* Essencial para o posicionamento do menu */
+}
+
+.avatar-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: inherit;
+  border: 2px solid #444;
+  transition: border-color 0.3s ease;
+}
+
+.avatar-circle:hover {
+  border-color: #f0e68c;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 55px; /* Posição abaixo do avatar */
+  right: 0;
+  background-color: #1a1a3d;
+  border: 1px solid #444;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  width: 160px;
+  z-index: 100;
+  overflow: hidden; /* Garante que os cantos arredondados funcionem */
+}
+
+.dropdown-menu a {
+  display: block;
+  padding: 12px 15px;
+  color: #e0e0e0;
+  text-decoration: none;
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+.dropdown-menu a:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #f0e68c;
+}
+
+.user-info {
+  padding: 15px;
+  text-align: center;
+  border-bottom: 1px solid #444;
+}
+
+.user-name {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #f0e68c;
+  word-wrap: break-word;
+}
+
+.header-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.avatar-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 2px solid #444;
+  overflow: hidden;
+  transition: border-color 0.3s ease;
+}
+
+.avatar-circle:hover {
+  border-color: #f0e68c;
+}
+
+.header-left {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.social-icon {
+  color: #f0e68c;
+  font-size: 1.4rem;
+  transition: transform 0.2s ease, color 0.2s ease;
+  cursor: pointer;
+}
+
+.social-icon:hover {
+  transform: scale(1.2);
+  color: #fff8dc;
+}
+
+/* ---- nova logo ---- */
+.site-logo {
+  height: 150px; /* PC */
+  width: auto;
+  object-fit: contain;
+  display: inline-block;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .site-logo {
+    height: 80px; /* Tablet */
+  }
+}
+
+@media (max-width: 480px) {
+  .site-logo {
+    height: 60px; /* Celular */
+  }
+}
+
+/* Estilos base do cabeçalho */
+.app-header {
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 5px 20px;   /* 🔥 antes era 15px 30px */
+    border-bottom: 1px solid #444;
+    backdrop-filter: blur(5px);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 70px;   /* garante altura mínima sem exagero */
+}
+
+.header-left, .header-center, .header-right {
+    flex: 1;
+}
+
+.header-center {
+    text-align: center;
+}
+
+.header-right {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 25px;
+}
+
+/* ... resto do seu CSS igual ... */
+
+/* ---- nova logo ---- */
+.site-logo {
+  height: 150px; /* PC */
+  width: auto;
+  object-fit: contain;
+  display: inline-block;
+  margin-top: -20px;   /* 🔥 puxa a logo um pouco pra cima */
+  margin-bottom: -20px; /* 🔥 evita empurrar o header pra baixo */
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .site-logo {
+    height: 80px;
+    margin-top: -10px;
+    margin-bottom: -10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .site-logo {
+    height: 60px;
+    margin-top: -5px;
+    margin-bottom: -5px;
+  }
+}

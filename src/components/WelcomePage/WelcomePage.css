@@ -1,0 +1,26 @@
+.welcome-page-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: normal;
+    min-height: 80vh; /* Ocupa a maior parte da tela visível */
+    text-align: center;
+    padding: 20px;
+}
+
+.welcome-content {
+    max-width: 600px;
+}
+
+.welcome-title {
+    font-size: 2.8rem;
+    color: #f0e68c;
+    margin-bottom: 20px;
+}
+
+.welcome-text {
+    font-size: 1.2rem;
+    color: #e0e0e0;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}

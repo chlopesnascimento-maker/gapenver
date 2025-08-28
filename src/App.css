@@ -1,0 +1,76 @@
+/* --- ESTILOS GLOBAIS E EFEITOS --- */
+.App {
+  text-align: center;
+}
+
+.stars {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  background: transparent;
+}
+
+.stars::before, .stars::after {
+  content: "";
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 
+      60vw 80vh 2px 0px #fff, 10vw 20vh 1px 0px #fff, 
+      80vw 30vh 2px 1px #fff, 30vw 90vh 1px 0px #fff,
+      90vw 10vh 1px 0px #fff, 45vw 60vh 1px 1px #fff,
+      20vw 50vh 2px 0px #fff, 70vw 70vh 1px 0px #fff;
+  animation: twinkle 15s linear infinite;
+}
+
+.stars::after {
+  width: 3px;
+  height: 3px;
+  box-shadow: 
+      5vw 95vh 3px 0px #fff, 95vw 40vh 2px 0px #fff, 
+      50vw 5vh 1px 0px #fff, 25vw 75vh 2px 1px #fff;
+  animation: twinkle 20s linear infinite;
+}
+
+@keyframes twinkle {
+  from { transform: translateY(0px); }
+  to { transform: translateY(-1000px); }
+}
+
+/* --- PARTÍCULAS DO MOUSE --- */
+.trail-particle, .star-particle { position: fixed; pointer-events: none; z-index: 9999; transform: translate(-50%, -50%); }
+.trail-particle { width: 8px; height: 8px; border-radius: 50%; background-color: #f0e68c; box-shadow: 0 0 10px #f0e68c, 0 0 20px #daa520; animation: fadeOut 1s forwards; }
+.star-particle { width: 5px; height: 5px; border-radius: 50%; background-color: #ffffff; box-shadow: 0 0 8px #ffffff; animation: starFade 0.8s forwards; }
+@keyframes fadeOut { to { transform: translate(-50%, -50%) scale(0); opacity: 0; } }
+@keyframes starFade { to { transform: translate(-50%, -50%) scale(0); opacity: 0; } }
+
+/* --- BOTÕES E ELEMENTOS COMUNS --- */
+.cta-button {
+    display: inline-block;
+    background: linear-gradient(45deg, #b8860b, #daa520);
+    color: white;
+    padding: 09px 188px;
+    text-decoration: none;
+    border-radius: 8px;
+    margin-top: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    border: none;
+    box-shadow: 0 4px 15px rgba(218, 165, 32, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: inherit;
+}
+.cta-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(218, 165, 32, 0.5);
+}
+
+.logo-svg { 
+    height: 50px; 
+    fill: #f0e68c; 
+}

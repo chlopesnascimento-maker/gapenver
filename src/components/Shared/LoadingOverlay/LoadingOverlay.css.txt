@@ -1,0 +1,99 @@
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 20, 0.9);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.book-loader {
+  text-align: center;
+  color: #0ff; /* azul ciano */
+  font-family: sans-serif;
+}
+
+.book-loader p {
+  margin-top: 20px;
+  color: #0ff;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+/* --- Book animation --- */
+.book {
+  position: relative;
+  width: 60px;
+  height: 45px;
+  margin: 0 auto;
+}
+
+.book .inner {
+  z-index: 2;
+  position: absolute;
+  width: 60px;
+  height: 45px;
+  top: 0;
+  left: 0;
+  perspective: 600px;
+}
+
+.book .inner .left,
+.book .inner .middle,
+.book .inner .right {
+  position: absolute;
+  top: 0;
+  width: 20px;
+  height: 45px;
+  background: #0ff;
+  transform-origin: left;
+}
+
+.book .inner .left {
+  left: 0;
+}
+.book .inner .middle {
+  left: 20px;
+}
+.book .inner .right {
+  left: 40px;
+}
+
+/* Folhas animadas */
+.book ul {
+  z-index: 1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 60px;
+  height: 45px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.book ul li {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 60px;
+  height: 45px;
+  background: #0ff;
+  transform-origin: left center;
+  animation: pageFlip 2s infinite ease-in-out;
+  opacity: 0.6;
+}
+
+.book ul li:nth-child(1) { animation-delay: 0s; }
+.book ul li:nth-child(2) { animation-delay: 0.2s; }
+.book ul li:nth-child(3) { animation-delay: 0.4s; }
+.book ul li:nth-child(4) { animation-delay: 0.6s; }
+.book ul li:nth-child(5) { animation-delay: 0.8s; }
+
+@keyframes pageFlip {
+  0% { transform: rotateY(0deg); opacity: 0.6; }
+  50% { transform: rotateY(-180deg); opacity: 1; }
+  100% { transform: rotateY(-360deg); opacity: 0.6; }
+}

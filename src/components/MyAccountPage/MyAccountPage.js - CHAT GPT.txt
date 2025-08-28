@@ -1,0 +1,277 @@
+import React, { useState, useEffect } from 'react';
+import './MyAccountPage.css';
+import '../Shared/Form.css';
+
+import { auth, db } from '../../firebase';
+import { doc, getDoc, deleteDoc } from 'firebase/firestore';
+import {
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+  updatePassword,
+  sendEmailVerification,
+  deleteUser,
+  reauthenticateWithPopup,
+  GoogleAuthProvider
+} from 'firebase/auth';
+
+function MyAccountPage({ navigateTo, user: userProp, userData: userDataProp, handleLogout }) {
+  const [localUserData, setLocalUserData] = useState(userDataProp || null);
+  const [currentPwd, setCurrentPwd] = useState('');
+  const [newPwd, setNewPwd] = useState('');
+  const [confirmNewPwd, setConfirmNewPwd] = useState('');
+  const [exporting, setExporting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [loadingUserData, setLoadingUserData] = useState(false);
+
+  // Decide qual user object usar: prop ou auth.currentUser
+  const authUser = auth.currentUser;
+  const user = userProp || authUser;
+
+  // providers list (ex: ['password', 'google.com'])
+  const providers = user?.providerData?.map((p) => p.providerId) || [];
+  const hasPasswordProvider = providers.includes('password');
+  const hasGoogleProvider = providers.includes('google.com');
+
+  // Se não recebeu userData por prop, tenta buscar do Firestore
+  useEffect(() => {
+    async function fetchUserDoc() {
+      if (!user) return;
+      if (userDataProp) {
+        setLocalUserData(userDataProp);
+        return;
+      }
+      try {
+        setLoadingUserData(true);
+        const refUser = doc(db, 'users', user.uid);
+        const snap = await getDoc(refUser);
+        if (snap.exists()) setLocalUserData(snap.data());
+      } catch (err) {
+        console.error('Erro ao buscar userData no MyAccountPage:', err);
+      } finally {
+        setLoadingUserData(false);
+      }
+    }
+    fetchUserDoc();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, userDataProp]);
+
+  const displayData = userDataProp || localUserData || {};
+
+  // ---------- Change Password (email/password accounts) ----------
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (!hasPasswordProvider) {
+      alert('Sua conta não usa senha (login via provedor externo).');
+      return;
+    }
+    if (!currentPwd || !newPwd || !confirmNewPwd) {
+      alert('Preencha todos os campos de senha.');
+      return;
+    }
+    if (newPwd !== confirmNewPwd) {
+      alert('As novas senhas não batem.');
+      return;
+    }
+    try {
+      const u = auth.currentUser;
+      const credential = EmailAuthProvider.credential(u.email, currentPwd);
+      await reauthenticateWithCredential(u, credential);
+      await updatePassword(u, newPwd);
+      alert('Senha atualizada com sucesso!');
+      setCurrentPwd(''); setNewPwd(''); setConfirmNewPwd('');
+    } catch (err) {
+      console.error('Erro ao trocar senha:', err);
+      alert('Erro ao trocar senha: ' + (err?.message || String(err)));
+    }
+  };
+
+  // ---------- Send email verification ----------
+  const handleSendVerification = async () => {
+    try {
+      const u = auth.currentUser;
+      await sendEmailVerification(u);
+      alert('E-mail de verificação enviado!');
+    } catch (err) {
+      console.error('Erro ao enviar verificação:', err);
+      alert('Erro ao enviar verificação: ' + (err?.message || String(err)));
+    }
+  };
+
+  // ---------- Export data (Auth + Firestore user doc) ----------
+  const handleExportData = async () => {
+    if (!user) return;
+    setExporting(true);
+    try {
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      const data = {
+        auth: {
+          uid: user.uid,
+          email: user.email,
+          providers: user.providerData,
+          creationTime: user.metadata?.creationTime,
+          lastSignInTime: user.metadata?.lastSignInTime,
+        },
+        firestore: snap.exists() ? snap.data() : null,
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `meus_dados_${user.uid}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Erro ao exportar dados:', err);
+      alert('Erro ao exportar dados: ' + (err?.message || String(err)));
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  // ---------- Delete account ----------
+  const handleDeleteAccount = async (e) => {
+    e.preventDefault();
+    if (deleteConfirmText !== 'DELETAR') {
+      alert('Para confirmar digite: DELETAR');
+      return;
+    }
+    if (!user) return;
+    try {
+      setDeleting(true);
+
+      // Reautenticação dependendo do provedor
+      if (hasPasswordProvider) {
+        const pwd = prompt('Para confirmar exclusão, digite sua senha atual:');
+        if (!pwd) {
+          setDeleting(false);
+          return;
+        }
+        const credential = EmailAuthProvider.credential(user.email, pwd);
+        await reauthenticateWithCredential(user, credential);
+      } else if (hasGoogleProvider) {
+        await reauthenticateWithPopup(user, new GoogleAuthProvider());
+      } else {
+        // fallback: tenta reauth com popup Google (pode falhar)
+        await reauthenticateWithPopup(user, new GoogleAuthProvider());
+      }
+
+      // Apaga documento Firestore do usuário (se existir)
+      try {
+        await deleteDoc(doc(db, 'users', user.uid));
+        console.log('Documento Firestore do usuário removido.');
+      } catch (errDoc) {
+        console.warn('Não foi possível deletar doc Firestore (ou já estava ausente):', errDoc);
+      }
+
+      // Deleta o usuário do Auth
+      await deleteUser(user);
+
+      alert('Conta excluída com sucesso. Você será deslogado.');
+      if (handleLogout) handleLogout();
+      else if (navigateTo) navigateTo('home');
+    } catch (err) {
+      console.error('Erro ao excluir conta:', err);
+      alert('Erro ao excluir conta: ' + (err?.message || String(err)));
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  // ---------- Reautenticar com Google manual (botão) ----------
+  const handleReauthWithGoogle = async () => {
+    try {
+      await reauthenticateWithPopup(user, new GoogleAuthProvider());
+      alert('Reautenticação com Google concluída. Agora tente a ação novamente.');
+    } catch (err) {
+      console.error('Erro na reautenticação Google:', err);
+      alert('Erro na reautenticação: ' + (err?.message || String(err)));
+    }
+  };
+
+  return (
+    <div className="minha-conta-page">
+      <div className="minha-conta-card">
+        <h2>Minha Conta</h2>
+
+        <div className="profile-row">
+          <div className="profile-avatar-large">
+            {displayData?.photoURL ? (
+              <img src={displayData.photoURL} alt="Avatar" />
+            ) : (
+              <div className="avatar-placeholder">Usuário</div>
+            )}
+          </div>
+          <div className="profile-info">
+            <p><strong>Nome:</strong> {displayData?.nome || '—' } {displayData?.sobrenome || ''}</p>
+            <p><strong>E-mail:</strong> {user?.email || '—'}</p>
+            <p><strong>Criado em:</strong> {user?.metadata?.creationTime || '—'}</p>
+
+            <div className="profile-actions">
+              <button className="cta-button" onClick={() => navigateTo && navigateTo('editProfile')}>Editar Perfil</button>
+              <button className="secondary-button" onClick={handleExportData} disabled={exporting}>
+                {exporting ? 'Exportando...' : 'Exportar meus dados'}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <hr />
+
+        <section className="security-section">
+          <h3>Segurança</h3>
+
+          {hasPasswordProvider ? (
+            <form onSubmit={handleChangePassword} className="change-password-form">
+              <label>Senha atual:
+                <input type="password" value={currentPwd} onChange={e => setCurrentPwd(e.target.value)} />
+              </label>
+              <label>Nova senha:
+                <input type="password" value={newPwd} onChange={e => setNewPwd(e.target.value)} />
+              </label>
+              <label>Repita nova senha:
+                <input type="password" value={confirmNewPwd} onChange={e => setConfirmNewPwd(e.target.value)} />
+              </label>
+              <button className="cta-button" type="submit">Alterar senha</button>
+            </form>
+          ) : (
+            <div className="info-block">
+              <p>Sua conta não usa senha (login por provedor). Para ações sensíveis, reautentique com o provedor.</p>
+              {hasGoogleProvider && (
+                <button className="secondary-button" onClick={handleReauthWithGoogle}>Reautenticar com Google</button>
+              )}
+            </div>
+          )}
+
+          <div className="verification-row">
+            <p>E-mail verificado: {user?.emailVerified ? 'Sim' : 'Não'}</p>
+            {!user?.emailVerified && (
+              <button className="secondary-button" onClick={handleSendVerification}>Enviar e-mail de verificação</button>
+            )}
+          </div>
+        </section>
+
+        <hr />
+
+        <section className="danger-section">
+          <h3>Apagar Conta</h3>
+          <p className="warning">Ao apagar sua conta, seus dados no Firestore serão removidos (quando possível) e sua conta no Auth será excluída. Esta ação é irreversível.</p>
+
+          <label>Digite <strong>DELETAR</strong> para habilitar:
+            <input type="text" value={deleteConfirmText} onChange={(e) => setDeleteConfirmText(e.target.value)} />
+          </label>
+
+          <button
+            className="danger-button"
+            onClick={handleDeleteAccount}
+            disabled={deleting || deleteConfirmText !== 'DELETAR'}
+          >
+            {deleting ? 'Apagando conta...' : 'Apagar minha conta'}
+          </button>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+export default MyAccountPage;

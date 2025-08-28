@@ -1,0 +1,53 @@
+import React from 'react';
+import './MyAccountPage.css';
+import '../Shared/Form.css';
+
+// A página recebe 'user' e 'userData' do App.js
+function MyAccountPage({ user, userData }) {
+
+  const handleAccountDelete = () => {
+    // A lógica de apagar a conta é complexa e perigosa.
+    // Requer reautenticação e confirmação.
+    // Por agora, vamos apenas mostrar um alerta.
+    if (window.confirm("Tem a certeza absoluta que deseja apagar a sua conta? Esta ação é irreversível.")) {
+      alert('Funcionalidade "Apagar Conta" em construção!');
+    }
+  };
+
+  return (
+    <div className="form-page-container">
+      <div className="form-container">
+        <div className="profile-header">
+          <h2 className="form-title">Minha Conta</h2>
+        </div>
+
+        <div className="account-info-container">
+          <div className="info-item">
+            <span className="info-label">Nome de Viajante:</span>
+            <span className="info-data">{userData ? `${userData.nome} ${userData.sobrenome}` : 'Carregando...'}</span>
+          </div>
+          <div className="info-item">
+            <span className="info-label">E-mail de Registo:</span>
+            <span className="info-data">{user ? user.email : 'Carregando...'}</span>
+          </div>
+          <div className="info-item">
+            <span className="info-label">Viajante desde:</span>
+            <span className="info-data">{user ? new Date(user.metadata.creationTime).toLocaleDateString('pt-BR') : 'Carregando...'}</span>
+          </div>
+        </div>
+
+        <div className="danger-zone">
+          <h3 className="danger-zone-title">Zona de Perigo</h3>
+          <p className="danger-zone-text">
+            Apagar a sua conta é uma ação permanente e removerá todos os seus dados do Reino de Gápenver.
+          </p>
+          <button onClick={handleAccountDelete} className="cta-button delete-button">
+            Apagar Conta
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default MyAccountPage;

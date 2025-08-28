@@ -1,0 +1,169 @@
+.profile-header {
+    margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.profile-avatar-large {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #444;
+    margin-bottom: 5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-edit-icon {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    transition: opacity 0.3s ease;
+    opacity: 0;
+}
+
+.profile-avatar-large:hover .avatar-edit-icon {
+    opacity: 1;
+}
+
+.profile-user-name {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: #f0e68c;
+    margin: 0;
+}
+
+.profile-header .form-title {
+    font-size: 1.8rem;
+    color: #ffe341;
+    margin: 0;
+}
+
+.column-title {
+    font-size: 1.4rem;
+    color: #e0e0e0;
+    margin-bottom: 25px;
+    text-align: left;
+    font-weight: 700;
+    border-bottom: 1px solid #444;
+    padding-bottom: 10px;
+}
+
+.profile-form {
+    display: flex;
+    gap: 40px;
+}
+
+.profile-column {
+    flex: 1;
+}
+
+@media (max-width: 768px) {
+    .profile-form {
+        flex-direction: column;
+        gap: 0;
+    }
+}
+
+/* --- NOVOS ESTILOS PARA A JANELA DE CORTE --- */
+.crop-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.crop-container {
+    background-color: #1a1a3d;
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid #444;
+    width: 90%;
+    max-width: 500px;
+    height: 600px;
+    display: flex;
+    flex-direction: column;
+}
+
+.cropper-wrapper {
+    position: relative;
+    flex-grow: 1;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.crop-controls {
+    padding-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.crop-controls input[type="range"] {
+    width: 80%;
+    accent-color: #f0e68c;
+}
+
+.crop-buttons {
+    display: flex;
+    gap: 15px;
+    width: 100%;
+}
+
+.crop-buttons .cta-button {
+    flex: 1;
+    margin-top: 0;
+}
+
+.crop-buttons .cancel-button {
+    flex: 1;
+    background: #555;
+    color: #fff;
+    border-radius: 5px;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+.feedback-message {
+  margin-top: 15px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.feedback-message.success {
+  color: #4caf50; /* verde sucesso */
+}
+
+.feedback-message.error {
+  color: #f44336; /* vermelho erro */
+}

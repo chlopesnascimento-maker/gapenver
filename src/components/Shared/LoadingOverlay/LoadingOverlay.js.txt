@@ -1,0 +1,30 @@
+import React from "react";
+import "./LoadingOverlay.css";
+
+function LoadingOverlay({ show }) {
+  if (!show) return null;
+
+  return (
+    <div className="loading-overlay">
+      <div className="book-loader">
+        <div className="book">
+          <div className="inner">
+            <div className="left"></div>
+            <div className="middle"></div>
+            <div className="right"></div>
+          </div>
+          <ul>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+          </ul>
+        </div>
+        <p>Carregando...</p>
+      </div>
+    </div>
+  );
+}
+
+export default LoadingOverlay;
