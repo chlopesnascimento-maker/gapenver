@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import '../Shared/Form.css'; // Usando o nosso CSS compartilhado
+import '../Shared/Form.css';
 
 function RegisterPage({ navigateTo, setLoading }) {
   const [nome, setNome] = useState('');
@@ -8,9 +8,7 @@ function RegisterPage({ navigateTo, setLoading }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false); // mantém para desabilitar inputs/botão
-
-  // NOVO: Estado para controlar a validação da senha
+  const [isLoading, setIsLoading] = useState(false);
   const [passwordValidations, setPasswordValidations] = useState({
     minLength: false,
     maxLength: false,
@@ -19,7 +17,6 @@ function RegisterPage({ navigateTo, setLoading }) {
     hasNumber: false,
   });
 
-  // Efeito que roda toda vez que a senha muda para validar os requisitos
   useEffect(() => {
     const validations = {
       minLength: password.length >= 6,
@@ -28,50 +25,67 @@ function RegisterPage({ navigateTo, setLoading }) {
       hasLower: /[a-z]/.test(password),
       hasNumber: /[0-9]/.test(password),
     };
-
     setPasswordValidations(validations);
   }, [password]);
 
   const handleRegister = async (e) => {
-    e.preventDefault();
-    setError('');
+  e.preventDefault();
+  setError('');
 
-    // Verifica se todos os requisitos da senha foram cumpridos
-    const allValid = Object.values(passwordValidations).every(v => v === true);
-    if (!allValid) {
-      setError('Por favor, cumpra todos os requisitos da senha.');
-      return;
-    }
+  // Suas validações continuam aqui, perfeitas!
+  const allValid = Object.values(passwordValidations).every(v => v === true);
+  if (!allValid) {
+    setError('Por favor, cumpra todos os requisitos da senha.');
+    return;
+  }
 
-    // Campos obrigatórios
-    if (!email || !password || !nome || !sobrenome || !nascimento) {
-      setError('Por favor, preencha todos os campos obrigatórios.');
-      return;
-    }
+  if (!email || !password || !nome || !sobrenome || !nascimento) {
+    setError('Por favor, preencha todos os campos obrigatórios.');
+    return;
+  }
 
-    // Ativa loading local + global (livrinho)
-    setIsLoading(true);
-    if (setLoading) setLoading(true);
+  setIsLoading(true);
+  if (setLoading) setLoading(true);
 
-    try {
-      // 🔹 Aqui antes ia o Firebase
-      // Agora só simulamos sucesso
-      console.log("Usuário cadastrado (simulação):", {
+  // As variáveis de ambiente do seu arquivo .env
+  const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
+  const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
+
+  try {
+    // A chamada para a nossa Edge Function!
+    const response = await fetch(`${supabaseUrl}/functions/v1/signup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${supabaseAnonKey}`,
+      },
+      body: JSON.stringify({
+        email,
+        password,
         nome,
         sobrenome,
         nascimento,
-        email
-      });
+      }),
+    });
 
-      navigateTo('welcome');
-    } catch (error) {
-      setError('Ocorreu um erro ao criar a conta. Tente novamente.');
-    } finally {
-      setIsLoading(false);
-      if (setLoading) setLoading(false);
+    const result = await response.json();
+
+    if (!response.ok) {
+      // Se a resposta da função tiver um erro, ele será capturado aqui
+      throw new Error(result.error || 'Falha ao registrar.');
     }
-  };
-  
+
+    console.log('Resposta da função:', result);
+    navigateTo('welcome'); // Ou uma página de "verifique seu email"
+
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setIsLoading(false);
+    if (setLoading) setLoading(false);
+  }
+};
+
   const handleDateInput = (e) => {
     let value = e.target.value.replace(/\D/g, '');
     if (value.length > 2) value = value.substring(0, 2) + '/' + value.substring(2);
@@ -83,6 +97,8 @@ function RegisterPage({ navigateTo, setLoading }) {
     const senhaInput = document.getElementById('reg-senha');
     const togglePassword = document.getElementById('toggle-reg-password');
     const capsLockWarning = document.getElementById('reg-caps-lock-warning');
+    if (!senhaInput || !togglePassword) return;
+
     const eyeIconClosed = togglePassword.querySelector('.eye-icon-closed');
     const eyeIconOpen = togglePassword.querySelector('.eye-icon-open');
 
@@ -94,9 +110,11 @@ function RegisterPage({ navigateTo, setLoading }) {
     };
 
     const handleKeyUp = (event) => {
-      capsLockWarning.style.display = event.getModifierState('CapsLock') ? 'block' : 'none';
+      if (capsLockWarning) {
+        capsLockWarning.style.display = event.getModifierState('CapsLock') ? 'block' : 'none';
+      }
     };
-    
+
     togglePassword.addEventListener('click', handleToggle);
     senhaInput.addEventListener('keyup', handleKeyUp);
 
@@ -110,11 +128,7 @@ function RegisterPage({ navigateTo, setLoading }) {
     <div className="form-page-container">
       <div className="form-container">
         <div className="form-title-container">
-          <svg className="title-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2 L15 9 L22 9 L17 14 L19 21 L12 17 L5 21 L7 14 L2 9 L9 9 Z"/></svg>
-          <svg className="title-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 2 L12 6 L20 2 L12 22 Z"/></svg>
           <h2 className="form-title">CADASTRE-SE</h2>
-          <svg className="title-icon-svg right" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 2 L12 6 L20 2 L12 22 Z"/></svg>
-          <svg className="title-icon-svg right" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2 L15 9 L22 9 L17 14 L19 21 L12 17 L5 21 L7 14 L2 9 L9 9 Z"/></svg>
         </div>
 
         <form onSubmit={handleRegister}>
@@ -180,7 +194,6 @@ function RegisterPage({ navigateTo, setLoading }) {
             </div>
             <small id="reg-caps-lock-warning" className="caps-lock-warning">CAPS LOCK ATIVADO</small>
 
-            {/* A lista de requisitos da senha */}
             <ul className="password-requirements">
               <li className={`requirement-item ${passwordValidations.minLength && passwordValidations.maxLength ? 'valid' : 'invalid'}`}>
                 Entre 6 e 15 caracteres
@@ -198,16 +211,8 @@ function RegisterPage({ navigateTo, setLoading }) {
           </div>
 
           {error && <p className="error-message">{error}</p>}
-          <p className="terms-text">
-            Ao continuar, você concorda com nossos Termos de Uso e nossa Política de Privacidade.
-          </p>
 
-          <button
-            type="submit"
-            onClick={handleRegister}
-            className="cta-button"
-            disabled={isLoading}
-          >
+          <button type="submit" disabled={isLoading} className="cta-button">
             {isLoading ? 'CADASTRANDO...' : 'CADASTRE-SE AGORA'}
           </button>
         </form>

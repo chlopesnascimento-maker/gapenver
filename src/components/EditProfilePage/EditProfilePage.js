@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import './EditProfilePage.css';
 import '../Shared/Form.css';
-
+import { supabase } from '../../supabaseClient'; // Corrigido para subir dois níveis se supabaseClient estiver na raiz de src
 import Cropper from 'react-easy-crop';
+import { getCroppedImg } from '../../utils/cropUtils';
 
-function EditProfilePage({ navigateTo }) {
+function EditProfilePage({ navigateTo, onProfileUpdate }) { // Adicionando onProfileUpdate
   const [newName, setNewName] = useState('');
   const [newSurname, setNewSurname] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
@@ -12,32 +13,42 @@ function EditProfilePage({ navigateTo }) {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const [passwordValidations, setPasswordValidations] = useState({
-    minLength: false,
-    maxLength: false,
-    hasUpper: false,
-    hasLower: false,
-    hasNumber: false,
+    minLength: false, maxLength: false, hasUpper: false,
+    hasLower: false, hasNumber: false,
   });
 
   const [passwordsMatch, setPasswordsMatch] = useState(false);
-  const [userData, setUserData] = useState({ nome: "Usuário", sobrenome: "Demo" });
+  const [userData, setUserData] = useState({ nome: '', sobrenome: '', photoURL: null });
 
   const [message, setMessage] = useState(null);
   const [messageType, setMessageType] = useState(null);
 
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [imageSrc, setImageSrc] = useState(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
-  const [croppedImage, setCroppedImage] = useState(null);
+  const [croppedImageBlob, setCroppedImageBlob] = useState(null);
   const [showCropper, setShowCropper] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserData({
+          nome: user.user_metadata?.nome || '',
+          sobrenome: user.user_metadata?.sobrenome || '',
+          photoURL: user.user_metadata?.photoURL || null,
+        });
+      }
+    };
+    fetchUserData();
+  }, []);
 
   useEffect(() => {
     setPasswordValidations({
-      minLength: newPassword.length >= 6,
-      maxLength: newPassword.length <= 15,
-      hasUpper: /[A-Z]/.test(newPassword),
-      hasLower: /[a-z]/.test(newPassword),
+      minLength: newPassword.length >= 6, maxLength: newPassword.length <= 15,
+      hasUpper: /[A-Z]/.test(newPassword), hasLower: /[a-z]/.test(newPassword),
       hasNumber: /[0-9]/.test(newPassword),
     });
   }, [newPassword]);
@@ -46,48 +57,76 @@ function EditProfilePage({ navigateTo }) {
     setPasswordsMatch(newPassword !== '' && newPassword === confirmPassword);
   }, [newPassword, confirmPassword]);
 
-  const handleSaveChanges = (e) => {
+  const handleSaveChanges = async (e) => {
     e.preventDefault();
+    setMessage(null);
+    setMessageType(null);
+    setIsLoading(true);
 
-    const querMudarNome = newName.trim() !== '' || newSurname.trim() !== '';
-    const querMudarSenha = currentPassword.trim() !== '' || newPassword.trim() !== '' || confirmPassword.trim() !== '';
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não encontrado.");
 
-    if (!querMudarNome && !querMudarSenha) {
-      setMessage("Nenhum campo preenchido.");
-      setMessageType("error");
-      return;
-    }
+      const updates = {};
+      
+      if (croppedImageBlob) {
+        // 👇 AQUI ESTÁ A ALTERAÇÃO FEITA
+        const filePath = `${user.id}/${Date.now()}_avatar.jpeg`;
 
-    if (querMudarNome && (newName.trim() === '' || newSurname.trim() === '')) {
-      setMessage("Preencha Nome e Sobrenome.");
-      setMessageType("error");
-      return;
-    }
+        const { error: uploadError } = await supabase.storage
+          .from('avatars')
+          .upload(filePath, croppedImageBlob, {
+            cacheControl: '3600',
+            upsert: true,
+          });
 
-    if (querMudarSenha) {
-      if (!currentPassword || !newPassword || !confirmPassword) {
-        setMessage("Preencha todos os campos de senha.");
-        setMessageType("error");
-        return;
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(filePath);
+        
+        updates.photoURL = urlData.publicUrl;
       }
-      if (!passwordsMatch) {
-        setMessage("As senhas novas não conferem.");
-        setMessageType("error");
-        return;
+
+      if (newName.trim()) updates.nome = newName.trim();
+      if (newSurname.trim()) updates.sobrenome = newSurname.trim();
+
+      if (Object.keys(updates).length > 0) {
+        const { error: metaError } = await supabase.auth.updateUser({
+          data: updates,
+        });
+        if (metaError) throw metaError;
+
+        // Avisa o App.js sobre a mudança
+        if (onProfileUpdate) {
+            onProfileUpdate(updates);
+        }
+
+        setUserData(prev => ({ ...prev, ...updates }));
       }
+
+      if (newPassword) {
+        if (!passwordsMatch) throw new Error("As senhas novas não conferem.");
+        const { error: passError } = await supabase.auth.updateUser({ password: newPassword });
+        if (passError) throw passError;
+      }
+
+      setMessage("Alterações salvas com sucesso!");
+      setMessageType("success");
+      setNewName(""); setNewSurname(""); setCurrentPassword("");
+      setNewPassword(""); setConfirmPassword("");
+      setCroppedImageBlob(null);
+    
+    } catch (err) {
+      console.error(err);
+      setMessage(err.message || "Erro ao salvar alterações.");
+      setMessageType("error");
+    } finally {
+      setIsLoading(false);
     }
-
-    setUserData({
-      ...userData,
-      nome: newName || userData.nome,
-      sobrenome: newSurname || userData.sobrenome,
-    });
-
-    setMessage("Dados salvos (simulação)!");
-    setMessageType("success");
-    setNewName(""); setNewSurname(""); setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
   };
-
+  
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -99,16 +138,22 @@ function EditProfilePage({ navigateTo }) {
       alert('A imagem deve ter no máximo 2MB.');
       return;
     }
-    setSelectedFile(file);
+    setImageSrc(URL.createObjectURL(file));
     setShowCropper(true);
   };
-
+  
   const showCroppedImage = async () => {
-    if (!selectedFile || !croppedAreaPixels) return;
-    setCroppedImage(URL.createObjectURL(selectedFile));
-    setShowCropper(false);
-    setUserData((prev) => ({ ...prev, photoURL: URL.createObjectURL(selectedFile) }));
-    alert("Foto de perfil atualizada (simulação).");
+    if (!imageSrc || !croppedAreaPixels) return;
+
+    try {
+      const croppedBlob = await getCroppedImg(imageSrc, croppedAreaPixels);
+      setCroppedImageBlob(croppedBlob);
+      setUserData(prev => ({ ...prev, photoURL: URL.createObjectURL(croppedBlob) }));
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setShowCropper(false);
+    }
   };
 
   return (
@@ -120,8 +165,7 @@ function EditProfilePage({ navigateTo }) {
               <img src={userData.photoURL} alt="Avatar" className="avatar-img" />
             ) : (
               <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="#e0e0e0">
-                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 
-                        1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
               </svg>
             )}
             <label htmlFor="avatar-upload" className="avatar-edit-icon">✏️</label>
@@ -131,21 +175,42 @@ function EditProfilePage({ navigateTo }) {
           <h2 className="form-title">Editar Perfil</h2>
         </div>
 
-        {showCropper && selectedFile && (
+        {showCropper && imageSrc && (
           <div className="crop-modal-overlay">
             <div className="crop-container">
               <Cropper
-                image={URL.createObjectURL(selectedFile)}
+                image={imageSrc}
                 crop={crop}
                 zoom={zoom}
                 aspect={1}
                 onCropChange={setCrop}
-                onZoomChange={(e) => setZoom(parseFloat(e.target.value))}
-                onCropComplete={(croppedArea, croppedPixels) => setCroppedAreaPixels(croppedPixels)}
+                onZoomChange={setZoom}
+                onCropComplete={(croppedArea, croppedPixels) =>
+                  setCroppedAreaPixels(croppedPixels)
+                }
+                showGrid={true}
               />
+              <div className="zoom-slider">
+                <input
+                  type="range"
+                  min={1}
+                  max={3}
+                  step={0.01}
+                  value={zoom}
+                  onChange={(e) => setZoom(Number(e.target.value))}
+                />
+              </div>
               <div className="crop-buttons">
-                <button type="button" className="cta-button" onClick={showCroppedImage}>CONFIRMAR</button>
-                <button type="button" className="cancel-button" onClick={() => setShowCropper(false)}>CANCELAR</button>
+                <button type="button" className="cta-button" onClick={showCroppedImage}>
+                  CONFIRMAR
+                </button>
+                <button
+                  type="button"
+                  className="cancel-button"
+                  onClick={() => setShowCropper(false)}
+                >
+                  CANCELAR
+                </button>
               </div>
             </div>
           </div>
@@ -194,7 +259,9 @@ function EditProfilePage({ navigateTo }) {
           </div>
         </form>
 
-        <button onClick={handleSaveChanges} className="cta-button">SALVAR ALTERAÇÕES</button>
+        <button onClick={handleSaveChanges} className="cta-button" disabled={isLoading}>
+          {isLoading ? 'SALVANDO...' : 'SALVAR ALTERAÇÕES'}
+        </button>
       </div>
     </div>
   );
