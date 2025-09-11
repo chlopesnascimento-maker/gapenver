@@ -1,0 +1,102 @@
+import React, { useEffect, useState } from "react";
+import { supabase } from "../../supabaseClient";
+import "./CidadaosdoReino.css";
+
+function CidadaosdoReino({ navigateTo }) {
+  const [citizens, setCitizens] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState(""); // 🔎 pesquisa
+
+  useEffect(() => {
+    const fetchCitizens = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, nome, sobrenome, foto_url, cargo, reino");
+
+      if (error) {
+        console.error("Erro ao buscar cidadãos:", error);
+      } else {
+        setCitizens(data || []);
+      }
+      setLoading(false);
+    };
+
+    fetchCitizens();
+  }, []);
+
+  const filteredCitizens = citizens.filter((citizen) =>
+    `${citizen.nome} ${citizen.sobrenome}`
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase())
+  );
+
+  if (loading) {
+    return (
+      <div className="citizens-container">
+        <p>Carregando cidadãos...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="citizens-container">
+      <h2>Cidadãos do Reino</h2>
+      <p>Conheça todos os membros do nosso reino:</p>
+
+     <div className="search-box">
+  <img 
+    src="https://cdn-icons-png.flaticon.com/256/1436/1436612.png" 
+    alt="Pesquisar" 
+    className="search-icon"
+  />
+  <input
+    type="text"
+    placeholder="Pesquisar cidadão"
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+  />
+</div>
+
+
+      <div className="citizens-grid">
+        {filteredCitizens.length > 0 ? (
+          filteredCitizens.map((citizen) => (
+            <div
+              key={citizen.id}
+              className="citizen-card"
+              onClick={() =>
+                navigateTo("userProfile", { userId: citizen.id })
+              }
+            >
+              <img
+                src={citizen.foto_url || "https://i.imgur.com/ZUQJmco.png"}
+                alt={`${citizen.nome} ${citizen.sobrenome}`}
+                className="citizen-photo"
+              />
+              <div className="citizen-info">
+                <h3>
+                  {citizen.nome} {citizen.sobrenome}
+                </h3>
+                <span
+                  className={`citizen-role role-${
+                    citizen.cargo?.toLowerCase() || "default"
+                  }`}
+                >
+                  {citizen.cargo || "Membro"}
+                </span>
+                <p className="citizen-reino">
+                  {citizen.reino || "Reino não declarado"}
+                </p>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p>Nenhum cidadão encontrado.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default CidadaosdoReino;

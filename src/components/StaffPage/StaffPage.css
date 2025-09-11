@@ -1,0 +1,83 @@
+.staff-page {
+  padding: 40px;
+  text-align: center;
+  color: #e0e0e0;
+}
+
+.staff-page h2 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.staff-page p {
+  margin-bottom: 30px;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.staff-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
+}
+
+.staff-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  padding: 20px;
+  width: 220px;
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+
+.staff-card:hover {
+  transform: translateY(-5px);
+}
+
+.staff-photo {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 15px;
+}
+
+.staff-info h3 {
+  margin: 5px 0;
+}
+
+/* Base exclusiva para StaffPage */
+.staff-role {
+  font-size: 0.9rem;
+  font-weight: bold;
+  display: inline-block;
+  margin-top: 5px;
+  background: none;
+  border: none;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  text-transform: none;
+}
+
+/* Admin exclusivo do StaffPage */
+.staff-role-admin {
+  color: #e74c3c;
+  text-shadow: 0 0 6px rgba(231, 76, 60, 0.6);
+}
+
+/* Oficial Real exclusivo do StaffPage */
+.staff-role-oficialreal {
+  color: #e67e22;
+  text-shadow: 0 0 6px rgba(230, 126, 34, 0.6);
+}
+
+/* Moderador exclusivo do StaffPage */
+.staff-role-guardareal {
+  color: #2ecc71;
+  text-shadow: 0 0 6px rgba(46, 204, 113, 0.6);
+}
+
+
+

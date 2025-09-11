@@ -1,0 +1,165 @@
+.citizens-container {
+  padding: 20px;
+  text-align: center;
+}
+
+.citizens-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.citizen-card {
+  background: #1e1e2f;
+  border-radius: 12px;
+  padding: 15px;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.citizen-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.citizen-photo {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+  border: 2px solid #fff;
+}
+
+.citizen-info h3 {
+  margin: 5px 0;
+  font-size: 1.2rem;
+}
+
+.citizen-role {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  margin-bottom: 6px;
+}
+
+.role-admin { background: crimson; color: #fff; }
+.role-oficialreal { background: rgb(250, 192, 66); color: #fff; }
+.role-guardareal { background: seagreen; color: #fff; }
+.role-viajante { background: royalblue; color: #fff; }
+.role-default { background: gray; color: #fff; }
+
+.citizen-reino {
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+.search-box {
+  margin: 20px auto;
+  max-width: 400px;
+  display: flex;
+  align-items: center;
+  background: #2a2a3d;
+  border-radius: 8px;
+  padding: 8px 12px;
+  border: 1px solid #444;
+}
+
+.search-box .search-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  opacity: 0.8;
+}
+
+
+.search-box input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: #fff;
+  font-size: 1rem;
+  outline: none;
+}
+
+/* ========================================
+   ESTILOS PARA O TEASER DE VISITANTES
+   ======================================== */
+
+.teaser-fade {
+  position: relative;
+  grid-column: span 1; /* Garante que ocupe o espaço de um card no grid */
+}
+
+/* O card em si fica embaçado e escurecido */
+.teaser-fade .citizen-card {
+  filter: blur(5px);
+  opacity: 0.4;
+  pointer-events: none; /* Impede que seja clicável */
+  transform: scale(0.98);
+}
+
+/* O overlay com o texto que fica por cima */
+.teaser-fade .cta-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+  z-index: 10;
+  border-radius: 10px; /* Para bater com o card */
+  cursor: pointer;
+}
+
+.cta-overlay h3 {
+  color: var(--accent); /* Reutiliza a cor dourada do seu site */
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  text-shadow: 1px 1px 5px rgba(0,0,0,0.7);
+}
+
+.cta-overlay p {
+  font-size: 0.9rem;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+}
+
+/* --- ESTILOS PARA PAGINAÇÃO --- */
+.pagination-controls {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.pagination-controls button {
+  background-color: var(--panel-bg);
+  color: var(--muted);
+  border: 1px solid var(--header-border);
+  padding: 8px 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination-controls button:hover {
+  background-color: var(--accent);
+  color: var(--panel-bg);
+  border-color: var(--accent);
+}
+
+.pagination-controls button.active {
+  background-color: var(--accent);
+  color: var(--panel-bg);
+  border-color: var(--accent);
+  font-weight: bold;
+}

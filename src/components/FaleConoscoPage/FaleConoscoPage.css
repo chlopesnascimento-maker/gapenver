@@ -1,0 +1,14 @@
+.fale-conosco-container {
+  padding: 20px;
+  text-align: center;
+}
+
+.fale-conosco-container h2 {
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+}
+
+.fale-conosco-container p {
+  font-size: 1.2rem;
+  color: #666;
+}

@@ -74,3 +74,148 @@
     height: 50px; 
     fill: #f0e68c; 
 }
+
+
+
+@media (max-width: 480px) {
+  /* Altere '.seu-botao-comprar' para a classe correta do seu botão */
+  .seu-botao-comprar {
+    width: auto; /* A largura se ajusta ao texto */
+    padding: 15px 30px; /* Ajusta o preenchimento para ficar confortável */
+    font-size: 1rem; /* Diminui um pouco a fonte no celular */
+    white-space: nowrap; /* Força o texto a ficar em uma única linha */
+  }
+}
+
+@media (max-width: 768px) {
+  main {
+    /* Reduz o preenchimento lateral em telas menores */
+    /* Isso permitirá que o rodapé e outros elementos ocupem mais espaço */
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Usando a classe correta que você encontrou */
+  .cta-button {
+    width: auto; /* A largura se ajusta ao texto */
+    padding: 15px 30px; /* Ajusta o preenchimento para ficar confortável */
+    font-size: 1rem; /* Diminui um pouco a fonte no celular */
+    white-space: nowrap; /* Força o texto a ficar em uma única linha */
+  }
+}
+
+/* ============================= */
+/* RESPONSIVIDADE GLOBAL - MOBILE */
+/* ============================= */
+
+@media (max-width: 768px) {
+  /* 1 - HEADER */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    position: relative;
+  }
+
+  header .logo {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  header .avatar-icon {
+    position: absolute;
+    right: 15px;
+  }
+
+  header .nav-menu {
+    display: none; /* esconde o menu normal */
+  }
+
+  header .hamburger-menu {
+    display: block; /* mostra o hamburguer */
+    position: absolute;
+    left: 15px;
+    font-size: 1.6rem;
+    cursor: pointer;
+  }
+
+  /* 2 - BODY (impede scroll lateral no mobile) */
+  body, html {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  .App {
+    overflow-x: hidden;
+    width: 100%;
+  }
+
+  /* 3 - FOOTER */
+  footer {
+    text-align: center;
+    padding: 15px 10px;
+  }
+
+  footer .social-icons {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+  }
+
+  /* Remove ícones sociais do header no mobile */
+  header .social-icons {
+    display: none;
+  }
+}
+
+/* ========================================
+   ESTILO DO BOTÃO VOLTAR AO TOPO
+   ======================================== */
+
+#backToTopBtn {
+  /* --- Posição --- */
+  position: fixed; /* Fica fixo na tela durante a rolagem */
+  bottom: 20px;
+  right: 20px;
+  z-index: 1010; /* Garante que fique acima da maioria dos elementos */
+
+  /* --- Estilo Visual (Inspirado no seu site) --- */
+  background-color: var(--panel-bg); /* Fundo azul-escuro, igual ao menu */
+  color: var(--accent); /* Cor dourada para o ícone */
+  width: 50px;
+  height: 50px;
+  border-radius: 50%; /* Deixa o botão perfeitamente circular */
+  border: 1px solid var(--header-border); /* Borda sutil */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4); /* Sombra para destacar */
+  
+  /* --- Conteúdo (Ícone) --- */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* --- Efeitos e Transições --- */
+  cursor: pointer;
+  opacity: 0; /* Começa invisível */
+  visibility: hidden; /* Começa escondido */
+  transform: translateY(20px); /* Efeito de surgir de baixo */
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+}
+
+/* Classe que o JavaScript vai adicionar para mostrar o botão */
+#backToTopBtn.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Efeito ao passar o mouse */
+#backToTopBtn:hover {
+  background-color: #2a2a5d; /* Um pouco mais claro que o --panel-bg */
+  transform: scale(1.05); /* Leve aumento para dar feedback */
+}
+

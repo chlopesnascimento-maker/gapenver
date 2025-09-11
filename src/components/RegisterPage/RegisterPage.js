@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../Shared/Form.css';
+import { supabase } from '../../supabaseClient';
 
 function RegisterPage({ navigateTo, setLoading }) {
   const [nome, setNome] = useState('');
@@ -29,62 +30,49 @@ function RegisterPage({ navigateTo, setLoading }) {
   }, [password]);
 
   const handleRegister = async (e) => {
-  e.preventDefault();
-  setError('');
+    e.preventDefault();
+    setError('');
 
-  // Suas validações continuam aqui, perfeitas!
-  const allValid = Object.values(passwordValidations).every(v => v === true);
-  if (!allValid) {
-    setError('Por favor, cumpra todos os requisitos da senha.');
-    return;
-  }
-
-  if (!email || !password || !nome || !sobrenome || !nascimento) {
-    setError('Por favor, preencha todos os campos obrigatórios.');
-    return;
-  }
-
-  setIsLoading(true);
-  if (setLoading) setLoading(true);
-
-  // As variáveis de ambiente do seu arquivo .env
-  const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
-  const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
-
-  try {
-    // A chamada para a nossa Edge Function!
-    const response = await fetch(`${supabaseUrl}/functions/v1/signup`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${supabaseAnonKey}`,
-      },
-      body: JSON.stringify({
-        email,
-        password,
-        nome,
-        sobrenome,
-        nascimento,
-      }),
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      // Se a resposta da função tiver um erro, ele será capturado aqui
-      throw new Error(result.error || 'Falha ao registrar.');
+    // Validação de senha
+    const allValid = Object.values(passwordValidations).every(v => v === true);
+    if (!allValid) {
+      setError('Por favor, cumpra todos os requisitos da senha.');
+      return;
     }
 
-    console.log('Resposta da função:', result);
-    navigateTo('welcome'); // Ou uma página de "verifique seu email"
+    if (!email || !password || !nome || !sobrenome || !nascimento) {
+      setError('Por favor, preencha todos os campos obrigatórios.');
+      return;
+    }
 
-  } catch (err) {
-    setError(err.message);
-  } finally {
-    setIsLoading(false);
-    if (setLoading) setLoading(false);
-  }
-};
+    setIsLoading(true);
+    if (setLoading) setLoading(true);
+
+    try {
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            nome,
+            sobrenome,
+            nascimento,
+          },
+          emailRedirectTo: `${window.location.origin}/login`, // link de confirmação
+        },
+      });
+
+      if (signUpError) throw signUpError;
+
+      console.log('Usuário registrado:', data);
+      navigateTo('welcome'); // leva para página de boas-vindas
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+      if (setLoading) setLoading(false);
+    }
+  };
 
   const handleDateInput = (e) => {
     let value = e.target.value.replace(/\D/g, '');

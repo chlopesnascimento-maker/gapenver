@@ -164,3 +164,73 @@
         text-align: center;
     }
 }
+
+/* Bloco de Sobre Mim */
+.about-me-block {
+  margin-top: 15px;
+  padding: 12px 15px;
+  border-left: 4px solid #3498db;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.about-me-block strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 15px;
+  color: #333;
+}
+
+.about-me-block p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #000000;
+  text-align: left;
+}
+
+.about-me-block {
+  padding: 12px 15px;
+  border-left: 4px solid #3498db;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.about-me-block p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+}
+
+/*Molduras */
+.about-me-block.administrador {
+  border: 1px solid #e74c3c;
+  border-radius: 10px;
+  background: #fff;
+  animation: pulse-red 4s infinite;
+}
+
+@keyframes pulse-red {
+  0%   { box-shadow: 0 0 3px #e74c3c, 0 0 6px #e74c3c; }
+  50%  { box-shadow: 0 0 8px #c0392b, 0 0 16px #c0392b; }
+  100% { box-shadow: 0 0 3px #e74c3c, 0 0 16px #e74c3c; }
+}
+
+.about-me-block.oficial-real {
+  border: 1px solid #fcb839;
+  border-radius: 10px;
+  background: #fff;
+  animation: pulse-orange 4s infinite;
+}
+
+@keyframes pulse-orange {
+  0%   { box-shadow: 0 0 3px #fcb839, 0 0 6px #fcb839; }
+  50%  { box-shadow: 0 0 8px #f5ae2b, 0 0 16px #f5ae2b; }
+  100% { box-shadow: 0 0 3px #fcb839, 0 0 6px #fcb839; }
+}
+
+
+
+
+

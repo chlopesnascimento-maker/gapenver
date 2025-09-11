@@ -6,7 +6,7 @@ function WelcomePage({ navigateTo }) {
     <div className="welcome-page-container">
       <div className="welcome-content">
         <h1 className="welcome-title">Bem-vindo(a), Viajante!</h1>
-        <p className="welcome-text">As Sentinelas Reais lhe concede acesso ao reino!</p>
+        <p className="welcome-text">As Sentinelas Reais lhe concede acesso ao reino! Mas antes, verifique sua caixa de E-MAIL e confirme sua conta!</p>
                
       </div>
     </div>

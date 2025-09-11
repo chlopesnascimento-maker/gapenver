@@ -1,33 +1,53 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './MyAccountPage.css';
 import '../Shared/Form.css';
-import { supabase } from '../../supabaseClient'; // Verifique se o caminho está correto
+import { supabase } from '../../supabaseClient';
 
-function MyAccountPage({ navigateTo, user: propUser, userData: propUserData }) {
-  const [userData, setUserData] = useState(propUserData);
-  const [user, setUser] = useState(propUser);
+function MyAccountPage({ navigateTo }) {
+  const [user, setUser] = useState(null);
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [sendingVerification, setSendingVerification] = useState(false);
-  const [loading, setLoading] = useState(!propUser);
+
+  const fetchUserData = useCallback(async () => {
+    setLoading(true);
+
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !authUser) {
+      console.error('Erro ao buscar usuário:', authError);
+      setLoading(false);
+      return;
+    }
+    setUser(authUser);
+
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('nome, sobrenome, foto_url')
+      .eq('id', authUser.id)
+      .single();
+
+    if (profileError) {
+      console.error('Erro ao buscar perfil na tabela:', profileError);
+    }
+    
+    const finalUserData = {
+      nome: authUser.user_metadata?.nome || profileData?.nome,
+      sobrenome: authUser.user_metadata?.sobrenome || profileData?.sobrenome,
+      photoURL: authUser.user_metadata?.photoURL || profileData?.foto_url,
+      aboutMe: authUser.user_metadata?.aboutMe || ''
+    };
+    
+    console.log("Dados finais combinados:", finalUserData);
+    setUserData(finalUserData);
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
-    const fetchUserIfNeeded = async () => {
-      if (!user) {
-        const { data, error } = await supabase.auth.getUser();
-        if (error) {
-          console.error(error);
-          setLoading(false);
-          return;
-        }
-        const currentUser = data?.user ?? null;
-        setUser(currentUser);
-        setUserData(currentUser?.user_metadata || null);
-        setLoading(false);
-      }
-    };
-    fetchUserIfNeeded();
-  }, [user]);
+    fetchUserData();
+  }, [fetchUserData]);
 
   const handleSendVerification = async () => {
     if (!user?.email) return;
@@ -49,22 +69,16 @@ function MyAccountPage({ navigateTo, user: propUser, userData: propUserData }) {
       alert('Para confirmar a exclusão, digite DELETAR no campo.');
       return;
     }
-
     if (!window.confirm("Você tem certeza ABSOLUTA que deseja apagar sua conta? Esta ação não pode ser desfeita.")) {
         return;
     }
-
     setDeleting(true);
     try {
-      // Chama a nossa nova Edge Function
       const { error } = await supabase.functions.invoke('delete-user');
-
       if (error) throw error;
-
       alert('Sua conta foi deletada com sucesso. Sentiremos sua falta!');
-      await supabase.auth.signOut(); // Desloga o usuário
-      navigateTo('home'); // Redireciona para a home
-
+      await supabase.auth.signOut();
+      navigateTo('home');
     } catch (err) {
       console.error(err);
       alert('Ocorreu um erro ao deletar sua conta: ' + err.message);
@@ -72,10 +86,28 @@ function MyAccountPage({ navigateTo, user: propUser, userData: propUserData }) {
       setDeleting(false);
     }
   };
-
+  
   if (loading) return <div className="form-page-container"><p>Carregando...</p></div>;
 
   const isVerified = Boolean(user?.email_confirmed_at);
+  
+  let roleDisplay = null;
+  const userRoles = user?.app_metadata?.roles;
+
+  if (userRoles && userRoles.length > 0) {
+    const primaryRole = userRoles[0];
+    if (primaryRole === 'admin') {
+      roleDisplay = { name: 'Administrador', style: { color: '#e74c3c', fontWeight: 'bold' } };
+    } else if (primaryRole === 'viajante') {
+      roleDisplay = { name: 'Viajante', style: { color: '#3498db', fontWeight: 'bold' } };
+    } else if (primaryRole === 'oficialreal') {
+      roleDisplay = { name: 'Oficial Real', style: { color: '#f39c12', fontWeight: 'bold' } };
+    } else if (primaryRole === 'moderadores') {
+      roleDisplay = { name: 'Moderador', style: { color: '#2ecc71', fontWeight: 'bold' } };
+    } else {
+      roleDisplay = { name: primaryRole, style: { fontWeight: 'normal' } };
+    }
+  }
 
   return (
     <div className="form-page-container">
@@ -92,12 +124,19 @@ function MyAccountPage({ navigateTo, user: propUser, userData: propUserData }) {
               </div>
             )}
           </div>
+          
 
           <div className="profile-info">
             <p><strong>Nome:</strong> {`${userData?.nome || ''} ${userData?.sobrenome || ''}`.trim()}</p>
+            {roleDisplay && (
+              <p>
+                <strong>Título:</strong> <span style={roleDisplay.style}>{roleDisplay.name}</span>
+              </p>
+            )}
             <p><strong>E-mail:</strong> {user?.email || '—'}</p>
             <p><strong>Criado em:</strong> {user?.created_at ? new Date(user.created_at).toLocaleDateString('pt-BR') : '—'}</p>
-            <div className="profile-actions">
+            
+              <div className="profile-actions">
               <button className="cta-button" onClick={() => navigateTo('editProfile')}>
                 EDITAR PERFIL
               </button>
@@ -106,6 +145,21 @@ function MyAccountPage({ navigateTo, user: propUser, userData: propUserData }) {
         </div>
 
         <hr />
+
+        {userData?.aboutMe && (
+  <>
+    <strong style={{ display: 'block', marginTop: '15px', marginBottom: '6px', fontSize: '15px', color: '#fff' }}>
+      Sobre Mim:
+    </strong>
+    <div className={`about-me-block ${roleDisplay?.name?.toLowerCase().replace(/\s+/g, '-')}`}>
+      <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>
+        {userData.aboutMe}
+      </p>
+    </div>
+  </>
+)}
+
+<hr />
 
         <section className="security-section">
           <h3>Segurança</h3>

@@ -1,0 +1,13 @@
+SUPABASE
+
+supabase functions deploy list-users
+supabase functions deploy update-user-by-admin
+supabase functions deploy delete-user-by-admin
+supabase functions deploy delete-user
+supabase functions deploy signup
+supabase functions deploy update-avatar
+supabase functions deploy update-role
+
+NPM
+
+npm start

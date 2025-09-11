@@ -1,0 +1,301 @@
+/* src/components/UserManagementPage/UserManagementPage.css */
+.user-management-container {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 20px;
+  color: #e0e0e0;
+}
+
+.admin-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap; /* Permite que os itens quebrem a linha em telas pequenas */
+  gap: 15px;      /* Espaçamento entre os itens quando quebram a linha */
+}
+
+/* ========================================================== */
+/* MELHORIA 1: Wrapper para a tabela rolar no mobile         */
+/* ========================================================== */
+.table-wrapper {
+  display: block; /* Garante que o container se comporte como um bloco */
+  width: 100%;    /* Garante que o container ocupe toda a largura disponível */
+  overflow-x: auto; /* A mágica acontece aqui! */
+  -webkit-overflow-scrolling: touch; /* Melhora a rolagem em iOS */
+  border: 1px solid rgba(218, 165, 32, 0.3);
+  border-radius: 8px;
+}
+
+.users-table {
+  width: 100%; /* De volta para fazer a tabela ocupar o espaço no desktop */
+  border-collapse: collapse;
+  background-color: rgba(255, 255, 255, 0.05);
+  min-width: 800px;
+}
+
+.users-table th, .users-table td {
+  border-bottom: 1px solid rgba(218, 165, 32, 0.3);
+  padding: 12px 15px;
+  vertical-align: middle;
+  text-align: left;
+  /* Esta regra força o texto a ficar em uma linha e expandir a tabela */
+  white-space: nowrap; 
+}
+
+.users-table th {
+  background-color: rgba(218, 165, 32, 0.2);
+  color: #DAA520;
+}
+
+.users-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.users-table tbody tr:nth-child(even) {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.actions-cell {
+  text-align: center;
+}
+
+/* Ajusta a largura da coluna de ações para ser mais compacta */
+.users-table .actions-cell {
+  width: 120px; /* Define uma largura fixa para os botões */
+}
+
+.action-button {
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin: 0 5px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: bold;
+  transition: all 0.2s ease-in-out;
+  color: #fff;
+}
+
+.edit-button {
+  background: linear-gradient(135deg, #2980b9, #3498db);
+  border: 1px solid rgba(52, 152, 219, 0.6);
+}
+
+.edit-button:hover {
+  background: linear-gradient(135deg, #3498db, #5dade2);
+  transform: translateY(-2px);
+  box-shadow: 0 0 8px rgba(52, 152, 219, 0.7);
+}
+
+.delete-button {
+  background: linear-gradient(135deg, #c0392b, #e74c3c);
+  border: 1px solid rgba(231, 76, 60, 0.6);
+}
+
+.delete-button:hover {
+  background: linear-gradient(135deg, #e74c3c, #ff6b6b);
+  transform: translateY(-2px);
+  box-shadow: 0 0 8px rgba(231, 76, 60, 0.7);
+}
+
+/* Estilos do Modal de Edição */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 15px;
+}
+
+.modal-content {
+  background-color: #2c2c54;
+  padding: 30px;
+  border-radius: 8px;
+  border: 1px solid rgba(218, 165, 32, 0.5);
+  width: 100%;
+  max-width: 500px;
+  color: #e0e0e0;
+}
+
+.modal-title {
+  color: #DAA520;
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+}
+
+.modal-content .form-group {
+  margin-bottom: 15px;
+}
+
+.modal-content .form-group label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.modal-content .form-group input,
+.modal-content select {
+  width: 100%;
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(218, 165, 32, 0.5);
+  border-radius: 4px;
+  color: #fff;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.modal-actions button {
+  flex-grow: 1;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.modal-actions .cancel-button {
+  background-color: #444;
+  color: #fff;
+}
+
+.modal-actions .cancel-button:hover {
+  background-color: #666;
+  transform: translateY(-2px);
+}
+
+.modal-actions .save-button {
+  background: linear-gradient(135deg, #daa520, #ffd700);
+  color: #000;
+}
+
+.modal-actions .save-button:hover {
+  background: linear-gradient(135deg, #ffd700, #ffea70);
+  transform: translateY(-2px);
+  box-shadow: 0 0 8px rgba(218, 165, 32, 0.6);
+}
+
+.modal-content select {
+  font-size: 1rem;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='gold' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.modal-content select:hover {
+  border-color: #DAA520;
+  box-shadow: 0 0 5px rgba(218, 165, 32, 0.4);
+}
+
+.modal-content select:focus {
+  outline: none;
+  border-color: #FFD700;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+}
+
+/* Badges de Cargo */
+.role-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #fff;
+}
+.role-admin { background-color: #e74c3c; }
+.role-viajante { background-color: #3498db; }
+.role-default { background-color: #7f8c8d; }
+.role-oficialreal { background-color: orange; }
+.role-guardareal { background-color: #27ae60; }
+.role-moderadores { background-color: green; }
+.role-banidos { background-color: #8e44ad; }
+
+
+/* Estilos para o Input de Arquivo Customizado */
+.file-input-group {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.file-input-group input[type="file"] {
+  display: none;
+}
+
+.custom-file-label {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: transparent;
+  border: 1px solid #DAA520;
+  color: #DAA520;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s ease-in-out;
+  white-space: nowrap;
+}
+
+.custom-file-label:hover {
+  background-color: rgba(218, 165, 32, 0.1);
+  color: #FFD700;
+  border-color: #FFD700;
+  transform: translateY(-2px);
+  box-shadow: 0 0 8px rgba(218, 165, 32, 0.4);
+}
+
+.file-name-display {
+  color: #ccc;
+  font-style: italic;
+  margin-left: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* ========================================================== */
+/* MELHORIA 2: Estilos específicos para telas pequenas (mobile) */
+/* ========================================================== */
+@media (max-width: 768px) {
+  .admin-page-header {
+    flex-direction: column; /* Coloca o título acima do botão */
+    align-items: flex-start; /* Alinha tudo à esquerda */
+  }
+
+  .admin-page-header .admin-title {
+    font-size: 1.8rem; /* Ajusta o tamanho do título */
+  }
+
+  .users-table th, .users-table td {
+    padding: 10px 12px;
+    font-size: 0.9rem; /* Diminui um pouco a fonte na tabela */
+    text-align: left;  /* Garante alinhamento à esquerda no mobile */
+  }
+
+  .modal-actions {
+    flex-direction: column; /* Botões do modal um em cima do outro */
+  }
+
+  .modal-actions button {
+    width: 100%; /* Fazem os botões ocuparem a largura total */
+  }
+}

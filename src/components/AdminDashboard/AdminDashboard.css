@@ -1,0 +1,49 @@
+/* src/components/AdminDashboard/AdminDashboard.css */
+.admin-dashboard-container {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 20px;
+  color: #e0e0e0;
+}
+
+.admin-title {
+  color: #DAA520; /* Dourado */
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.admin-widgets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.admin-widget {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(218, 165, 32, 0.3);
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+}
+
+.admin-widget h3 {
+  margin-top: 0;
+  color: #DAA520;
+}
+
+.widget-data {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+/* Adicione no final do AdminDashboard.css */
+.admin-widget.clickable {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-widget.clickable:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(218, 165, 32, 0.3);
+}

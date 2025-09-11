@@ -1,6 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import '../Shared/Form.css';
-import { supabase } from 'supabaseClient'; // Importando o Supabase
+import { supabase } from '../../supabaseClient'; // Corrigido o caminho do import
+
+// --- FUNÇÃO AUXILIAR PARA TRADUZIR ERROS ---
+// Colocamos ela fora do componente para melhor organização.
+const traduzErros = (mensagem) => {
+  const mapa = {
+    "Invalid login credentials": "Credenciais inválidas. Verifique seu e-mail e senha.",
+    "Email not confirmed": "E-mail não confirmado. Por favor, verifique sua caixa de entrada.",
+    "User already registered": "Este e-mail já está cadastrado.",
+  };
+  return mapa[mensagem] || "Ocorreu um erro inesperado. Tente novamente.";
+};
+
 
 function LoginPage({ navigateTo }) {
   const [email, setEmail] = useState('');
@@ -8,8 +20,7 @@ function LoginPage({ navigateTo }) {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  
-
+  // --- FUNÇÃO handleLogin TOTALMENTE REESTRUTURADA ---
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
@@ -22,47 +33,50 @@ function LoginPage({ navigateTo }) {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      // 1. Tenta fazer o login UMA VEZ
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      
-      if (error) {
-        setError(error.message); // Mostra erro real do Supabase
-      } else {
-        console.log('Login bem-sucedido:', data);
-        navigateTo('home'); // Redireciona para a página inicial
+      // 2. Se houver um erro, traduz e exibe a mensagem
+      if (signInError) {
+        throw signInError;
       }
 
-    } catch (err) {
-      setError('Ocorreu um erro inesperado. Tente novamente.');
-    } finally {
-      setIsLoading(false);
-const traduzErros = (mensagem) => {
-  const mapa = {
-    "Invalid login credentials": "Credenciais inválidas. Verifique e tente novamente.",
-    "Email not confirmed": "E-mail não confirmado. Verifique sua caixa de entrada.",
-    "User already registered": "Este e-mail já está cadastrado.",
-  };
-  return mapa[mensagem] || "Ocorreu um erro inesperado.";
-};
+// 3. Se o login for bem-sucedido, verifica o cargo do usuário
+if (data.user) {
+  const userRole =
+    data.user.app_metadata?.roles?.[0]?.toLowerCase().trim() ||
+    data.user.user_metadata?.cargo?.toLowerCase().trim();
 
-const { error } = await supabase.auth.signInWithPassword({ email, password });
-if (error) {
-  setError(traduzErros(error.message));
+  // Salva o cargo no localStorage
+  localStorage.setItem('userRole', userRole);
+
+  // 4. Redireciona com base no cargo
+  if (userRole === 'banidos') {
+    navigateTo('bannedPage');
+  } else {
+    navigateTo('home');
+  }
 }
 
-      
+    } catch (err) {
+      // O 'catch' agora usa nossa função para mostrar um erro amigável
+      setError(traduzErros(err.message));
+    } finally {
+      // O 'finally' só é responsável por parar o loading
+      setIsLoading(false);
     }
   };
-
-  
 
   useEffect(() => {
     const senhaInput = document.getElementById('login-senha');
     const togglePassword = document.getElementById('toggle-login-password');
+    // ... (o resto do seu useEffect continua igual e funcional)
     const capsLockWarning = document.getElementById('login-caps-lock-warning');
+    if (!senhaInput || !togglePassword || !capsLockWarning) return;
+
     const eyeIconClosed = togglePassword.querySelector('.eye-icon-closed');
     const eyeIconOpen = togglePassword.querySelector('.eye-icon-open');
 
@@ -92,8 +106,8 @@ if (error) {
         <div className="form-title-container">
           <h2 className="form-title">LOGIN</h2>
         </div>
-
         <form onSubmit={handleLogin}>
+          {/* O seu JSX continua o mesmo */}
           <div className="form-group">
             <label htmlFor="login-email">E-MAIL:</label>
             <input
@@ -104,7 +118,6 @@ if (error) {
               disabled={isLoading}
             />
           </div>
-
           <div className="form-group">
             <label htmlFor="login-senha">SENHA:</label>
             <div className="password-wrapper">
@@ -126,13 +139,10 @@ if (error) {
             </div>
             <small id="login-caps-lock-warning" className="caps-lock-warning">CAPS LOCK ATIVADO</small>
           </div>
-
           <a href="#" onClick={() => navigateTo('forgotPassword')} className="forgot-password-link">
             Esqueci minha senha
           </a>
-
           {error && <p className="error-message">{error}</p>}
-
           <button type="submit" className="cta-button" disabled={isLoading}>
             {isLoading ? 'ENTRANDO...' : 'ENTRAR'}
           </button>

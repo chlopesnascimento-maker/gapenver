@@ -1,0 +1,330 @@
+/* =========================
+   Header.css - VERSÃO FINAL CORRIGIDA
+   ========================= */
+
+/* ===== VARIÁVEIS LOCAIS (cores) ===== */
+:root{
+  --header-bg: rgba(0,0,0,0.3);
+  --header-border: #444;
+  --accent: #f0e68c;
+  --muted: #e0e0e0;
+  --panel-bg: #1a1a3d;
+  --overlay-bg: rgba(6,6,10,0.96);
+}
+
+/* ===== BASE (desktop-first) ===== */
+.app-header {
+  background-color: var(--header-bg);
+  padding: 1px 30px;
+  border-bottom: 1px solid var(--header-border);
+  backdrop-filter: blur(5px);
+  position: relative;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Header - top row */
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 12px;
+}
+
+.header-left,
+.header-center,
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.header-left { justify-content: flex-start; }
+.header-center { justify-content: center; flex: 0 1 auto; text-align: center; }
+.header-right { justify-content: flex-end; gap: 20px; }
+
+.site-logo {
+  height: 120px;
+  width: auto;
+  object-fit: contain;
+  display: inline-block;
+  margin: 0;
+}
+
+.social-icon {
+  color: var(--accent);
+  font-size: 1.4rem;
+  transition: transform .18s ease, color .18s ease;
+  cursor: pointer;
+}
+.social-icon:hover { transform: scale(1.18); color: #fff8dc; }
+
+.avatar-container { position: relative; }
+.avatar-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(255,255,255,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 2px solid var(--header-border);
+  overflow: hidden;
+  transition: border-color .2s ease;
+}
+.avatar-circle:hover { border-color: var(--accent); }
+.header-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 56px;
+  right: 0;
+  background-color: var(--panel-bg);
+  border: 1px solid var(--header-border);
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+  width: 180px;
+  z-index: 1100;
+  overflow: hidden;
+}
+.dropdown-menu a {
+  display: block;
+  padding: 12px 14px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: .95rem;
+}
+.dropdown-menu a:hover { background: rgba(255,255,255,0.03); color: var(--accent); }
+.user-info { padding: 12px; border-bottom: 1px solid var(--header-border); text-align:center; }
+.user-name { color: var(--accent); font-weight:700; }
+
+/* ===== Segunda linha: navegação (desktop) ===== */
+.header-nav {
+  background: rgba(0,0,0,0.25);
+  border-top: 1px solid var(--header-border);
+  width: 100%;
+   margin-left: -30px;  /* Anula o padding esquerdo do container pai */
+  margin-right: -30px; /* Anula o padding direito do container pai */
+  padding-left: 30px;  /* Devolve o padding para o conteúdo interno (a lista) */
+  padding-right: 30px; /* Devolve o padding para o conteúdo interno (a lista) */
+}
+.header-nav .nav-list {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  gap: 36px;
+  margin: 0;
+  padding: 12px 20px;
+}
+.header-nav .nav-list li { display: block; }
+.header-nav .nav-list a {
+  color: var(--muted);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color .18s ease;
+}
+.header-nav .nav-list a:hover { color: var(--accent); }
+
+/* ========================================
+   ESTILO PARA LINKS DE LOGIN/CADASTRO (VERSÃO MAIS FORTE)
+   ======================================== */
+
+.header-right .desktop-auth-links a,
+.header-right .desktop-auth-links a:visited { /* <<< Ataca o link normal E o visitado */
+  color: var(--muted); /* Força a cor correta */
+  text-decoration: none !important; /* Força a remoção do sublinhado */
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 18px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease-in-out;
+}
+
+.header-right .desktop-auth-links a:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  text-decoration: none !important; /* Garante que não apareça sublinhado no hover */
+}
+
+/* Esconde o container de login do mobile no desktop por padrão */
+.mobile-login-container {
+  display: none;
+}
+
+/* ==== AQUI ESTÁ A CORREÇÃO FINAL ==== */
+/* Garante que os elementos mobile NÃO existam no desktop por padrão */
+.hamburger-menu,
+.mobile-nav-overlay {
+  display: none;
+}
+
+
+
+/* ===== Responsividade (desktop -> tablet -> mobile) ===== */
+@media (max-width: 1024px) {
+  .site-logo { height: 120px; }
+}
+@media (max-width: 768px) {
+  .site-logo { height: 80px; }
+}
+@media (max-width: 480px) {
+  .site-logo { height: 120px; }
+}
+
+/* ================================
+   MOBILE (max-width:768)
+   ================================ */
+@media (max-width: 768px) {
+
+  /* Header em 1 linha */
+  .app-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    min-height: 56px;
+    position: relative;
+  }
+
+  .header-left, .header-right {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .header-center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .header-center .site-logo { pointer-events: auto; }
+
+  .avatar-circle { width: 36px; height: 36px; }
+  .header-nav { display: none; }
+
+  .header-left .social-icon,
+  .header-left .social-icons { display: none; }
+
+  /* Mostra o botão hambúrguer apenas no mobile */
+  .hamburger-menu {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    padding: 6px;
+    cursor: pointer;
+  }
+
+ /* ========================================
+   ESTILOS FINAIS DO MENU MOBILE (BASEADO NO DROPDOWN)
+   ======================================== */
+
+/* 1. RESTAURAMOS O CONTÊINER PRINCIPAL (ESSENCIAL!) */
+.mobile-nav-overlay {
+  display: none; /* Continua escondido por padrão */
+  position: fixed; /* ESSENCIAL para flutuar sobre a página */
+  inset: 0;
+  background: var(--overlay-bg); /* O fundo escuro semi-transparente */
+  z-index: 3000; /* ESSENCIAL para ficar na frente de TUDO */
+  padding-top: 72px;
+  overflow-y: auto;
+}
+
+.mobile-nav-overlay.open {
+  display: block;
+}
+
+/* 2. A LISTA VIRA O PAINEL, USANDO O ESTILO DO SEU .dropdown-menu */
+.mobile-nav-overlay .mobile-nav-list {
+  /* Estilos que você forneceu do .dropdown-menu */
+  background-color: var(--panel-bg);
+  border: 1px solid var(--header-border);
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+  overflow: hidden;
+  
+  /* Adaptações para o contexto mobile */
+  width: 90%;
+  max-width: 400px; /* Um bom limite para não ficar muito largo */
+  margin: 30px auto; /* Centralizado e com margem no topo */
+  padding: 0; /* Removemos o padding para os links controlarem */
+  list-style: none;
+}
+
+.mobile-nav-overlay .mobile-nav-list li {
+  width: 100%;
+}
+
+/* 3. OS LINKS, USANDO O ESTILO DO SEU .dropdown-menu a */
+.mobile-nav-overlay .mobile-nav-list a {
+  /* Estilos que você forneceu do .dropdown-menu a */
+  display: block;
+  padding: 14px 20px; /* Aumentei um pouco o padding para toque */
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 1rem; /* Um pouco maior para legibilidade mobile */
+  
+  /* Estilo visual */
+  font-family: 'Cinzel', serif; /* MANTENHA A FONTE DO SEU PROJETO */
+  text-align: center;
+  border-bottom: 1px solid var(--header-border); /* Linha separadora */
+}
+
+/* Remove a borda do último item */
+.mobile-nav-overlay .mobile-nav-list li:last-child a {
+  border-bottom: none;
+}
+
+/* 4. O HOVER, USANDO O ESTILO DO SEU .dropdown-menu a:hover */
+.mobile-nav-overlay .mobile-nav-list a:hover {
+  background: rgba(255,255,255,0.03);
+  color: var(--accent);
+}
+
+/* Botão de fechar continua o mesmo */
+.hamburger-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 26px;
+  cursor: pointer;
+}
+
+  .hamburger-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 26px;
+    cursor: pointer;
+  }
+  
+  html, body, .App { overflow-x: hidden; max-width: 100vw; }
+}
+

@@ -1,0 +1,124 @@
+/* Estilos do Modal de Edição */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 15px;
+}
+
+.modal-content {
+  background-color: #2c2c54;
+  padding: 30px;
+  border-radius: 8px;
+  border: 1px solid rgba(218, 165, 32, 0.5);
+  width: 100%;
+  max-width: 500px;
+  color: #e0e0e0;
+}
+
+.modal-title {
+  color: #DAA520;
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+}
+
+.modal-content .form-group {
+  margin-bottom: 15px;
+}
+
+.modal-content .form-group label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.modal-content .form-group input,
+.modal-content select {
+  width: 100%;
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(218, 165, 32, 0.5);
+  border-radius: 4px;
+  color: #fff;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.modal-actions button {
+  flex-grow: 1;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.modal-actions .cancel-button {
+  background-color: #444;
+  color: #fff;
+}
+
+.modal-actions .cancel-button:hover {
+  background-color: #666;
+  transform: translateY(-2px);
+}
+
+.modal-actions .save-button {
+  background: linear-gradient(135deg, #daa520, #ffd700);
+  color: #000;
+}
+
+.modal-actions .save-button:hover {
+  background: linear-gradient(135deg, #ffd700, #ffea70);
+  transform: translateY(-2px);
+  box-shadow: 0 0 8px rgba(218, 165, 32, 0.6);
+}
+
+.modal-content select {
+  font-size: 1rem;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='gold' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.modal-content select:hover {
+  border-color: #DAA520;
+  box-shadow: 0 0 5px rgba(218, 165, 32, 0.4);
+}
+
+.modal-content select:focus {
+  outline: none;
+  border-color: #FFD700;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+}
+
+@media (max-width:768px) {
+
+      .modal-actions {
+    flex-direction: column; /* Botões do modal um em cima do outro */
+  }
+
+  .modal-actions button {
+    width: 100%; /* Fazem os botões ocuparem a largura total */
+  }
+}

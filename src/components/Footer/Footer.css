@@ -4,3 +4,28 @@
     text-align: center;
     padding: 20px;
 }
+ 
+/* Adicione no final do seu Footer.css */
+@media (max-width: 768px) {
+  .seu-rodape { /* Altere para a classe correta do seu rodapé */
+    text-align: center; /* Garante que o texto fique centralizado */
+  }
+}
+
+/* Footer - mostrar redes no mobile */
+@media (max-width: 768px) {
+  .app-footer {
+    text-align: center;
+    padding: 14px 12px;
+  }
+
+  /* mostra essas redes somente no mobile; no desktop você continua escondendo aqui */
+  .app-footer .social-icons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 10px;
+  }
+}
+
+/* No desktop, se você já tem ícones no footer e não quer duplicados, esconda via .desktop-only / .mobile-only */

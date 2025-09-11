@@ -1,0 +1,36 @@
+/* src/components/BannedPage/BannedPage.css */
+.banned-page-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+  color: #e0e0e0;
+  text-align: center;
+  padding: 20px;
+}
+
+.banned-card {
+  background-color: rgba(44, 44, 84, 0.7);
+  padding: 40px;
+  border-radius: 8px;
+  border: 1px solid rgba(218, 165, 32, 0.5);
+  max-width: 600px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.banned-title {
+  color: #e74c3c; /* Vermelho para indicar alerta */
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+}
+
+.banned-message {
+  font-size: 1.2rem;
+  line-height: 1.6;
+}
+
+.banned-support {
+  margin-top: 30px;
+  font-size: 0.9rem;
+  color: #ccc;
+}

@@ -1,0 +1,201 @@
+.profile-page-container {
+  min-height: 100vh;
+  background-color: #0d0d1a;
+  color: #e0e0e0;
+  padding-top: initial;
+  padding-bottom: 50px;
+  position: relative; 
+  z-index: 1; 
+}
+
+/* --- BANNER SUPERIOR --- */
+.profile-banner {
+  width: 100%;
+  height: 250px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+}
+
+.banner-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to top, rgba(13, 13, 26, 0.9) 0%, rgba(13, 13, 26, 0) 100%);
+}
+
+.profile-avatar {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 5px solid #1a1a3d;
+  object-fit: cover;
+  position: relative;
+  z-index: 10;
+  box-shadow: 0 0 0 5px rgba(218, 165, 32, 0.5), 0 5px 20px rgba(0, 0, 0, 0.7);
+  transform: translateY(50%); 
+}
+
+/* --- CONTEÚDO PRINCIPAL --- */
+.profile-content-area {
+  max-width: 1200px;
+  margin: 0 auto;
+  /* CORREÇÃO 1: Menos espaço entre avatar e nome */
+  padding: 90px 20px 20px; /* 75px (metade do avatar) + 15px de respiro */
+  position: relative;
+  z-index: 5;
+}
+
+.profile-header {
+  text-align: center;
+  margin-bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px; /* diminui o espaçamento vertical */
+}
+
+.profile-name {
+  font-size: 3rem;
+  color: #DAA520;
+  margin: 0;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+}
+
+.profile-cargo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0;
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Cores específicas para cada cargo */
+.cargo-admin { color: #e74c3c; }
+.cargo-oficialreal { color: #f39c12; }
+.cargo-guardareal { color: #2ecc71; }
+.cargo-viajante { color: #3498db; }
+.cargo-banidos { color: #7f8c8d; }
+
+.staff-badge {
+  height: 25px; /* ajusta a altura pra encaixar melhor */
+  width: auto;
+  margin: 0;
+  display: inline-block; /* mantém na mesma linha se precisar */
+}
+
+.profile-note {
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-style: italic;
+  max-width: 80%;
+  margin: 0;
+}
+
+.profile-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 30px;
+  margin-top: 50px;
+}
+
+.profile-card {
+  background-color: rgba(23, 23, 43, 0.85);
+  padding: 30px;
+  border-radius: 12px;
+  border: 1px solid rgba(218, 165, 32, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
+  height: 100%;
+}
+
+.profile-card h2 {
+  color: #DAA520;
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(218, 165, 32, 0.2);
+  padding-bottom: 10px;
+}
+
+.about-card p {
+  line-height: 1.8;
+  text-align: justify;
+}
+
+.kingdom-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.kingdom-crest {
+  background-color: transparent;
+  width: 200px;
+  height: 200px;
+}
+
+.kingdom-badge h3 {
+  color: #DAA520;
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+/* --- RESPONSIVIDADE --- */
+@media (max-width: 1024px) {
+  .profile-main-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-avatar { transform: translateY(40%); }
+  .profile-content-area { padding-top: 90px; }
+  .profile-name { font-size: 2.5rem; }
+  .profile-main-grid {  grid-template-columns: 1fr; /* Mantém uma coluna */  gap: 25px; /* ADICIONE/AJUSTE ESTA LINHA */}
+  .profile-card {  height: auto; /* Permite que o card se ajuste ao seu conteúdo no mobile */}
+}
+
+@media (max-width: 480px) {
+  .profile-avatar { transform: translateY(50%); }
+  .profile-content-area { padding-top: 75px; }
+  .profile-name { font-size: 2rem; }
+  .profile-card { padding: 20px; }
+  .profile-card h2 { font-size: 1.5rem; }
+}
+
+/* ========================================================== */
+/* ESTILO DO BOTÃO DE EDITAR PERFIL                           */
+/* Adicione este bloco ao final do seu CSS.                   */
+/* ========================================================== */
+.profile-edit-button {
+  display: inline-block; /* Permite que o botão se alinhe com os outros itens */
+  margin-top: 10px;    /* Adiciona um espaço acima do botão */
+  padding: 10px 25px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  background: linear-gradient(135deg, #daa520, #ffd700);
+  color: #000000; /* Cor escura para melhor contraste */
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: 'Cinzel', serif;
+}
+
+.profile-edit-button:hover {
+  background: linear-gradient(135deg, #ffd700, #ffea70);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(218, 165, 32, 0.5);
+}

@@ -30,23 +30,18 @@ function HomePage() {
     <>
       <div className="section">
         <h1>Bem-vindos ao Reino de <b>GÁPENVER</b></h1>
-        <h2>Onde os rios sussurram segredos antigos.</h2>
-        <a href="#" className="cta-button">COMPRAR AGORA</a>
-      </div>
-
-      <div className="section">
-        <h2>Nas florestas encantadas, árvores brilham sob a lua.</h2>
-        <a href="#" className="cta-button">COMPRAR AGORA</a>
+        <h2>Onde os rios sussurram segredos antigos. Nas florestas encantadas, árvores brilham sob a lua.</h2>
+               
       </div>
 
       <div className="section">
         <h2>Castelos imponentes tocam as nuvens com suas torres.</h2>
-        <a href="#" className="cta-button">COMPRAR AGORA</a>
+        
       </div>
 
       <div className="section">
         <h2>Heróis lendários forjam seu destino em cada aurora.</h2>
-        <a href="#" className="cta-button">COMPRAR AGORA</a>
+        
       </div>
 
       <div className="section">

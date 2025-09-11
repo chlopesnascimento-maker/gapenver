@@ -1,272 +1,267 @@
-.profile-header {
-    margin-bottom: 30px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
+/* =================================== */
+/* LAYOUT E ESPAÇAMENTO GERAL         */
+/* =================================== */
+
+/* CORREÇÃO 1: Aumentamos a largura máxima do formulário */
+.form-container {
+  max-width: 1100px; /* Antes provavelmente estava em torno de 500px-600px */
+  padding: 40px; /* Damos mais preenchimento interno */
 }
 
-.profile-avatar-large {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.05);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid #444;
-    margin-bottom: 5px;
-    position: relative;
-    overflow: hidden;
+.profile-header { 
+  margin-bottom: 30px; 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  gap: 10px; 
+} 
+
+.profile-avatar-large { 
+  width: 100px; 
+  height: 100px; 
+  border-radius: 50%; 
+  background-color: rgba(255, 255, 255, 0.05); 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  border: 2px solid #444; 
+  margin-bottom: 5px; 
+  position: relative; 
+  overflow: hidden; 
 }
 
-.avatar-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.avatar-img { 
+  width: 100%; 
+  height: 100%; 
+  object-fit: cover; 
+} 
+
+.avatar-edit-icon { 
+  position: absolute; 
+  bottom: 5px; 
+  right: 5px; 
+  background-color: rgba(0, 0, 0, 0.7); 
+  border-radius: 50%; width: 30px; 
+  height: 30px; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  cursor: pointer; 
+  font-size: 16px; 
+  transition: opacity 0.3s ease; 
+  opacity: 0; 
+} 
+
+.profile-avatar-large:hover .avatar-edit-icon { 
+  opacity: 1; 
+} 
+
+.profile-user-name { 
+  font-weight: 700; 
+  font-size: 1.5rem; 
+  color: #f0e68c; 
+  margin: 0; 
+} 
+
+.profile-header .form-title { 
+  font-size: 1.8rem; 
+  color: #ffe341; 
+  margin: 0; 
+} 
+
+.profile-form { 
+  display: flex; 
+  gap: 60px; 
+} 
+
+.profile-column { 
+  flex: 1; 
+} 
+
+.column-title { 
+  font-size: 1.4rem; 
+  color: #e0e0e0; 
+  margin-bottom: 25px; 
+  text-align: left; 
+  font-weight: 700; 
+  border-bottom: 1px solid #444; 
+  padding-bottom: 10px; 
+} 
+
+.form-group {
+  margin-bottom: 25px;
 }
 
-.avatar-edit-icon {
-    position: absolute;
-    bottom: 5px;
-    right: 5px;
-    background-color: rgba(0, 0, 0, 0.7);
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 16px;
-    transition: opacity 0.3s ease;
-    opacity: 0;
+.form-container > .cta-button {
+  margin-top: 20px;
+  width: 100%;
 }
 
-.profile-avatar-large:hover .avatar-edit-icon {
-    opacity: 1;
+
+/* =================================== */
+/* ESTILO DO DROPDOWN E TEXTAREA      */
+/* =================================== */
+.profile-column select {
+  width: 100%;
+  padding: 12px 15px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(218, 165, 32, 0.5);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 1rem;
+  font-family: inherit;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%23DAA520' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  background-size: 20px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.profile-user-name {
-    font-weight: 700;
-    font-size: 1.5rem;
-    color: #f0e68c;
-    margin: 0;
+.profile-column select:hover {
+  border-color: #DAA520;
+  box-shadow: 0 0 5px rgba(218, 165, 32, 0.4);
 }
 
-.profile-header .form-title {
-    font-size: 1.8rem;
-    color: #ffe341;
-    margin: 0;
+.profile-column select:focus {
+  outline: none;
+  border-color: #FFD700;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
 }
 
-.column-title {
-    font-size: 1.4rem;
-    color: #e0e0e0;
-    margin-bottom: 25px;
-    text-align: left;
-    font-weight: 700;
-    border-bottom: 1px solid #444;
-    padding-bottom: 10px;
+#profile-about { 
+  width: 100%; 
+  padding: 10px; 
+  border-radius: 8px; 
+  font-size: 14px; 
+  font-family: inherit; 
+  transition: border 0.2s;
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(218, 165, 32, 0.5);
+  color: #fff;
+  /* CORREÇÃO 2: Remove a alça de redimensionamento */
+  resize: none; 
+} 
+  
+#profile-about:focus { 
+  outline: none; 
+  border-color: #DAA520; 
+  box-shadow: 0 0 4px rgba(218, 165, 32, 0.5); 
 }
 
-.profile-form {
-    display: flex;
-    gap: 40px;
-}
+/* =================================== */
+/* ESTILOS DO CROPPER (INTACTOS)      */
+/* =================================== */
+.crop-modal-overlay { 
+  position: fixed; 
+  inset: 0; 
+  background: rgba(0, 0, 0, 0.8); 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  z-index: 2000; 
+  backdrop-filter: blur(5px);
+} 
 
-.profile-column {
-    flex: 1;
-}
+.crop-container { 
+  position: relative; 
+  width: min(92vw, 520px); 
+  height: min(92vh, 520px); 
+  background: #111; 
+  border-radius: 12px; 
+  overflow: hidden; 
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+} 
 
-@media (max-width: 768px) {
-    .profile-form {
-        flex-direction: column;
-        gap: 0;
-    }
-}
+.crop-container .reactEasyCrop_Container { 
+  position: absolute !important; 
+  inset: 0; 
+} 
 
-/* --- NOVOS ESTILOS PARA A JANELA DE CORTE --- */
-.crop-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(5px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-}
-
-.crop-container {
-    background-color: #1a1a3d;
-    padding: 20px;
-    border-radius: 10px;
-    border: 1px solid #444;
-    width: 90%;
-    max-width: 500px;
-    height: 600px;
-    display: flex;
-    flex-direction: column;
-}
-
-.cropper-wrapper {
-    position: relative;
-    flex-grow: 1;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.crop-controls {
-    padding-top: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-}
-
-.crop-controls input[type="range"] {
-    width: 80%;
-    accent-color: #f0e68c;
-}
-
-.crop-buttons {
-    display: flex;
-    gap: 15px;
-    width: 100%;
-}
-
-.crop-buttons .cta-button {
-    flex: 1;
-    margin-top: 0;
-}
-
-.crop-buttons .cancel-button {
-    flex: 1;
-    background: #555;
-    color: #fff;
-    border-radius: 5px;
-    padding: 10px;
-    border: none;
-    cursor: pointer;
-}
-
-.feedback-message {
-  margin-top: 15px;
+.zoom-slider { 
+  position: absolute; 
+  left: 50%; 
+  transform: translateX(-50%); 
+  bottom: 72px; 
+  width: 65%; 
+  z-index: 1010; 
+} 
+    
+.zoom-slider input[type="range"] { 
+  width: 100%; 
+  accent-color: #DAA520;
+} 
+    
+.crop-buttons { 
+  position: absolute; 
+  left: 50%; 
+  transform: translateX(-50%); 
+  bottom: 0; 
+  display: flex; 
+  justify-content: center; 
+  gap: 16px; 
+  padding: 12px; 
+  background: linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0)); 
+  z-index: 1020; 
+  width: 100%; 
+} 
+    
+.crop-buttons .cta-button, .crop-buttons .cancel-button { 
+  padding: 8px 16px; 
+  border: none; 
+  border-radius: 8px; 
+  color: #000;
+  cursor: pointer; 
   font-weight: bold;
-  text-align: center;
-}
+} 
+      
+.crop-buttons .cta-button { 
+  background: #ddc540; 
+} 
 
-.feedback-message.success {
-  color: #4caf50; /* verde sucesso */
-}
-
-.feedback-message.error {
-  color: #f44336; /* vermelho erro */
-}
-
-.crop-buttons {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 12px;
-  z-index: 1000;
-}
-
-.crop-buttons .cta-button,
-.crop-buttons .cancel-button {
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: none;
-  background-color: #007bff;
+.crop-buttons .cta-button:hover { 
+  background: #f0e68c; 
+} 
+      
+.crop-buttons .cancel-button { 
+  background: #6c757d; 
   color: #fff;
-  cursor: pointer;
+} 
+      
+.crop-buttons .cancel-button:hover { 
+  background: #5a6268; 
+} 
+      
+.feedback-message { 
+  margin-top: 15px; 
+  font-weight: bold; 
+  text-align: center; 
+} 
+
+.feedback-message.success { 
+  color: #4caf50;
+} 
+
+.feedback-message.error { 
+  color: #f44336;
+} 
+
+@media (max-width: 768px) { 
+  .profile-form { flex-direction: column; gap: 0; } 
 }
 
-.crop-buttons .cancel-button {
-  background-color: #6c757d;
+/* =================================== */
+/* NOVO ESTILO PARA O AVISO DE CAPS LOCK */
+/* =================================== */
+.caps-lock-warning {
+  display: none; /* Começa escondido por padrão */
+  color: #fffb1f; /* Cor vermelha para alerta */
+  font-size: 0.8rem;
+  font-weight: bold;
+  margin-top: 8px;
+  text-align: left;
 }
 
-.crop-buttons .cta-button:hover {
-  background-color: #0056b3;
-}
-
-.crop-buttons .cancel-button:hover {
-  background-color: #5a6268;
-}
-
-/* Overlay de tela cheia escuro */
-.crop-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-}
-
-/* Caixa do recorte com tamanho controlado */
-.crop-container {
-  position: relative;
-  width: min(92vw, 520px);
-  height: min(92vh, 520px);
-  background: #111;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-}
-
-/* Garante que o Cropper ocupe 100% da caixa acima */
-.crop-container .reactEasyCrop_Container {
-  position: absolute !important;
-  inset: 0;
-}
-
-/* Slider de zoom, acima dos botões */
-.zoom-slider {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 72px; /* fica acima dos botões */
-  width: 65%;
-  z-index: 1010;
-}
-.zoom-slider input[type="range"] {
-  width: 100%;
-}
-
-.crop-buttons {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 0;
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-  padding: 12px;
-  background: linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0));
-  z-index: 1020;
-  width: 100%;
-}
-
-
-.crop-buttons .cta-button,
-.crop-buttons .cancel-button {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 8px;
-  color: #fff;
-  cursor: pointer;
-}
-
-.crop-buttons .cta-button { background: #ddc540; }
-.crop-buttons .cta-button:hover { background: #ddc540; }
-
-.crop-buttons .cancel-button { background: #6c757d; }
-.crop-buttons .cancel-button:hover { background: #5a6268; }

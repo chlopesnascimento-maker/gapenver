@@ -1,0 +1,142 @@
+import React, { useEffect, useState } from 'react';
+import { supabase } from '../../supabaseClient';
+import './UserProfilePage.css';
+
+// Mapeamento dos banners e brasões dos reinos (substitua pelas suas URLs)
+const reinoAssets = {
+  'gapenver': {
+    banner: 'https://i.imgur.com/5qP53OJ.png',
+    crest: 'https://i.imgur.com/5qP53OJ.png',
+    background: 'https://i.imgur.com/c535d4.png' // URL para o fundo de Gapenver
+  },
+  'saraver': {
+    banner: 'https://i.imgur.com/aU8Q8kV.png',
+    crest: 'https://i.imgur.com/aU8Q8kV.png',
+    background: 'https://i.imgur.com/url-fundo-saraver.png'
+  },
+  'corvusk': {
+    banner: 'https://i.imgur.com/icWVvHn.png',
+    crest: 'https://i.imgur.com/icWVvHn.png',
+    background: 'https://i.imgur.com/url-fundo-corvusk.png'
+  },
+  "lo'otrak": {
+    banner: 'https://i.imgur.com/5WmAmH3.png',
+    crest: 'https://i.imgur.com/5WmAmH3.png',
+    background: "https://i.imgur.com/url-fundo-lootrak.png"
+  },
+  'reinos independentes': {
+    banner: 'https://i.imgur.com/link-banner-padrao.png',
+    crest: 'https://i.imgur.com/link-brasao-madeira.png',
+    background: null // Sem fundo especial
+  }
+};
+
+const roleDisplayNames = {
+  'admin': 'Administrador',
+  'oficialreal': 'Oficial Real',
+  'guardareal': 'Guarda Real',
+  'viajante': 'Viajante',
+  'banidos': 'Banido',
+  'default': 'Indefinido'
+};
+
+function UserProfilePage({ user, viewUserId }) {
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const targetId = viewUserId || user?.id; // 👈 prioridade pro viewUserId
+      if (!targetId) return;
+
+      setLoading(true);
+      setError(null);
+
+      const { data, error: fetchError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', targetId);
+
+      if (fetchError) {
+        console.error("Erro detalhado ao buscar perfil:", fetchError);
+        setError("Não foi possível carregar o perfil. Verifique o console.");
+      } else if (data && data.length > 0) {
+        setProfile(data[0]);
+      } else {
+        setError("Os dados de perfil para este usuário ainda não foram criados. Por favor, edite seu perfil para criá-los.");
+      }
+      setLoading(false);
+    };
+    fetchProfile();
+  }, [viewUserId, user]); // 👈 refaz quando trocar usuário ou id
+
+  if (loading) {
+    return <div className="profile-page-container"><p>Carregando perfil...</p></div>;
+  }
+  if (error) {
+    return <div className="profile-page-container"><p className="error-message">{error}</p></div>;
+  }
+  if (!profile) {
+    return <div className="profile-page-container"><p>Perfil não encontrado.</p></div>;
+  }
+  
+  const { nome, sobrenome, foto_url, sobre_mim, reino, nota, nota_expires_at, cargo } = profile;
+  const notaExpirou = nota_expires_at && new Date(nota_expires_at) < new Date();
+  const reinoKey = reino?.toLowerCase() || 'reinos independentes';
+  const assets = reinoAssets[reinoKey] || reinoAssets['reinos independentes'];
+  const isStaff = ['admin', 'oficialreal', 'guardareal'].includes(cargo?.toLowerCase());
+  const displayName = roleDisplayNames[cargo?.toLowerCase()] || roleDisplayNames['default'];
+  
+  return (
+    <div className="profile-page-container">
+      <div className="profile-banner" style={{ backgroundImage: `url(${assets.banner})` }}>
+        <div className="banner-overlay"></div>
+        <img src={foto_url || 'URL_PADRAO_AVATAR'} alt="Avatar do Usuário" className="profile-avatar"/>
+      </div>
+
+      <div className="profile-content-area">
+        <div className="profile-header">
+          <h1 className="profile-name">{nome} {sobrenome}</h1>
+          <h2 className={`profile-cargo cargo-${cargo?.toLowerCase()}`}>{displayName}</h2>
+          {isStaff && (
+            <img src="https://i.imgur.com/J6hJQ7i.png" alt="Insígnia da Staff" className="staff-badge" />
+          )}
+          {!notaExpirou && nota && (
+            <div className="profile-note">"{nota}"</div>
+          )}
+        </div>
+        
+        <div className="profile-main-grid">
+          <div className="profile-card about-card">
+            <h2>Sobre Mim</h2>
+            <p>{sobre_mim || 'Nenhuma informação fornecida ainda.'}</p>
+          </div>
+
+          {/* Adicionando o estilo de fundo dinâmico ao card do reino */}
+          <div 
+            className="profile-card main-info-card" 
+            style={{ backgroundImage: assets.background ? `url(${assets.background})` : 'none' }}
+          >
+            {/* O overlay garante a legibilidade do texto por cima do fundo */}
+            <div className="card-overlay">
+              <h2>Reino Principal</h2>
+              <div className="kingdom-badge">
+                <img src={assets.crest} alt={`Brasão de ${reino}`} className="kingdom-crest"/>
+                <h3>{reino}</h3>
+              </div>
+            </div>
+          </div>
+
+          <div className="profile-card extra-card">
+            <h2>Conquistas</h2>
+            <p>Em breve...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default UserProfilePage;
+

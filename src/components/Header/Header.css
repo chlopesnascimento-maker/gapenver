@@ -1,116 +1,85 @@
-/* Estilos base do cabeçalho */
+/* ========================================
+   Header.css - VERSÃO FINAL E ORGANIZADA
+   ======================================== */
+
+/* ===== VARIÁVEIS LOCAIS (cores) ===== */
+:root {
+  --header-bg: rgba(0,0,0,0.3);
+  --header-border: #444;
+  --accent: #f0e68c;
+  --muted: #e0e0e0;
+  --panel-bg: #1a1a3d;
+  --overlay-bg: rgba(6,6,10,0.96);
+}
+
+/* ========================================
+   ESTILOS BASE (DESKTOP-FIRST)
+   ======================================== */
+
 .app-header {
-    background-color: rgba(0, 0, 0, 0.3);
-    padding: 15px 30px;
-    border-bottom: 1px solid #444;
-    backdrop-filter: blur(5px);
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  background-color: var(--header-bg);
+  padding: 1px 30px;
+  border-bottom: 1px solid var(--header-border);
+  backdrop-filter: blur(5px);
+  position: relative;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.header-left, .header-center, .header-right {
-    flex: 1;
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 12px;
 }
 
-.header-center {
-    text-align: center;
-}
-
+.header-left,
+.header-center,
 .header-right {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 25px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.header-left { justify-content: flex-start; }
+.header-center { justify-content: center; flex: 0 1 auto; text-align: center; }
+.header-right { justify-content: flex-end; gap: 20px; }
+
+.site-logo {
+  height: 120px;
+  width: auto;
+  object-fit: contain;
+  display: inline-block;
+  margin: 0;
 }
 
-.header-right a {
-    color: #e0e0e0;
-    text-decoration: none;
-    font-size: 0.9rem;
-    transition: color 0.3s ease;
-    cursor: inherit;
+.social-icon {
+  color: var(--accent);
+  font-size: 1.4rem;
+  transition: transform .18s ease, color .18s ease;
+  cursor: pointer;
 }
+.social-icon:hover { transform: scale(1.18); color: #fff8dc; }
 
-.header-right a:hover {
-    color: #f0e68c;
-}
-
-.search-icon-svg {
-    height: 22px;
-    fill: #e0e0e0;
-    transition: fill 0.3s ease;
-}
-
-.search-icon-svg:hover {
-    fill: #f0e68c;
-}
-
-/* Estilos para o novo avatar e menu dropdown */
-.avatar-container {
-  position: relative; /* Essencial para o posicionamento do menu */
-}
-
+.avatar-container { position: relative; }
 .avatar-circle {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255,255,255,0.05);
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: inherit;
-  border: 2px solid #444;
-  transition: border-color 0.3s ease;
+  cursor: pointer;
+  border: 2px solid var(--header-border);
+  overflow: hidden;
+  transition: border-color .2s ease;
 }
-
-.avatar-circle:hover {
-  border-color: #f0e68c;
-}
-
-.dropdown-menu {
-  position: absolute;
-  top: 55px; /* Posição abaixo do avatar */
-  right: 0;
-  background-color: #1a1a3d;
-  border: 1px solid #444;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-  width: 160px;
-  z-index: 100;
-  overflow: hidden; /* Garante que os cantos arredondados funcionem */
-}
-
-.dropdown-menu a {
-  display: block;
-  padding: 12px 15px;
-  color: #e0e0e0;
-  text-decoration: none;
-  font-size: 0.9rem;
-  text-align: left;
-}
-
-.dropdown-menu a:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-  color: #f0e68c;
-}
-
-.user-info {
-  padding: 15px;
-  text-align: center;
-  border-bottom: 1px solid #444;
-}
-
-.user-name {
-  font-weight: 700;
-  font-size: 1rem;
-  color: #f0e68c;
-  word-wrap: break-word;
-}
-
+.avatar-circle:hover { border-color: var(--accent); }
 .header-avatar-img {
   width: 100%;
   height: 100%;
@@ -121,118 +90,239 @@
   user-select: none;
 }
 
-.avatar-circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.05);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  border: 2px solid #444;
+.dropdown-menu {
+  position: absolute;
+  top: 56px;
+  right: 0;
+  background-color: var(--panel-bg);
+  border: 1px solid var(--header-border);
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+  width: 180px;
+  z-index: 1100;
   overflow: hidden;
-  transition: border-color 0.3s ease;
 }
-
-.avatar-circle:hover {
-  border-color: #f0e68c;
+.dropdown-menu a {
+  display: block;
+  padding: 12px 14px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: .95rem;
 }
+.dropdown-menu a:hover { background: rgba(255,255,255,0.03); color: var(--accent); }
+.user-info { padding: 12px; border-bottom: 1px solid var(--header-border); text-align:center; }
+.user-name { color: var(--accent); font-weight:700; }
 
-.header-left {
+.header-nav {
+  background: rgba(0,0,0,0.25);
+  border-top: 1px solid var(--header-border);
+  width: 100%;
+  margin-left: -30px;
+  margin-right: -30px;
+  padding-left: 30px;
+  padding-right: 30px;
+}
+.header-nav .nav-list {
+  list-style: none;
   display: flex;
-  gap: 14px;
+  justify-content: center;
+  gap: 36px;
+  margin: 0;
+  padding: 12px 20px;
+}
+.header-nav .nav-list li { display: block; }
+.header-nav .nav-list a {
+  color: var(--muted);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color .18s ease;
+}
+.header-nav .nav-list a:hover { color: var(--accent); }
+
+/* --- CONTROLE DE VISIBILIDADE DESKTOP (AQUI ESTÁ A LÓGICA CORRETA) --- */
+
+/* Mostra os links de texto no desktop */
+.desktop-auth-links {
+  display: flex;
   align-items: center;
+  gap: 8px;
+}
+.desktop-auth-links a,
+.desktop-auth-links a:visited {
+  color: var(--muted);
+  text-decoration: none !important;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 18px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease-in-out;
+}
+.desktop-auth-links a:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  text-decoration: none !important;
 }
 
-.social-icon {
-  color: #f0e68c;
-  font-size: 1.4rem;
-  transition: transform 0.2s ease, color 0.2s ease;
-  cursor: pointer;
+/* Esconde TODOS os elementos de mobile no desktop por padrão */
+.hamburger-menu,
+.mobile-nav-overlay,
+.mobile-login-container {
+  display: none;
 }
 
-.social-icon:hover {
-  transform: scale(1.2);
-  color: #fff8dc;
-}
+/* ========================================
+   RESPONSIVIDADE E MOBILE
+   ======================================== */
 
-/* ---- nova logo ---- */
-.site-logo {
-  height: 150px; /* PC */
-  width: auto;
-  object-fit: contain;
-  display: inline-block;
+/* --- Media queries para ajustes de tamanho --- */
+@media (max-width: 1024px) {
+  .site-logo { height: 120px; }
 }
-
-/* Responsividade */
 @media (max-width: 768px) {
-  .site-logo {
-    height: 80px; /* Tablet */
-  }
+  .site-logo { height: 80px; }
 }
-
 @media (max-width: 480px) {
-  .site-logo {
-    height: 60px; /* Celular */
-  }
+  .site-logo { height: 120px; } /* Ajuste conforme necessário */
 }
 
-/* Estilos base do cabeçalho */
-.app-header {
-    background-color: rgba(0, 0, 0, 0.3);
-    padding: 5px 20px;   /* 🔥 antes era 15px 30px */
-    border-bottom: 1px solid #444;
-    backdrop-filter: blur(5px);
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    display: flex;
+/* --- ESTILOS PRINCIPAIS PARA MOBILE --- */
+@media (max-width: 768px) {
+
+  .app-header {
+    flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    min-height: 70px;   /* garante altura mínima sem exagero */
-}
+    padding: 8px 12px;
+    min-height: 56px;
+  }
+  
+  .header-left, .header-right {
+    flex: 0 0 auto;
+    gap: 8px;
+  }
+  
+  .header-center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+  .header-center .site-logo { pointer-events: auto; }
 
-.header-left, .header-center, .header-right {
-    flex: 1;
-}
-
-.header-center {
-    text-align: center;
-}
-
-.header-right {
+  .avatar-circle { width: 36px; height: 36px; }
+  .header-nav { display: none; }
+  .header-left .social-icon { display: none; }
+  
+  /* --- CONTROLE DE VISIBILIDADE MOBILE --- */
+  
+  /* Esconde os links de texto do desktop */
+  .desktop-auth-links {
+    display: none;
+  }
+  
+  /* Mostra o container de login do mobile */
+  .mobile-login-container {
     display: flex;
-    justify-content: flex-end;
+    flex-direction: column;
     align-items: center;
-    gap: 25px;
-}
+    cursor: pointer;
+    position: relative;
+  }
+  
+  .mobile-login-container .login-prompt-mobile {
+    color: var(--muted);
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-top: 4px;
+    text-transform: uppercase;
+  }
+  
+  .mobile-login-container .dropdown-menu {
+    top: 52px;
+  }
 
-/* ... resto do seu CSS igual ... */
+  /* Mostra e estiliza o menu hambúrguer */
+  .hamburger-menu {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    padding: 6px;
+    cursor: pointer;
+  }
 
-/* ---- nova logo ---- */
-.site-logo {
-  height: 150px; /* PC */
-  width: auto;
-  object-fit: contain;
-  display: inline-block;
-  margin-top: -20px;   /* 🔥 puxa a logo um pouco pra cima */
-  margin-bottom: -20px; /* 🔥 evita empurrar o header pra baixo */
-}
-
-/* Responsividade */
-@media (max-width: 768px) {
-  .site-logo {
-    height: 80px;
-    margin-top: -10px;
-    margin-bottom: -10px;
+  /* Estilos do overlay do menu mobile */
+  .mobile-nav-overlay { display: none; } /* Mantido por segurança */
+  .mobile-nav-overlay.open {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: var(--overlay-bg);
+    z-index: 3000;
+    padding-top: 72px;
+    overflow-y: auto;
+  }
+  
+  .mobile-nav-overlay .mobile-nav-list {
+    background-color: var(--panel-bg);
+    border: 1px solid var(--header-border);
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+    overflow: hidden;
+    width: 90%;
+    max-width: 400px;
+    margin: 30px auto;
+    padding: 0;
+    list-style: none;
+  }
+  
+  .mobile-nav-overlay .mobile-nav-list li { width: 100%; }
+  
+  .mobile-nav-overlay .mobile-nav-list a {
+    display: block;
+    padding: 14px 20px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 1rem;
+    font-family: 'Cinzel', serif;
+    text-align: center;
+    border-bottom: 1px solid var(--header-border);
+  }
+  
+  .mobile-nav-overlay .mobile-nav-list li:last-child a {
+    border-bottom: none;
+  }
+  
+  .mobile-nav-overlay .mobile-nav-list a:hover {
+    background: rgba(255,255,255,0.03);
+    color: var(--accent);
+  }
+  
+  .hamburger-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 26px;
+    cursor: pointer;
   }
 }
 
-@media (max-width: 480px) {
-  .site-logo {
-    height: 60px;
-    margin-top: -5px;
-    margin-bottom: -5px;
-  }
+/* --- Estilo para os ícones sociais no menu mobile --- */
+.mobile-social-icons {
+  display: flex; /* Alinha os ícones em linha */
+  justify-content: center; /* Centraliza horizontalmente */
+  gap: 28px; /* Espaçamento entre os ícones */
+  margin-top: 40px; /* Espaço acima, separando do menu */
+  padding-bottom: 20px; /* Um respiro na parte de baixo */
+}
+
+/* Opcional: Aumentar um pouco o tamanho dos ícones no mobile */
+.mobile-social-icons .social-icon {
+  font-size: 1.8rem;
 }

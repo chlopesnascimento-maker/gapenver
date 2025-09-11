@@ -1,103 +1,195 @@
-// Header.js
 import React, { useState, useEffect, useRef } from 'react';
 import './Header.css';
 import { FaTiktok, FaYoutube, FaInstagram, FaFacebook } from "react-icons/fa";
 
-// 1. Recebendo as props corretas do App.js
 function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const menuRef = useRef(null);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isKingdomMenuOpen, setIsKingdomMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
+  const kingdomMenuRef = useRef(null);
+  const mobileOverlayRef = useRef(null);
+  const hamburgerRef = useRef(null);
+
+  
 
   useEffect(() => {
     function handleClickOutside(event) {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setIsMenuOpen(false);
+      // fecha dropdown do avatar
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setIsUserMenuOpen(false);
+      }
+
+      // fecha overlay só se clicar fora dele e do botão
+      if (isKingdomMenuOpen) {
+        const clickedInsideOverlay = mobileOverlayRef.current?.contains(event.target);
+        const clickedOnHamburger = hamburgerRef.current?.contains(event.target);
+        if (!clickedInsideOverlay && !clickedOnHamburger) {
+          setIsKingdomMenuOpen(false);
+        }
       }
     }
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [menuRef]);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isKingdomMenuOpen]);
 
   const handleMenuClick = (page) => {
     navigateTo(page);
-    setIsMenuOpen(false);
+    setIsUserMenuOpen(false);
+    setIsKingdomMenuOpen(false);
   };
 
   const defaultAvatarSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23e0e0e0"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`;
   const defaultAvatarDataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(defaultAvatarSvg)}`;
-
-  // 2. Lógica para usar a foto de perfil do usuário ou a padrão
   const avatarSrc = userData?.photoURL || defaultAvatarDataUrl;
 
-  return (
-    <header className="app-header">
-      {/* Esta parte (left e center) permanece exatamente como a sua original */}
-      <div className="header-left">
-        <a href="https://www.tiktok.com/@seuPerfil" target="_blank" rel="noopener noreferrer">
-          <FaTiktok className="social-icon" />
-        </a>
-        <a href="https://www.youtube.com/@seuCanal" target="_blank" rel="noopener noreferrer">
-          <FaYoutube className="social-icon" />
-        </a>
-        <a href="https://www.instagram.com/seuPerfil" target="_blank" rel="noopener noreferrer">
-          <FaInstagram className="social-icon" />
-        </a>
-        <a href="https://www.facebook.com/seuPerfil" target="_blank" rel="noopener noreferrer">
-          <FaFacebook className="social-icon" />
-        </a>
-      </div>
+  const userRole = user?.app_metadata?.roles?.[0]?.toLowerCase();
 
-      <div className="header-center">
-        <a href="#" onClick={() => navigateTo('home')}>
-          <img
-            src="https://i.imgur.com/ZUQJmco.png"
-            alt="Logo do site"
-            className="site-logo"
-            draggable={false}
-          />
-        </a>
-      </div>
+return (
+    <>
+      <header className="app-header">
+        {/* Primeira linha */}
+        <div className="header-top">
+          <div className="header-left">
+            <button
+              ref={hamburgerRef}
+              className="hamburger-menu"
+              onClick={() => setIsKingdomMenuOpen(!isKingdomMenuOpen)}
+              aria-label="Abrir menu"
+            >
+              ☰
+            </button>
 
-      {/* 3. A lógica de renderização é atualizada, mas a ESTRUTURA HTML/CSS interna é a SUA ORIGINAL */}
-      <div className="header-right">
-        {!sessionChecked ? (
-          <span style={{ opacity: 0.7 }}>Carregando...</span>
-        ) : user ? (
-          <div className="avatar-container" ref={menuRef}>
-            <div className="avatar-circle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-              <img
-                id="top-right-avatar"
-                src={avatarSrc} // <-- Usa a foto correta
-                alt="Avatar"
-                className="header-avatar-img"
-                draggable={false}
-              />
-            </div>
-
-            {isMenuOpen && (
-              <div className="dropdown-menu">
-                <div className="user-info">
-                  <span className="user-name">{userData?.nome || user.email}</span>
-                </div>
-                <a href="#" onClick={() => handleMenuClick('editProfile')}>Editar Perfil</a>
-                <a href="#" onClick={() => handleMenuClick('myAccount')}>Minha Conta</a>
-                <a href="#" onClick={handleLogout}>Sair do Reino</a> {/* <-- Usa o logout correto */}
-              </div>
-            )}
+            <a href="https://www.tiktok.com/@seuPerfil" target="_blank" rel="noopener noreferrer"><FaTiktok className="social-icon" /></a>
+            <a href="https://www.youtube.com/@seuCanal" target="_blank" rel="noopener noreferrer"><FaYoutube className="social-icon" /></a>
+            <a href="https://www.instagram.com/seuPerfil" target="_blank" rel="noopener noreferrer"><FaInstagram className="social-icon" /></a>
+            <a href="https://www.facebook.com/profile.php?id=61577103301956" target="_blank" rel="noopener noreferrer"><FaFacebook className="social-icon" /></a>
           </div>
-        ) : (
-          <>
-            <a href="#" onClick={() => alert('Página de Pesquisa em construção!')}>
-              <svg className="search-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+
+          <div className="header-center">
+            <a href="#" onClick={() => navigateTo('home')}>
+              <img src="https://i.imgur.com/ZUQJmco.png" alt="Logo do site" className="site-logo" draggable={false} />
             </a>
-            <a href="#" onClick={() => navigateTo('register')}>Cadastrar</a>
-            <a href="#" onClick={() => navigateTo('login')}>Login</a>
-          </>
-        )}
+          </div>
+          
+          <div className="header-right">
+            {!sessionChecked ? <span style={{ opacity: 0.7 }}>Carregando...</span> : user ? (
+              <div className="avatar-container" ref={userMenuRef}>
+                <div className="avatar-circle" onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}>
+                  <img id="top-right-avatar" src={avatarSrc} alt="Avatar" className="header-avatar-img" draggable={false}/>
+                </div>
+                {isUserMenuOpen && (
+                  <div className="dropdown-menu user-dropdown">
+                    <div className="user-info">
+                      <span className="user-name">{userData?.nome || user.email}</span>
+                    </div>
+                    {(() => {
+                      if (userRole === 'banidos') return (<a href="#" onClick={handleLogout}>Sair do Reino</a>);
+                      
+                      let panelName = null;
+                      if (userRole === 'admin') panelName = 'Painel Admin';
+                      else if (userRole === 'oficialreal' || userRole === 'guardareal') panelName = 'Painel do Gestor';
+
+                      return (
+                        <>
+                          {panelName && <a href="#" onClick={() => handleMenuClick('adminDashboard')}>{panelName}</a>}
+                          <a href="#" onClick={() => handleMenuClick('editProfile')}>Editar Perfil</a>
+                          <a href="#" onClick={() => handleMenuClick('myProfile')}>Meu Perfil</a>
+                          <a href="#" onClick={() => handleMenuClick('myAccount')}>Minha Conta</a>
+                          <a href="#" onClick={handleLogout}>Sair do Reino</a>
+                        </>
+                      );
+                    })()}
+                  </div>
+                )}
+              </div>
+          ) : (
+  <>
+    {/* ===== LINKS PARA DESKTOP (AGORA COM A DIV CORRETA) ===== */}
+    <div className="desktop-auth-links">
+      <a href="#" onClick={() => navigateTo('register')}>Cadastrar</a>
+      <a href="#" onClick={() => navigateTo('login')}>Login</a>
+    </div>
+
+    {/* ===== ÍCONE PARA MOBILE ===== */}
+    <div className="mobile-login-container" ref={userMenuRef}>
+      <div className="avatar-circle" onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}>
+        {/* Ícone de avatar padrão (SVG) */}
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24px" height="24px">
+          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+        </svg>
       </div>
-    </header>
+      <span className="login-prompt-mobile">ENTRAR</span>
+
+      {/* O menu dropdown que abre ao clicar */}
+      {isUserMenuOpen && (
+        <div className="dropdown-menu user-dropdown">
+          <a href="#" onClick={() => handleMenuClick('register')}>CADASTRAR-SE</a>
+          <a href="#" onClick={() => handleMenuClick('login')}>LOGIN</a>
+        </div>
+      )}
+    </div>
+  </>
+)}
+          </div>
+        </div>
+
+        {/* Menu desktop */}
+        <nav className="header-nav" ref={kingdomMenuRef}>
+          <ul className="nav-list">
+            {userRole === 'banidos' ? (
+              <li><a href="#" onClick={() => handleMenuClick('faleConosco')}>Fale Conosco</a></li>
+            ) : (
+              <>
+                <li><a href="#" onClick={() => handleMenuClick('gapenver')}>Gapenver</a></li>
+                <li><a href="#" onClick={() => alert('Página em breve!')}>Saraver</a></li>
+                <li><a href="#" onClick={() => alert('Página em breve!')}>Corvusk</a></li>
+                <li><a href="#" onClick={() => alert('Página em breve!')}>Lo'otrak</a></li>
+                <li><a href="#" onClick={() => handleMenuClick('cidadaosDoReino')}>Cidadãos do Reino</a></li>
+                <li><a href="#" onClick={() => alert('Página em breve!')}>Sugestões</a></li>
+                <li><a href="#" onClick={() => alert('Página em breve!')}>Mapa Mundo</a></li>
+                <li><a href="#" onClick={() => handleMenuClick('faleConosco')}>Fale Conosco</a></li>
+                <li><a href="#" onClick={() => handleMenuClick('staff')}>STAFF</a></li>
+              </>
+            )}
+          </ul>
+        </nav>
+      </header>
+      
+      {/* Overlay mobile (agora fora do <header>) */}
+      <div
+        ref={mobileOverlayRef}
+        className={`mobile-nav-overlay ${isKingdomMenuOpen ? "open" : ""}`}
+      >
+        <button
+          className="hamburger-close"
+          onClick={() => setIsKingdomMenuOpen(false)}
+          aria-label="Fechar menu"
+        >
+          ✕
+        </button>
+
+        <ul className="mobile-nav-list">
+          <li><a href="#" onClick={() => { handleMenuClick('gapenver'); }}>Gapenver</a></li>
+          <li><a href="#" onClick={() => { alert('Página em breve!'); }}>Saraver</a></li>
+          <li><a href="#" onClick={() => { alert('Página em breve!'); }}>Corvusk</a></li>
+          <li><a href="#" onClick={() => { alert('Página em breve!'); }}>Lo'otrak</a></li>
+          <li><a href="#" onClick={() => { handleMenuClick('cidadaosDoReino'); }}>Cidadãos do Reino</a></li>
+          <li><a href="#" onClick={() => { alert('Página em breve!'); }}>Sugestões</a></li>
+          <li><a href="#" onClick={() => { alert('Página em breve!'); }}>Mapa Mundo</a></li>
+          <li><a href="#" onClick={() => { handleMenuClick('faleConosco'); }}>Fale Conosco</a></li>
+          <li><a href="#" onClick={() => { handleMenuClick('staff'); }}>STAFF</a></li>
+        </ul>
+
+        <div className="mobile-social-icons">
+    <a href="https://www.tiktok.com/@seuPerfil" target="_blank" rel="noopener noreferrer"><FaTiktok className="social-icon" /></a>
+    <a href="https://www.youtube.com/@seuCanal" target="_blank" rel="noopener noreferrer"><FaYoutube className="social-icon" /></a>
+    <a href="https://www.instagram.com/seuPerfil" target="_blank" rel="noopener noreferrer"><FaInstagram className="social-icon" /></a>
+    <a href="https://www.facebook.com/profile.php?id=61577103301956" target="_blank" rel="noopener noreferrer"><FaFacebook className="social-icon" /></a>
+  </div>
+
+      </div>
+    </>
   );
 }
 

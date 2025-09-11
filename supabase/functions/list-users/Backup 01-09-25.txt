@@ -1,0 +1,94 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
+  try {
+    const userClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+    )
+
+    // --- Ajuste com try/catch ---
+    let user = null
+    try {
+      const { data, error } = await userClient.auth.getUser()
+      if (error) {
+        console.log("Erro ao pegar usuário:", error.message)
+      }
+      user = data?.user || null
+    } catch (e) {
+      console.log("Exceção em getUser:", e.message)
+    }
+    // ----------------------------
+
+    const callerRole = (user?.app_metadata?.roles?.[0] || user?.user_metadata?.cargo || "").toLowerCase().trim();
+    const allowedRoles = ['admin', 'oficialreal', 'guardareal'];
+    
+    console.log("callerRole cru:", user?.app_metadata?.roles);
+    console.log("callerRole formatado:", callerRole);
+
+    if (!user || !allowedRoles.includes(callerRole)) {
+      throw new Error("Acesso negado: Você não tem permissão para visualizar a lista de usuários.");
+    }
+
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+    
+    const { data: { users }, error: usersError } = await supabaseAdmin.auth.admin.listUsers();
+    if (usersError) throw usersError;
+
+    const roleRanks = {
+      admin: 1,
+      oficialreal: 2,
+      guardareal: 3,
+      viajante: 4, 
+      default: 99
+    };
+
+    const callerRank = roleRanks[callerRole] || roleRanks['default'];
+
+    const filteredUsers = users.filter(targetUser => {
+      const targetRole = targetUser.app_metadata?.roles?.[0]?.toLowerCase() || 'default';
+      const targetRank = roleRanks[targetRole] || roleRanks['default'];
+      return callerRank <= targetRank;
+    });
+
+    const { data: profiles, error: profilesError } = await supabaseAdmin
+      .from("profiles")
+      .select("id, nome, sobrenome, foto_url, cargo");
+    if (profilesError) throw profilesError;
+
+    const mergedUsers = filteredUsers.map((u) => {
+      const profile = profiles.find((p) => p.id === u.id) || {};
+      return {
+        ...u,
+        user_metadata: {
+          ...u.user_metadata,
+          ...profile,
+        }
+      };
+    });
+
+    return new Response(JSON.stringify(mergedUsers), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 200,
+    });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: error.message }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 403,
+    });
+  }
+})

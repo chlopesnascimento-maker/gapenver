@@ -1,0 +1,35 @@
+// src/components/AdminDashboard/AdminDashboard.js
+import React from 'react';
+import './AdminDashboard.css';
+
+// Adicionamos a propriedade 'navigateTo'
+function AdminDashboard({ navigateTo }) {
+  return (
+    <div className="admin-dashboard-container">
+      <h1 className="admin-title">Painel de Controle do Administrador</h1>
+      <p>Bem-vindo, Majestade. O Reino aguarda suas ordens.</p>
+      <div className="admin-widgets-grid">
+        
+        {/* Widget clicável para gerenciar usuários */}
+        <div className="admin-widget clickable" onClick={() => navigateTo('userManagement')}>
+          <h3>Gerenciar Usuários</h3>
+          <p className="widget-data">Ver Lista</p>
+          <p>Veja e administre todos os cidadãos do reino.</p>
+        </div>
+
+        <div className="admin-widget">
+          <h3>Visitas Hoje</h3>
+          <p className="widget-data">--</p>
+          <p>Em breve...</p>
+        </div>
+        <div className="admin-widget">
+          <h3>Gerenciar Pedidos</h3>
+          <p className="widget-data">--</p>
+          <p>Em breve...</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default AdminDashboard;

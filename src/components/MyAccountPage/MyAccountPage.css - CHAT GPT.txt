@@ -1,107 +1,215 @@
-.minha-conta-page {
-  padding: 30px;
-  display: flex;
-  justify-content: center;
+import React, { useState, useEffect, useCallback } from 'react';
+import './MyAccountPage.css';
+import '../Shared/Form.css';
+import { supabase } from '../../supabaseClient';
+
+function MyAccountPage({ navigateTo }) {
+  const [user, setUser] = useState(null);
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [sendingVerification, setSendingVerification] = useState(false);
+
+  const fetchUserData = useCallback(async () => {
+    setLoading(true);
+
+    // 1. Busca o usuário autenticado (que contém user_metadata)
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !authUser) {
+      console.error('Erro ao buscar usuário:', authError);
+      setLoading(false);
+      return;
+    }
+    setUser(authUser);
+
+    // 2. Busca os dados da tabela 'profiles' como um fallback
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('nome, sobrenome, foto_url')
+      .eq('id', authUser.id)
+      .single();
+
+    if (profileError) {
+      console.error('Erro ao buscar perfil na tabela:', profileError);
+    }
+    
+    // 3. ✅ LÓGICA FINAL: Combina as duas fontes de dados
+    // Prioriza os dados do user_metadata. Se não existirem, usa os da tabela profiles.
+    const finalUserData = {
+      nome: authUser.user_metadata?.nome || profileData?.nome,
+      sobrenome: authUser.user_metadata?.sobrenome || profileData?.sobrenome,
+      photoURL: authUser.user_metadata?.photoURL || profileData?.foto_url,
+    };
+    
+    console.log("Dados finais combinados:", finalUserData);
+    setUserData(finalUserData);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchUserData();
+  }, [fetchUserData]);
+
+  // O restante do seu código permanece exatamente o mesmo...
+
+  const handleSendVerification = async () => {
+    if (!user?.email) return;
+    try {
+      setSendingVerification(true);
+      const { error } = await supabase.auth.resend({ type: 'signup', email: user.email });
+      if (error) throw error;
+      alert('E-mail de verificação enviado! Verifique sua caixa de entrada e spam.');
+    } catch (err) {
+      alert('Erro ao enviar e-mail: ' + err.message);
+    } finally {
+      setSendingVerification(false);
+    }
+  };
+
+  const handleDeleteAccount = async (e) => {
+    e.preventDefault();
+    if (deleteConfirmText.toUpperCase() !== 'DELETAR') {
+      alert('Para confirmar a exclusão, digite DELETAR no campo.');
+      return;
+    }
+    if (!window.confirm("Você tem certeza ABSOLUTA que deseja apagar sua conta? Esta ação não pode ser desfeita.")) {
+        return;
+    }
+    setDeleting(true);
+    try {
+      const { error } = await supabase.functions.invoke('delete-user');
+      if (error) throw error;
+      alert('Sua conta foi deletada com sucesso. Sentiremos sua falta!');
+      await supabase.auth.signOut();
+      navigateTo('home');
+    } catch (err) {
+      console.error(err);
+      alert('Ocorreu um erro ao deletar sua conta: ' + err.message);
+    } finally {
+      setDeleting(false);
+    }
+  };
+  
+  if (loading) return <div className="form-page-container"><p>Carregando...</p></div>;
+
+  const isVerified = Boolean(user?.email_confirmed_at);
+  
+  let roleDisplay = null;
+  const userRoles = user?.app_metadata?.roles;
+
+  if (userRoles && userRoles.length > 0) {
+    const primaryRole = userRoles[0];
+    if (primaryRole === 'admin') {
+      roleDisplay = {
+        name: 'Administrador',
+        style: { color: '#e74c3c', fontWeight: 'bold' }
+      };
+    } else if (primaryRole === 'viajante') {
+      roleDisplay = {
+        name: 'Viajante',
+        style: { color: '#3498db', fontWeight: 'bold' } // Azul Ciano
+      };
+    } else if (primaryRole === 'oficialreal') {
+      roleDisplay = {
+        name: 'Oficial Real',
+        style: { color: '#f39c12', fontWeight: 'bold' } // Laranja
+      };
+    } else if (primaryRole === 'moderadores') {
+      roleDisplay = {
+        name: 'Moderador',
+        style: { color: '#2ecc71', fontWeight: 'bold' } // Verde
+      };
+    } else {
+      // Um fallback para qualquer outro cargo que não tenha estilo definido
+      roleDisplay = {
+        name: primaryRole,
+        style: { fontWeight: 'normal' } // Estilo padrão
+      };
+    }
+  }
+
+  return (
+    <div className="form-page-container">
+      <div className="my-account-card">
+        <h2 className="form-title">Minha Conta</h2>
+
+        <div className="profile-row">
+          <div className="profile-avatar-large">
+            {userData?.photoURL ? (
+              <img
+                src={userData.photoURL}
+                alt="Avatar"
+                className="avatar-img"
+              />
+            ) : (
+              <div className="avatar-placeholder">
+                {userData?.nome ? userData.nome.charAt(0).toUpperCase() : '?'}
+              </div>
+            )}
+          </div>
+
+          <div className="profile-info">
+            <p><strong>Nome:</strong> {`${userData?.nome || ''} ${userData?.sobrenome || ''}`.trim()}</p>
+            {roleDisplay && (
+              <p>
+                <strong>Título:</strong> <span style={roleDisplay.style}>{roleDisplay.name}</span>
+              </p>
+            )}
+            <p><strong>E-mail:</strong> {user?.email || '—'}</p>
+            <p><strong>Criado em:</strong> {user?.created_at ? new Date(user.created_at).toLocaleDateString('pt-BR') : '—'}</p>
+            <div className="profile-actions">
+              <button className="cta-button" onClick={() => navigateTo('editProfile')}>
+                EDITAR PERFIL
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <hr />
+
+        <section className="security-section">
+          <h3>Segurança</h3>
+          <div className="verification-row">
+            <p>E-mail verificado: {isVerified ? 'Sim' : 'Não'}</p>
+            {!isVerified && (
+              <button
+                className="secondary-button"
+                onClick={handleSendVerification}
+                disabled={sendingVerification}
+              >
+                {sendingVerification ? 'Enviando...' : 'Reenviar e-mail de verificação'}
+              </button>
+            )}
+          </div>
+        </section>
+
+        <hr />
+
+        <section className="danger-section">
+          <h3>Apagar Conta</h3>
+          <p className="warning">Esta ação é irreversível e removerá todos os seus dados.</p>
+          <div className="form-group">
+            <label>Digite <strong>DELETAR</strong> para confirmar:</label>
+            <input
+              type="text"
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              placeholder="DELETAR"
+            />
+          </div>
+          <button
+            className="danger-button"
+            onClick={handleDeleteAccount}
+            disabled={deleting || deleteConfirmText.toUpperCase() !== 'DELETAR'}
+          >
+            {deleting ? 'Processando...' : 'Apagar minha conta'}
+          </button>
+        </section>
+      </div>
+    </div>
+  );
 }
 
-.minha-conta-card {
-  width: 100%;
-  max-width: 900px;
-  background: linear-gradient(180deg, rgba(26,26,61,1), rgba(12,12,30,1));
-  border: 1px solid #333;
-  border-radius: 12px;
-  padding: 24px;
-  color: #e0e0e0;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.5);
-}
-
-.profile-row {
-  display: flex;
-  gap: 20px;
-  align-items: center;
-}
-
-.profile-avatar-large {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 2px solid #444;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255,255,255,0.02);
-}
-
-.profile-avatar-large img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.profile-info p {
-  margin: 6px 0;
-  color: #e0e0e0;
-}
-
-.profile-actions {
-  margin-top: 10px;
-  display: flex;
-  gap: 10px;
-}
-
-.cta-button {
-  background: linear-gradient(90deg,#f0e68c,#ffd06b);
-  border: none;
-  padding: 10px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 700;
-}
-
-.secondary-button {
-  background: #333;
-  border: 1px solid #444;
-  padding: 8px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  color: #e0e0e0;
-}
-
-.security-section, .danger-section {
-  margin-top: 16px;
-}
-
-.change-password-form label,
-.danger-section label {
-  display: block;
-  margin-bottom: 10px;
-  color: #ddd;
-}
-
-.change-password-form input,
-.danger-section input {
-  width: 100%;
-  margin-top: 6px;
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: 1px solid #444;
-  background: #0f1222;
-  color: #fff;
-}
-
-.warning {
-  color: #ffb3b3;
-  margin: 10px 0;
-}
-
-.danger-button {
-  background: linear-gradient(90deg,#ff6b6b,#ff3b3b);
-  border: none;
-  color: white;
-  padding: 10px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  margin-top: 8px;
-}
+export default MyAccountPage;
