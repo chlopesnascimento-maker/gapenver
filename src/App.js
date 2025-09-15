@@ -23,6 +23,9 @@ import StaffPage from './components/StaffPage/StaffPage'; // ✅ garante que est
 import CidadaosdoReino from "./components/CidadaosdoReino/CidadaosdoReino";
 import GapenverPage from './components/CityPages/GapenverPage'; // 1. IMPORTE ADICIONADO
 import FaleConoscoPage from './components/FaleConoscoPage/FaleConoscoPage';
+import ComunidadePage from './components/ComunidadePage/ComunidadePage';
+import CriarTopicoPage from './components/CriarTopicoPage/CriarTopicoPage';
+import TopicoDetalhePage from './components/TopicoDetalhePage/TopicoDetalhePage';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
@@ -178,6 +181,8 @@ function App() {
           <MyAccountPage navigateTo={navigateTo} user={user} userData={userData}/>
         )}
 
+        {currentPage === 'criarTopico' && <CriarTopicoPage user={user} navigateTo={navigateTo} />}
+
         {/* --- MUDANÇA 2: ROTAS ATUALIZADAS --- */}
         {currentPage === 'adminDashboard' && canAccessPanel && (
           <AdminDashboard user={user} navigateTo={navigateTo} />
@@ -187,7 +192,11 @@ function App() {
           <UserManagementPage navigateTo={navigateTo} user={user} />
         )}
 
+        {currentPage === 'comunidade' && <ComunidadePage user={user} navigateTo={navigateTo} />}
+
         {currentPage === 'gapenver' && <GapenverPage />}
+
+        {currentPage === 'topicoDetalhe' && <TopicoDetalhePage user={user} pageState={pageParams} navigateTo={navigateTo} />}
 
         {/* Fale Conosco */}
         {currentPage === 'faleConosco' && <FaleConoscoPage />}

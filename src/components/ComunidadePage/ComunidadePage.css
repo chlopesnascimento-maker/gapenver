@@ -1,0 +1,206 @@
+.comunidade-container {
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 20px;
+  color: #e0e0e0;
+}
+
+.comunidade-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(218, 165, 32, 0.3);
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+}
+
+.comunidade-header h1 {
+  font-family: 'Cinzel', serif;
+  font-size: 2.5rem;
+  color: #DAA520;
+  margin: 0;
+}
+
+.novo-topico-btn {
+  background: linear-gradient(135deg, #daa520, #ffd700);
+  color: #1a1a3d;
+  font-family: 'Cinzel', serif;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.novo-topico-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(218, 165, 32, 0.5);
+}
+
+.comunidade-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.tab-btn {
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  background-color: transparent;
+  color: #a0a0a0;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  color: #DAA520;
+}
+
+.tab-btn.active {
+  color: #FFD700;
+  border-bottom: 2px solid #FFD700;
+}
+
+.lista-topicos {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.topico-item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background-color: rgba(23, 23, 43, 0.85);
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid rgba(218, 165, 32, 0.2);
+  transition: border-color 0.2s ease;
+}
+
+.topico-item:hover {
+  border-color: rgba(218, 165, 32, 0.5);
+}
+
+.topico-autor-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100px;
+  flex-shrink: 0;
+}
+
+.autor-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #DAA520;
+}
+
+.topico-autor-info span {
+  font-size: 0.8rem;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.topico-conteudo {
+  flex-grow: 1;
+}
+
+.topico-titulo {
+  font-family: 'Cinzel', serif;
+  font-size: 1.2rem;
+  margin: 0 0 5px 0;
+  color: #fff;
+}
+
+.topico-data {
+  font-size: 0.8rem;
+  color: #a0a0a0;
+}
+
+.topico-acao {
+  margin-left: auto;
+}
+
+.ver-topico-btn {
+  background: none;
+  border: 1px solid #DAA520;
+  color: #DAA520;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.ver-topico-btn:hover {
+  background-color: rgba(218, 165, 32, 0.1);
+  color: #FFD700;
+}
+
+/* Adicione este código ao final do seu ComunidadePage.css */
+
+.topicos-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background-color: rgba(23, 23, 43, 0.5);
+}
+
+.topicos-table th, .topicos-table td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 1px solid rgba(218, 165, 32, 0.2);
+}
+
+.topicos-table th {
+  font-family: 'Cinzel', serif;
+  color: #DAA520;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.topicos-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.topicos-table tbody tr.clickable-row:hover {
+  background-color: rgba(218, 165, 32, 0.1);
+  cursor: pointer;
+}
+
+.topicos-table td {
+  font-size: 0.95rem;
+  vertical-align: middle;
+}
+
+/* Larguras das colunas */
+.col-numero { width: 5%; text-align: center; }
+.col-titulo { width: 40%; }
+.col-categoria { width: 15%; }
+.col-autor { width: 20%; }
+.col-status { width: 10%; text-align: center; }
+.col-resposta { width: 10%; text-align: center; }
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #111827;
+}
+
+.status-badge.novo {
+  background-color: #34d399; /* Verde esmeralda */
+}
