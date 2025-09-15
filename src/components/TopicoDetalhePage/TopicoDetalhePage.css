@@ -43,7 +43,7 @@
   background-color: rgba(0, 0, 0, 0.2);
   border-right: 1px solid rgba(218, 165, 32, 0.2);
 }
-.autor-card img {
+.autor-card img:first-child {
   width: 80px;
   height: 80px;
   border-radius: 50%;
@@ -53,21 +53,22 @@
 }
 .autor-card h3 {
   margin: 0 0 5px 0;
-  font-size: 1rem;
+  font-size: 20px;
   color: #fff;
 }
 .cargo-badge {
-  padding: 3px 8px;
-  border-radius: 10px;
-  font-size: 0.7rem;
+  font-size: 13px; /* Tamanho ajustado para texto */
   font-weight: bold;
-  color: #fff;
-  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
-.cargo-admin { background-color: #e74c3c; }
-.cargo-oficialreal { background-color: #f39c12; }
-.cargo-guardareal { background-color: #2ecc71; }
-.cargo-viajante { background-color: #3498db; }
+
+/* Cores específicas para o TEXTO de cada cargo */
+.cargo-admin { color: #e74c3c; }
+.cargo-oficialreal { color: #f39c12; }
+.cargo-guardareal { color: #2ecc71; }
+.cargo-viajante { color: #3498db; }
+.cargo-banidos { color: #7f8c8d; }
 
 .conteudo-card {
   padding: 20px;
@@ -205,4 +206,92 @@
 /* Garante que o botão 'Publicar' dentro do form não tenha o 'float' */
 .form-resposta .btn-publicar {
     float: none;
+}
+
+/* Adicione ao final de TopicoDetalhePage.css */
+.moderation-panel {
+  background-color: rgba(255, 215, 0, 0.1);
+  border: 1px solid #DAA520;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+.moderation-panel strong {
+  color: #FFD700;
+}
+.moderation-panel button {
+  background: none;
+  border: 1px solid #DAA520;
+  color: #DAA520;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.moderation-panel button:hover:not(:disabled) {
+  background-color: rgba(218, 165, 32, 0.2);
+  color: #FFD700;
+}
+.moderation-panel button.btn-delete {
+  border-color: #e74c3c;
+  color: #e74c3c;
+}
+.moderation-panel button.btn-delete:hover {
+  background-color: rgba(231, 76, 60, 0.1);
+  color: #ff6b6b;
+}
+.moderation-panel button:disabled {
+  border-color: #7f8c8d;
+  color: #7f8c8d;
+  cursor: not-allowed;
+}
+
+.topic-closed-alert {
+  text-align: center;
+  padding: 15px;
+  background-color: rgba(127, 140, 141, 0.2);
+  border: 1px solid #7f8c8d;
+  border-radius: 8px;
+  margin: 30px 0;
+  font-style: italic;
+}
+
+.reply-actions {
+  margin-top: 15px;
+  border-top: 1px solid rgba(218, 165, 32, 0.1);
+  padding-top: 10px;
+  text-align: right;
+}
+.btn-excluir-comentario {
+  background: none;
+  border: none;
+  color: #a0a0a0;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: color 0.2s ease;
+}
+.btn-excluir-comentario:hover {
+  color: #e74c3c;
+  text-decoration: underline;
+}
+
+/* Adicione este estilo ao final do seu CSS */
+.detalhe-container .staff-badge {
+  height: 20px;
+  width: auto;
+  margin-top: 8px;
+}
+
+/* Adicione este estilo ao final do seu TopicoDetalhePage.css */
+
+.moderation-panel button.btn-open {
+  border-color: #2ecc71;
+  color: #2ecc71;
+}
+.moderation-panel button.btn-open:hover {
+  background-color: rgba(46, 204, 113, 0.1);
+  color: #2ecc71;
 }
