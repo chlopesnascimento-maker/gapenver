@@ -1,5 +1,5 @@
 .detalhe-container {
-  max-width: 900px;
+  max-width: 1800px;
   margin: 40px auto;
   padding: 20px;
   color: #e0e0e0;
@@ -68,7 +68,7 @@
 .cargo-oficialreal { color: #f39c12; }
 .cargo-guardareal { color: #2ecc71; }
 .cargo-viajante { color: #3498db; }
-.cargo-banidos { color: #7f8c8d; }
+.cargo-banidos { color: #f372ff; }
 
 .conteudo-card {
   padding: 20px;
@@ -95,6 +95,7 @@
 .conteudo-texto {
   line-height: 1.7;
   white-space: pre-wrap;
+  text-align: left;
 }
 .titulo-respostas {
   font-family: 'Cinzel', serif;
@@ -294,4 +295,85 @@
 .moderation-panel button.btn-open:hover {
   background-color: rgba(46, 204, 113, 0.1);
   color: #2ecc71;
+}
+
+/* ========================================================== */
+/* ESTILOS PARA O LAYOUT MOBILE DA PÁGINA DE TÓPICO (VERSÃO CORRIGIDA) */
+/* ========================================================== */
+@media (max-width: 768px) {
+
+  /* 1. Transforma o card em uma coluna vertical (continua igual) */
+  .post-card {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  /* 2. Transforma o card do autor em um cabeçalho horizontal (continua igual) */
+  .autor-card {
+    width: 100%;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    border-right: none;
+    border-bottom: 1px solid rgba(218, 165, 32, 0.2);
+    background-color: transparent;
+    padding: 15px;
+  }
+  
+  /* 3. Ajusta o avatar para um tamanho menor (continua igual) */
+  .autor-card img:first-child {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 0;
+    margin-right: 15px;
+  }
+  
+  /* ========================================================== */
+  /* 4. AQUI ESTÁ A CORREÇÃO PRINCIPAL                            */
+  /* Força o container das infos a ser uma coluna vertical      */
+  /* ========================================================== */
+  .autor-card-info {
+    display: flex;
+    flex-direction: column;     /* Empilha os itens verticalmente */
+    align-items: flex-start;  /* Alinha tudo à esquerda */
+    gap: 4px;                   /* Um pequeno espaço entre os itens */
+  }
+
+  /* 5. Garante que o texto dentro do bloco de info não tenha estilos conflitantes */
+  .autor-card-info > * {
+    text-align: left; /* Força todo o texto à esquerda */
+    margin: 0; /* Remove margens que possam atrapalhar */
+  }
+
+  .autor-card-info .cargo-badge {
+    font-size: 0.8rem;
+  }
+
+  /* 6. Ajustes gerais para o restante do conteúdo no mobile */
+  .conteudo-card {
+    padding: 15px;
+  }
+  
+  .conteudo-texto {
+    text-align: left;
+  }
+
+  .conteudo-header h2 {
+    font-size: 1.3rem;
+  }
+}
+
+/* ========================================================== */
+/* CORREÇÃO FINAL E FORÇADA PARA O AUTOR CARD NO MOBILE       */
+/* ========================================================== */
+@media (max-width: 768px) {
+
+  /* Esta regra super específica garante que o container das informações (nome, cargo)
+     SEMPRE se comporte como uma coluna vertical. */
+  .detalhe-container .post-card .autor-card .autor-card-info {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important; /* Alinha à esquerda */
+    text-align: left !important;
+  }
 }

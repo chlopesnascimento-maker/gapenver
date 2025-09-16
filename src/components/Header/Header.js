@@ -176,6 +176,7 @@ return (
           <li><a href="#" onClick={() => { alert('Página em breve!'); }}>Corvusk</a></li>
           <li><a href="#" onClick={() => { alert('Página em breve!'); }}>Lo'otrak</a></li>
           <li><a href="#" onClick={() => { handleMenuClick('cidadaosDoReino'); }}>Cidadãos do Reino</a></li>
+          <li><a href="#" onClick={() => handleMenuClick('comunidade')}>Tópicos</a></li>
           <li><a href="#" onClick={() => { alert('Página em breve!'); }}>Sugestões</a></li>
           <li><a href="#" onClick={() => { alert('Página em breve!'); }}>Mapa Mundo</a></li>
           <li><a href="#" onClick={() => { handleMenuClick('faleConosco'); }}>Fale Conosco</a></li>

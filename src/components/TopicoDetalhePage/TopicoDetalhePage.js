@@ -14,6 +14,8 @@ const roleDisplayNames = {
   'default': 'Indefinido'
 };
 
+
+
 function TopicoDetalhePage({ user, pageState, navigateTo }) {
   const { topicId } = pageState;
   const [topico, setTopico] = useState(null);
@@ -64,6 +66,25 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
   useEffect(() => {
     fetchDados();
   }, [fetchDados]);
+
+  useEffect(() => {
+    // Se não houver usuário logado, não faz nada
+    if (!user || !topicId) return;
+
+    const marcarComoLido = async () => {
+      // "upsert" tenta inserir; se já existir, ele não faz nada (ou atualiza, se quiséssemos)
+      const { error } = await supabase
+        .from('topicos_lidos')
+        .upsert({
+          topico_id: topicId,
+          user_id: user.id
+        });
+        
+      if (error) console.error("Erro ao marcar tópico como lido:", error);
+    };
+
+    marcarComoLido();
+}, [topicId, user]); // Roda sempre que o tópico ou o usuário mudar
 
   const handleModerateAction = async (action, targetId) => {
     // eslint-disable-next-line no-restricted-globals

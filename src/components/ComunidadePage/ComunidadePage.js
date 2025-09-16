@@ -2,25 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import './ComunidadePage.css';
 
-// Componente para o Status do Tópico (lógica de "Novo")
-function TopicoStatus({ topico }) {
-    const umDiaAtras = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const dataCriacao = new Date(topico.created_at);
-
-    // Se o tópico foi criado nas últimas 24h, é "Novo"
-    if (dataCriacao > umDiaAtras) {
-        return <span className="status-badge novo">NOVO</span>;
-    }
-    
-    // Futuramente, podemos adicionar a lógica de "Novas Respostas" aqui
-    return null; // Não mostra nada se não for novo
-}
+// Lista de categorias para o filtro, facilita a manutenção
+const categorias = ['Todos', 'Personagens', 'Mundo', 'Geral', 'Regras'];
 
 function ComunidadePage({ user, navigateTo }) {
   const [topicos, setTopicos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('publico');
+
+  // ==========================================================
+  // ADIÇÃO 1: Novo estado para controlar o filtro de categoria
+  // ==========================================================
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState('Todos');
 
   const currentUserRole = user?.app_metadata?.roles?.[0]?.toLowerCase() || 'default';
   const isStaff = ['admin', 'oficialreal', 'guardareal'].includes(currentUserRole);
@@ -30,69 +24,71 @@ function ComunidadePage({ user, navigateTo }) {
       setLoading(true);
       setError(null);
 
-      let query = supabase
-        .from('topicos')
-        .select(`
-          id,
-          id_serial,
-          titulo,
-          categoria,
-          created_at,
-          ultima_resposta_staff_at,
-          profiles ( nome, sobrenome )
-        `)
-        .order('created_at', { ascending: false });
-
-      if (activeTab === 'staff') {
-        query = query.eq('apenas_staff', true);
-      } else {
-        query = query.eq('apenas_staff', false);
-      }
-
-      const { data, error: fetchError } = await query;
+      // ==========================================================
+      // ALTERAÇÃO: Passamos o filtro de categoria para a nossa função no banco
+      // ==========================================================
+      const { data, error: fetchError } = await supabase.rpc('get_topicos_com_status_leitura', {
+        categoria_filtro: categoriaSelecionada
+      });
 
       if (fetchError) {
         console.error('Erro ao buscar tópicos:', fetchError);
         setError('Não foi possível carregar os tópicos.');
       } else {
-        setTopicos(data);
+        const filteredData = data.filter(topico => 
+            activeTab === 'staff' ? topico.apenas_staff === true : topico.apenas_staff === false
+        ).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        setTopicos(filteredData);
       }
       setLoading(false);
     };
 
-    if (user) { // Garante que a busca só ocorra se o usuário estiver logado
+    if (user) {
         fetchTopicos();
     }
-  }, [activeTab, user]);
+  }, [activeTab, user, categoriaSelecionada]); // <-- Adicionamos o novo filtro como dependência
 
- const handleRowClick = (topicoId) => {
-  navigateTo('topicoDetalhe', { topicId: topicoId });
-};
+  const handleRowClick = (topicoId) => {
+    navigateTo('topicoDetalhe', { topicId: topicoId });
+  };
 
   return (
     <div className="comunidade-container">
       <div className="comunidade-header">
         <h1>Comunidade</h1>
-        <button className="novo-topico-btn" onClick={() => navigateTo('criarTopico')}>
-  Criar Novo Tópico
-</button>
+        <button className="novo-topico-btn" onClick={() => navigateTo('criarTopico')}>Criar Novo Tópico</button>
       </div>
 
       <div className="comunidade-tabs">
         <button 
           className={`tab-btn ${activeTab === 'publico' ? 'active' : ''}`}
-          onClick={() => setActiveTab('publico')}
+          onClick={() => { setActiveTab('publico'); setCategoriaSelecionada('Todos'); }}
         >
           Tópicos da Comunidade
         </button>
         {isStaff && (
           <button 
             className={`tab-btn ${activeTab === 'staff' ? 'active' : ''}`}
-            onClick={() => setActiveTab('staff')}
+            onClick={() => { setActiveTab('staff'); setCategoriaSelecionada('Todos'); }}
           >
             Sala da Staff
           </button>
         )}
+      </div>
+
+      {/* ========================================================== */}
+      {/* ADIÇÃO 2: O menu de filtros por categoria                  */}
+      {/* ========================================================== */}
+      <div className="category-filters">
+        {categorias.map(cat => (
+          <button
+            key={cat}
+            className={`filter-btn ${categoriaSelecionada === cat ? 'active' : ''}`}
+            onClick={() => setCategoriaSelecionada(cat)}
+          >
+            {cat}
+          </button>
+        ))}
       </div>
 
       <div className="table-wrapper">
@@ -109,22 +105,26 @@ function ComunidadePage({ user, navigateTo }) {
           </thead>
           <tbody>
             {loading && (
-              <tr><td colSpan="6">Carregando tópicos...</td></tr>
+              <tr><td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>Carregando tópicos...</td></tr>
             )}
             {error && (
-              <tr><td colSpan="6" className="error-message">{error}</td></tr>
+              <tr><td colSpan="6" className="error-message" style={{ textAlign: 'center', padding: '20px' }}>{error}</td></tr>
             )}
             {!loading && !error && topicos.length === 0 && (
-              <tr><td colSpan="6">Nenhum tópico encontrado nesta seção.</td></tr>
+              <tr><td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>Nenhum tópico encontrado nesta seção.</td></tr>
             )}
             {!loading && !error && topicos.map(topico => (
-              <tr key={topico.id} onClick={() => handleRowClick(topico.id)} className="clickable-row">
+              <tr 
+                key={topico.id} 
+                onClick={() => handleRowClick(topico.id)} 
+                className={`clickable-row ${!topico.foi_lido ? 'nao-lido' : ''}`}
+              >
                 <td className="col-numero">{topico.id_serial}</td>
                 <td className="col-titulo">{topico.titulo}</td>
                 <td className="col-categoria">{topico.categoria}</td>
-                <td className="col-autor">{`${topico.profiles.nome} ${topico.profiles.sobrenome}`}</td>
+                <td className={`col-autor cargo-text-${topico.profile_cargo?.toLowerCase()}`}>{`${topico.profile_nome || ''} ${topico.profile_sobrenome || ''}`.trim()}</td>
                 <td className="col-status">
-                  <TopicoStatus topico={topico} />
+                  {!topico.foi_lido && <span className="status-badge novo">NOVO</span>}
                 </td>
                 <td className="col-resposta">
                   {topico.ultima_resposta_staff_at ? '✔️' : '—'}
@@ -137,5 +137,7 @@ function ComunidadePage({ user, navigateTo }) {
     </div>
   );
 }
+
+
 
 export default ComunidadePage;

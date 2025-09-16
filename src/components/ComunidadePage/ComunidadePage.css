@@ -1,5 +1,6 @@
+/* Como vai ficar */
 .comunidade-container {
-  max-width: 1000px;
+  max-width: 1800px; /* Aumentamos a largura máxima */
   margin: 40px auto;
   padding: 20px;
   color: #e0e0e0;
@@ -161,6 +162,7 @@
   padding: 15px;
   text-align: left;
   border-bottom: 1px solid rgba(218, 165, 32, 0.2);
+  white-space: nowrap;
 }
 
 .topicos-table th {
@@ -203,4 +205,74 @@
 
 .status-badge.novo {
   background-color: #34d399; /* Verde esmeralda */
+}
+
+/* Adicione ao seu ComunidadePage.css */
+.topicos-table .nao-lido {
+  font-weight: bold;
+  color: #fff; /* Garante um branco mais forte para o texto */
+}
+
+.topicos-table .nao-lido td {
+    color: #fff;
+}
+
+/* Adicione este código ao final do seu ComunidadePage.css */
+
+.category-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(218, 165, 32, 0.2);
+}
+
+.filter-btn {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(218, 165, 32, 0.3);
+  color: #a0a0a0;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+  background-color: rgba(218, 165, 32, 0.1);
+  color: #FFD700;
+}
+
+.filter-btn.active {
+  background-color: #DAA520;
+  color: #111827;
+  border-color: #DAA520;
+}
+
+/* Cores para o TEXTO do nome do autor baseado no cargo */
+.topicos-table .cargo-text-admin { color: #e74c3c; font-weight: bold; }
+.topicos-table .cargo-text-oficialreal { color: #f39c12; font-weight: bold; }
+.topicos-table .cargo-text-guardareal { color: #2ecc71; font-weight: bold; }
+.topicos-table .cargo-text-viajante { color: #ffffff; font-weight: normal; }
+.topicos-table .cargo-text-banidos { color: #ff6dff; font-weight: normal; }
+
+/* ========================================================== */
+/* AJUSTES FINAIS DE LAYOUT PARA O MOBILE                     */
+/* ========================================================== */
+@media (max-width: 768px) {
+
+  /* Transforma o header em uma coluna para alinhar melhor os itens */
+  .comunidade-header {
+    flex-direction: column;
+    align-items: flex-start; /* Alinha o título à esquerda */
+    gap: 20px; /* Adiciona um espaço entre o título e o botão */
+  }
+
+  /* Faz o botão ocupar 100% da largura e o centraliza */
+  .novo-topico-btn {
+    width: 100%;
+    text-align: center;
+  }
 }
