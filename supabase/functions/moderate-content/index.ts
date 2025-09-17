@@ -12,7 +12,8 @@ serve(async (req) => {
   }
 
   try {
-    const { action, targetId } = await req.json();
+    // Adicionamos o 'payload' para dados extras como na edição de respostas
+    const { action, targetId, payload } = await req.json();
     if (!action || !targetId) {
       throw new Error("Ação e ID do alvo são obrigatórios.");
     }
@@ -44,12 +45,38 @@ serve(async (req) => {
         if (closeError) throw closeError;
         break;
 
-      // ==========================================================
-      // ADIÇÃO: Novo case para reabrir o tópico
-      // ==========================================================
       case "open_topic":
         const { error: openError } = await supabaseAdmin.from("topicos").update({ status: 'aberto' }).eq("id", targetId);
         if (openError) throw openError;
+        break;
+
+      case "move_topic":
+        const { newCategory, isPrivate } = payload;
+        if (!newCategory) {
+          throw new Error("A nova categoria é obrigatória para mover o tópico.");
+        }
+        const { error: moveError } = await supabaseAdmin
+          .from("topicos")
+          .update({ categoria: newCategory, apenas_staff: isPrivate })
+          .eq("id", targetId);
+        if (moveError) throw moveError;
+        break;
+      
+      case "edit_reply":
+        const { newContent, editReason } = payload;
+        if (!newContent || !editReason) {
+          throw new Error("Novo conteúdo e motivo da edição são obrigatórios.");
+        }
+        const { error: editError } = await supabaseAdmin
+          .from("respostas")
+          .update({
+            conteudo: newContent,
+            motivo_edicao: editReason,
+            editado_em: new Date().toISOString(),
+            editado_por_user_id: callerUser.id,
+          })
+          .eq("id", targetId);
+        if (editError) throw editError;
         break;
 
       case "delete_topic":

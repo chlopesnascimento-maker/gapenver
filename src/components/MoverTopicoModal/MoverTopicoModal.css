@@ -1,0 +1,12 @@
+/* Estilos genéricos de modal que você pode já ter */
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+.modal-content { background-color: #2c2c54; padding: 30px; border-radius: 8px; border: 1px solid rgba(218, 165, 32, 0.5); width: 90%; max-width: 500px; color: #e0e0e0; }
+.modal-title { color: #DAA520; margin-top: 0; margin-bottom: 20px; font-size: 1.5rem; }
+.modal-content .form-group { margin-bottom: 15px; }
+.modal-content .form-group label { display: block; margin-bottom: 5px; }
+.modal-content .form-group-checkbox { display: flex; align-items: center; gap: 10px; margin-top: 20px; }
+.modal-content select { width: 100%; padding: 10px; background-color: rgba(0, 0, 0, 0.3); border: 1px solid rgba(218, 165, 32, 0.5); border-radius: 6px; color: #fff; font-size: 1rem; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 30px; }
+.modal-actions button { padding: 10px 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+.modal-actions .cancel-button { background-color: #444; color: #fff; }
+.modal-actions .save-button { background: linear-gradient(135deg, #daa520, #ffd700); color: #000; }

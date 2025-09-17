@@ -1,0 +1,91 @@
+/* Estilos para o container principal do card de autor */
+.autor-card-container {
+  width: 150px;
+  flex-shrink: 0;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-right: 1px solid rgba(218, 165, 32, 0.2);
+}
+
+.autor-card-container .autor-avatar-img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #DAA520;
+  margin-bottom: 15px;
+}
+
+/* Container para as informações abaixo do avatar */
+.autor-card-container .autor-info-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.autor-card-container .autor-info-stack h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #fff;
+}
+
+.autor-card-container .autor-cargo-text {
+  font-size: 1rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.autor-card-container .autor-staff-badge {
+  height: 20px;
+  width: auto;
+}
+
+/* Cores para o TEXTO de cada cargo */
+.autor-card-container .cargo-admin { color: #e74c3c; }
+.autor-card-container .cargo-oficialreal { color: #f39c12; }
+.autor-card-container .cargo-guardareal { color: #2ecc71; }
+.autor-card-container .cargo-viajante { color: #3498db; }
+.autor-card-container .cargo-banido { color: #9b59b6; }
+
+
+/* ========================================================== */
+/* LAYOUT MOBILE ISOLADO (só se aplica a este componente)     */
+/* ========================================================== */
+@media (max-width: 768px) {
+  .autor-card-container {
+    width: 100%;
+    /*flex-direction: row; /* Volta a ser horizontal */
+    justify-content: flex-start;
+    align-items: center;
+    border-right: none;
+    border-bottom: 1px solid rgba(218, 165, 32, 0.2);
+    padding: 15px;
+  }
+
+  .autor-card-container .autor-avatar-img {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 0;
+    margin-right: 15px;
+  }
+
+  .autor-card-container .autor-info-stack {
+    align-items: center; /* Alinha o conteúdo à esquerda */
+    text-align: left;
+  }
+
+  .autor-card-container .autor-info-stack h3 {
+    font-size: 1rem;
+  }
+  
+  .autor-card-container .autor-cargo-text {
+    font-size: 0.8rem;
+    text-transform: none;
+  }
+}

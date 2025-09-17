@@ -1,22 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../supabaseClient';
 import './TopicoDetalhePage.css';
-
-// ==========================================================
-// ADIÇÃO 1: O "dicionário" de tradução dos cargos
-// ==========================================================
-const roleDisplayNames = {
-  'admin': 'Administrador',
-  'oficialreal': 'Oficial Real',
-  'guardareal': 'Guarda Real',
-  'viajante': 'Viajante',
-  'banidos': 'Banido',
-  'default': 'Indefinido'
-};
-
-
+import AutorCard from '../AutorCard/AutorCard';
+import MoverTopicoModal from '../MoverTopicoModal/MoverTopicoModal';
 
 function TopicoDetalhePage({ user, pageState, navigateTo }) {
+  // --- ESTADOS ---
   const { topicId } = pageState;
   const [topico, setTopico] = useState(null);
   const [respostas, setRespostas] = useState([]);
@@ -27,6 +16,13 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
   const [novaResposta, setNovaResposta] = useState('');
   const [enviando, setEnviando] = useState(false);
   
+  const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
+  
+  // --- NOVOS ESTADOS PARA A EDIÇÃO ---
+  const [editingReplyId, setEditingReplyId] = useState(null);
+  const [editedContent, setEditedContent] = useState('');
+  const [editReason, setEditReason] = useState('');
+
   const currentUserRole = user?.app_metadata?.roles?.[0]?.toLowerCase() || 'default';
   const isStaff = ['admin', 'oficialreal', 'guardareal'].includes(currentUserRole);
 
@@ -50,8 +46,12 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
     }
     setTopico(topicoData);
 
+    // Buscamos as respostas incluindo o perfil de quem AUTOR e de quem EDITOU
     const { data: respostasData, error: respostasError } = await supabase
-        .from('respostas').select('*, profiles(*)').eq('topico_id', topicId).order('created_at', { ascending: true });
+      .from('respostas')
+      .select('*, profiles:user_id(nome, sobrenome, cargo, foto_url), editor:editado_por_user_id(nome, sobrenome)')
+      .eq('topico_id', topicId)
+      .order('created_at', { ascending: true });
 
     if (respostasError) {
         setError('Não foi possível carregar as respostas.');
@@ -67,32 +67,10 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
     fetchDados();
   }, [fetchDados]);
 
-  useEffect(() => {
-    // Se não houver usuário logado, não faz nada
-    if (!user || !topicId) return;
-
-    const marcarComoLido = async () => {
-      // "upsert" tenta inserir; se já existir, ele não faz nada (ou atualiza, se quiséssemos)
-      const { error } = await supabase
-        .from('topicos_lidos')
-        .upsert({
-          topico_id: topicId,
-          user_id: user.id
-        });
-        
-      if (error) console.error("Erro ao marcar tópico como lido:", error);
-    };
-
-    marcarComoLido();
-}, [topicId, user]); // Roda sempre que o tópico ou o usuário mudar
-
-  const handleModerateAction = async (action, targetId) => {
+  const handleModerateAction = async (action, targetId, payload = {}) => {
     // eslint-disable-next-line no-restricted-globals
     if (!confirm(`Você tem certeza que deseja executar a ação "${action}"?`)) return;
-
-    const { error: moderateError } = await supabase.functions.invoke('moderate-content', {
-      body: { action, targetId },
-    });
+    const { error: moderateError } = await supabase.functions.invoke('moderate-content', { body: { action, targetId, payload } });
     if (moderateError) {
       alert(`Erro ao moderar: ${moderateError.message || moderateError}`);
     } else {
@@ -108,7 +86,6 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
   const handleDeleteOwnReply = async (replyId) => {
     // eslint-disable-next-line no-restricted-globals
     if (!confirm("Você tem certeza que deseja excluir seu próprio comentário?")) return;
-    
     const { error: deleteError } = await supabase.from('respostas').delete().eq('id', replyId);
     if (deleteError) {
         alert(`Erro ao excluir comentário: ${deleteError.message}`);
@@ -121,15 +98,10 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
     e.preventDefault();
     if (!novaResposta.trim()) return;
     setEnviando(true);
-    
-    const { error: insertError } = await supabase
-        .from('respostas').insert({ conteudo: novaResposta, topico_id: topicId, user_id: user.id });
-        
+    const { error: insertError } = await supabase.from('respostas').insert({ conteudo: novaResposta, topico_id: topicId, user_id: user.id });
     if (isStaff) {
-        await supabase
-            .from('topicos').update({ ultima_resposta_staff_at: new Date() }).eq('id', topicId);
+      await supabase.from('topicos').update({ ultima_resposta_staff_at: new Date() }).eq('id', topicId);
     }
-
     setEnviando(false);
     if (insertError) {
         alert('Erro ao enviar resposta: ' + insertError.message);
@@ -140,65 +112,88 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
     }
   };
 
+  // --- NOVAS FUNÇÕES PARA O SISTEMA DE EDIÇÃO ---
+  const handleStartEdit = (resposta) => {
+    setEditingReplyId(resposta.id);
+    setEditedContent(resposta.conteudo);
+    setEditReason('');
+  };
+
+  const handleSaveEdit = async () => {
+    setEnviando(true);
+
+    // Se for um membro da Staff editando a resposta de outra pessoa
+    if (isStaff && user.id !== editingReplyId) {
+      if (!editedContent.trim() || !editReason.trim()) {
+        alert("O conteúdo e o motivo da edição são obrigatórios.");
+        setEnviando(false);
+        return;
+      }
+      // Chama a função de moderação segura
+      await handleModerateAction('edit_reply', editingReplyId, {
+        newContent: editedContent,
+        editReason: editReason,
+      });
+    } else { // Se for o próprio usuário editando
+      if (!editedContent.trim()) {
+        alert("O conteúdo não pode estar vazio.");
+        setEnviando(false);
+        return;
+      }
+      // Faz o update direto, confiando na RLS que criamos
+      const { error } = await supabase
+        .from('respostas')
+        .update({
+          conteudo: editedContent,
+          usuario_editou_em: new Date().toISOString()
+        })
+        .eq('id', editingReplyId);
+
+      if (error) {
+        alert(`Erro ao salvar edição: ${error.message}`);
+      }
+    }
+
+    setEnviando(false);
+    setEditingReplyId(null); // Fecha o modo de edição
+    // fetchDados() é chamado dentro de handleModerateAction, ou precisamos chamar aqui
+    if (!isStaff || user.id === editingReplyId) {
+        fetchDados();
+    }
+  };
+
+
   if (loading) return <div className="detalhe-container"><p>Carregando tópico...</p></div>;
   if (error) return <div className="detalhe-container"><p className="error-message">{error}</p></div>;
   if (!topico) return <div className="detalhe-container"><p>Tópico não encontrado.</p></div>;
 
   const isTopicClosed = topico.status === 'fechado';
-  const isTopicAuthorStaff = ['admin', 'oficialreal', 'guardareal'].includes(topico.profiles.cargo?.toLowerCase());
-
-  // ==========================================================
-  // ADIÇÃO 2: Lógica para "traduzir" o cargo do autor do tópico
-  // ==========================================================
-  const autorCargoKey = topico.profiles.cargo?.toLowerCase() || 'default';
-  const autorDisplayName = roleDisplayNames[autorCargoKey];
-
 
   return (
     <div className="detalhe-container">
-        <button onClick={() => navigateTo('comunidade')} className="btn-voltar">
-            &larr; Voltar para a Comunidade
-        </button>
+        <button onClick={() => navigateTo('comunidade')} className="btn-voltar">&larr; Voltar para a Comunidade</button>
         
         {isStaff && (
-                <div className="moderation-panel">
-                    <strong>Ações de Moderação:</strong>
-                    
-                    {/* ========================================================== */}
-                    {/* ALTERAÇÃO: Lógica para alternar entre os botões          */}
-                    {/* ========================================================== */}
-                    {isTopicClosed ? (
-                        <button className="btn-open" onClick={() => handleModerateAction('open_topic', topico.id)}>
-                            Abrir Tópico
-                        </button>
-                    ) : (
-                        <button onClick={() => handleModerateAction('close_topic', topico.id)}>
-                            Fechar Tópico
-                        </button>
-                    )}
-                    
-                    <button className="btn-delete" onClick={() => handleModerateAction('delete_topic', topico.id)}>
-                        Excluir Tópico
-                    </button>
-                </div>
+          <div className="moderation-panel">
+            <strong>Ações de Moderação:</strong>
+            {isTopicClosed ? (
+                <button className="btn-open" onClick={() => handleModerateAction('open_topic', topico.id)}>Abrir Tópico</button>
+            ) : (
+                <button onClick={() => handleModerateAction('close_topic', topico.id)}>Fechar Tópico</button>
             )}
+            <button onClick={() => setIsMoveModalOpen(true)}>Mover Tópico</button>
+            <button className="btn-delete" onClick={() => handleModerateAction('delete_topic', topico.id)}>Excluir Tópico</button>
+          </div>
+        )}
         
         <div className="post-card post-principal">
-            <div className="autor-card">
-                <img src={topico.profiles.foto_url || 'URL_PADRAO'} alt={topico.profiles.nome} />
-                <h3>{`${topico.profiles.nome} ${topico.profiles.sobrenome}`}</h3>
-                {/* ALTERAÇÃO 1: Usando o nome traduzido */}
-                <span className={`cargo-badge cargo-${autorCargoKey}`}>{autorDisplayName}</span>
-                {isTopicAuthorStaff && (
-                    <img src="https://i.imgur.com/J6hJQ7i.png" alt="Insígnia da Staff" className="staff-badge" />
-                )}
-            </div>
+            <AutorCard profile={topico.profiles} />
             <div className="conteudo-card">
-                <div className="conteudo-header">
-                    <h2>{topico.titulo}</h2>
-                    <span>{new Date(topico.created_at).toLocaleString('pt-BR')}</span>
-                </div>
-                <p className="conteudo-texto">{topico.conteudo}</p>
+              <div className="conteudo-header">
+                <h2>{topico.titulo}</h2>
+                <span>{new Date(topico.created_at).toLocaleString('pt-BR')}</span>
+              </div>
+              <p className="conteudo-texto">{topico.conteudo}</p>
             </div>
         </div>
 
@@ -208,44 +203,63 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
         <div className="lista-respostas">
             {respostas.length > 0 ? (
                 respostas.map(resposta => {
-                    // ==========================================================
-                    // ADIÇÃO 3: Lógica para "traduzir" o cargo de quem responde
-                    // ==========================================================
-                    const respostaCargoKey = resposta.profiles.cargo?.toLowerCase() || 'default';
-                    const respostaDisplayName = roleDisplayNames[respostaCargoKey];
-                    const isReplyAuthorStaff = ['admin', 'oficialreal', 'guardareal'].includes(respostaCargoKey);
-                    const canDelete = user && (
-                        (user.id === resposta.user_id) || 
-                        (isStaff && resposta.profiles.cargo !== 'admin')
-                    );
+                    const isOwnReply = user && user.id === resposta.user_id;
+                    const canDelete = isOwnReply || (isStaff && resposta.profiles.cargo !== 'admin');
+                    const canEdit = isOwnReply || isStaff;
+
+                    if (editingReplyId === resposta.id) {
+                        return (
+                            <div key={resposta.id} className="post-card edit-mode">
+                                <AutorCard profile={resposta.profiles} />
+                                <div className="conteudo-card">
+                                    <textarea
+                                        className="edit-textarea"
+                                        value={editedContent}
+                                        onChange={(e) => setEditedContent(e.target.value)}
+                                        rows="5"
+                                    />
+                                    {isStaff && !isOwnReply && (
+                                      <div className="edit-reason-box">
+                                          <label>Motivo da Edição da Mensagem (obrigatório)</label>
+                                          <input
+                                              type="text"
+                                              value={editReason}
+                                              onChange={(e) => setEditReason(e.target.value)}
+                                              placeholder="Ex: Remoção de conteúdo inadequado"
+                                          />
+                                      </div>
+                                    )}
+                                    <div className="form-resposta-actions">
+                                        <button className="btn-cancelar-resposta" onClick={() => setEditingReplyId(null)} disabled={enviando}>Cancelar</button>
+                                        <button className="btn-publicar" onClick={handleSaveEdit} disabled={enviando}>
+                                            {enviando ? 'Salvando...' : 'Salvar Edição'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    }
 
                     return (
                         <div key={resposta.id} className="post-card">
-                            <div className="autor-card">
-                                <img src={resposta.profiles.foto_url || 'URL_PADRAO'} alt={resposta.profiles.nome} />
-                                <h3>{`${resposta.profiles.nome} ${resposta.profiles.sobrenome}`}</h3>
-                                {/* ALTERAÇÃO 2: Usando o nome traduzido */}
-                                <span className={`cargo-badge cargo-${respostaCargoKey}`}>{respostaDisplayName}</span>
-                                {isReplyAuthorStaff && (
-                                    <img src="https://i.imgur.com/J6hJQ7i.png" alt="Insígnia da Staff" className="staff-badge" />
-                                )}
-                            </div>
+                            <AutorCard profile={resposta.profiles} />
                             <div className="conteudo-card">
-                                <div className="conteudo-header">
-                                    <span>{new Date(resposta.created_at).toLocaleString('pt-BR')}</span>
-                                </div>
+                                <div className="conteudo-header"><span>{new Date(resposta.created_at).toLocaleString('pt-BR')}</span></div>
                                 <p className="conteudo-texto">{resposta.conteudo}</p>
                                 
-                                {canDelete && (
-                                    <div className="reply-actions">
-                                        <button 
-                                            onClick={() => user.id === resposta.user_id ? handleDeleteOwnReply(resposta.id) : handleModerateAction('delete_reply', resposta.id)} 
-                                            className="btn-excluir-comentario"
-                                        >
-                                            Excluir
-                                        </button>
+                                {resposta.usuario_editou_em && (
+                                    <div className="info-edicao">(Editado pelo autor em {new Date(resposta.usuario_editou_em).toLocaleDateString('pt-BR')})</div>
+                                )}
+                                {resposta.editado_em && resposta.editor && (
+                                    <div className="info-edicao">
+                                        Editado por {`${resposta.editor.nome} ${resposta.editor.sobrenome || ''}`.trim()} em {new Date(resposta.editado_em).toLocaleDateString('pt-BR')}: "{resposta.motivo_edicao}"
                                     </div>
                                 )}
+
+                                <div className="reply-actions">
+                                    {canEdit && <button onClick={() => handleStartEdit(resposta)} className="btn-editar-comentario">Editar</button>}
+                                    {canDelete && <button onClick={() => isOwnReply ? handleDeleteOwnReply(resposta.id) : handleModerateAction('delete_reply', resposta.id)} className="btn-excluir-comentario">Excluir</button>}
+                                </div>
                             </div>
                         </div>
                     )
@@ -277,6 +291,13 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
                 </form>
             )
         )}
+
+      <MoverTopicoModal 
+        isOpen={isMoveModalOpen}
+        onClose={() => setIsMoveModalOpen(false)}
+        topico={topico}
+        onMoveSuccess={() => { setIsMoveModalOpen(false); fetchDados(); }}
+      />
     </div>
   );
 }

@@ -377,3 +377,60 @@
     text-align: left !important;
   }
 }
+
+/* Adicione ao final de TopicoDetalhePage.css */
+
+.reply-actions {
+  gap: 15px; /* Adiciona espaço entre os botões de editar e excluir */
+  display: flex;
+  justify-content: flex-end;
+}
+.btn-editar-comentario {
+  background: none;
+  border: none;
+  color: #a0a0a0;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: color 0.2s ease;
+  font-weight: bold;
+}
+.btn-editar-comentario:hover {
+  color: #3498db; /* Azul para editar */
+  text-decoration: underline;
+}
+
+/* Estilos para o modo de edição */
+.edit-mode {
+  border-color: #3498db;
+}
+.edit-textarea,
+.edit-reason-box input {
+  width: 100%;
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.4);
+  border: 1px solid #3498db;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 1rem;
+}
+.edit-reason-box {
+  margin-top: 15px;
+}
+.edit-reason-box label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #a0a0a0;
+  margin-bottom: 5px;
+}
+
+/* Estilo para a informação de "Editado por" */
+.info-edicao {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: #7f8c8d;
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
