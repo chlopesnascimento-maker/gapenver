@@ -1,0 +1,107 @@
+.mensagens-container {
+  display: flex;
+  height: calc(100vh - 80px); /* Ocupa a altura da tela menos o header */
+  max-width: 1400px;
+  margin: 0 auto;
+  background-color: #17172b;
+  border-left: 1px solid rgba(218, 165, 32, 0.2);
+  border-right: 1px solid rgba(218, 165, 32, 0.2);
+  color: #e0e0e0;
+}
+
+.lista-conversas-sidebar {
+  width: 350px;
+  border-right: 1px solid rgba(218, 165, 32, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  padding: 20px;
+  border-bottom: 1px solid rgba(218, 165, 32, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sidebar-header h2 {
+  font-family: 'Cinzel', serif;
+  color: #DAA520;
+  margin: 0;
+}
+
+.nova-mensagem-btn {
+  background: none;
+  border: 1px solid #DAA520;
+  color: #DAA520;
+  font-size: 1.5rem;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 4px;
+}
+
+.conversas-list {
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.conversa-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 20px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(218, 165, 32, 0.1);
+}
+
+.conversa-item:hover {
+  background-color: rgba(218, 165, 32, 0.05);
+}
+
+.conversa-item.active {
+  background-color: rgba(218, 165, 32, 0.1);
+  border-left: 3px solid #FFD700;
+}
+
+.conversa-item img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.conversa-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.conversa-nome {
+  font-weight: bold;
+  color: #fff;
+}
+
+.conversa-preview {
+  font-size: 0.85rem;
+  color: #a0a0a0;
+}
+
+
+.chat-area {
+  flex-grow: 1;
+  display: flex;
+}
+
+.sem-conversa-selecionada {
+  margin: auto;
+  text-align: center;
+  color: #a0a0a0;
+}
+.sem-conversa-selecionada h3 {
+    font-family: 'Cinzel', serif;
+    color: #DAA520;
+}
