@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../supabaseClient';
 import './ChatWindow.css';
 
-function ChatWindow({ user, conversaId }) {
+// ALTERAÇÃO 1: Adicionamos 'deletedTimestamp' aqui
+function ChatWindow({ user, conversaId, deletedTimestamp }) {
   const [mensagens, setMensagens] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -10,14 +11,24 @@ function ChatWindow({ user, conversaId }) {
   const [enviando, setEnviando] = useState(false);
   const mensagensEndRef = useRef(null);
 
+  // ALTERAÇÃO 2: A função de busca agora usa o timestamp
   const fetchMensagens = async () => {
     if (!conversaId) return;
     
-    const { data, error: fetchError } = await supabase
+    let query = supabase
       .from('mensagens')
       .select('*, remetente:remetente_id(id, nome, sobrenome, foto_url)')
-      .eq('conversa_id', conversaId)
-      .order('created_at', { ascending: true });
+      .eq('conversa_id', conversaId);
+
+    // Se a data existir, aplicamos o filtro
+    if (deletedTimestamp) {
+      console.log('Aplicando filtro de data:', deletedTimestamp); // Linha de debug
+      query = query.gt('created_at', deletedTimestamp);
+    }
+
+    // O resto da função é igual ao seu original
+    query = query.order('created_at', { ascending: true });
+    const { data, error: fetchError } = await query;
 
     if (fetchError) {
       console.error("Erro ao buscar mensagens:", fetchError);
@@ -27,25 +38,35 @@ function ChatWindow({ user, conversaId }) {
     }
   };
 
-  // === NOVO: marca conversa como lida ao abrir ===
-  const marcarComoLida = async () => {
-  if (!conversaId || !user?.id) return;
-  try {
-    const { data, error } = await supabase
-      .from('participantes_da_conversa')
-      .update({ last_read_at: new Date().toISOString() })
-      .eq('conversa_id', conversaId)
-      .eq('user_id', user.id);
+const marcarComoLida = async () => {
+    if (!conversaId || !user?.id) return;
 
-    if (error) throw error;
-    console.log('marcarComoLida: sucesso', data);
+    // Objeto base para o update
+    const updatePayload = {
+      last_read_at: new Date().toISOString()
+    };
 
-    // NOTIFICA O HEADER IMEDIATAMENTE NESSA ABA
-    window.dispatchEvent(new CustomEvent('conversaLida', { detail: { conversaId } }));
-  } catch (err) {
-    console.error('Erro ao marcar como lida:', err);
-  }
-};
+    // LÓGICA DEFENSIVA ADICIONADA AQUI:
+    // Se este componente sabe que a conversa foi deletada (porque ele recebeu o timestamp),
+    // vamos garantir que esse valor seja preservado no update.
+    if (deletedTimestamp) {
+      updatePayload.deleted_at = deletedTimestamp;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('participantes_da_conversa')
+        // Usamos o nosso novo payload seguro
+        .update(updatePayload)
+        .eq('conversa_id', conversaId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      window.dispatchEvent(new CustomEvent('conversaLida', { detail: { conversaId } }));
+    } catch (err) {
+      console.error('Erro ao marcar como lida (versão segura):', err);
+    }
+  };
 
   useEffect(() => {
     mensagensEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -56,8 +77,9 @@ function ChatWindow({ user, conversaId }) {
 
     setLoading(true);
     fetchMensagens().then(() => setLoading(false));
-    marcarComoLida(); // marca como lida logo que abrir
+    marcarComoLida();
 
+    // SEU LISTENER ORIGINAL - SEGURO E FUNCIONAL
     const subscription = supabase
       .channel(`public:mensagens:conversa_id=eq.${conversaId}`)
       .on('postgres_changes', { 
@@ -67,8 +89,8 @@ function ChatWindow({ user, conversaId }) {
           filter: `conversa_id=eq.${conversaId}`
         }, 
         () => {
-          fetchMensagens();
-          marcarComoLida(); // marca como lida quando chega msg nova e você está na conversa
+          fetchMensagens(); // Mantivemos o seu fetchMensagens() original e robusto
+          marcarComoLida();
         }
       )
       .subscribe();
@@ -76,15 +98,14 @@ function ChatWindow({ user, conversaId }) {
     return () => {
       supabase.removeChannel(subscription);
     };
-
-  }, [conversaId]);
+  // ALTERAÇÃO 3: Adicionamos 'deletedTimestamp' à lista de dependências
+  }, [conversaId, deletedTimestamp]);
 
   const handleEnviarMensagem = async (e) => {
+    // ... seu código original, sem alterações ...
     e.preventDefault();
     if (!novaMensagem.trim()) return;
-
     setEnviando(true);
-    
     const { error: insertError } = await supabase
       .from('mensagens')
       .insert({
@@ -92,7 +113,6 @@ function ChatWindow({ user, conversaId }) {
         conversa_id: conversaId,
         remetente_id: user.id
       });
-
     if (insertError) {
       console.error("Erro ao enviar mensagem:", insertError);
       alert(`Não foi possível enviar a mensagem. Erro: ${insertError.message}`);
@@ -103,6 +123,8 @@ function ChatWindow({ user, conversaId }) {
     }
     setEnviando(false);
   };
+  
+  // O RESTO DO SEU ARQUIVO (RETURN/JSX) PERMANECE IDÊNTICO
 
   if (loading) return <div>Carregando mensagens...</div>;
   if (error) return <div>{error}</div>;

@@ -31,7 +31,9 @@ function NovaConversaModal({ user, isOpen, onClose, onNewConversation }) {
     fetchAllUsers();
   }, [isOpen, user.id]);
 
-  const handleStartConversation = async () => {
+ // DENTRO DE NovaConversaModal.js
+
+const handleStartConversation = async () => {
     if (!selectedUser || !message.trim()) {
         setError("Por favor, selecione um destinatário e escreva uma mensagem.");
         return;
@@ -39,20 +41,50 @@ function NovaConversaModal({ user, isOpen, onClose, onNewConversation }) {
     setLoading(true);
     setError('');
 
-    // Chama a função SQL para criar a conversa e a primeira mensagem
-    const { error: rpcError } = await supabase
-      .rpc('create_conversation_with_message', {
-        other_user_id: selectedUser.id,
-        message_content: message
-      });
+    try {
+      // 1. Tenta encontrar uma conversa existente entre os dois usuários
+      const { data: existingConvoId, error: findError } = await supabase
+        .rpc('find_existing_conversation', {
+          user1_id: user.id,
+          user2_id: selectedUser.id
+        });
 
-    setLoading(false);
-    if (rpcError) {
-        console.error("Erro ao criar conversa:", rpcError);
-        setError("Não foi possível iniciar a conversa. Tente novamente.");
-    } else {
-        alert("Conversa iniciada com sucesso!");
-        onNewConversation(); // Função para fechar o modal e atualizar a lista de conversas
+      if (findError) throw findError;
+
+      // 2. Se encontrou uma conversa antiga...
+      if (existingConvoId) {
+        // LÓGICA ANTIGA DE "RESSUSCITAR" REMOVIDA!
+        // Agora nós apenas inserimos a mensagem. O gatilho faz o resto.
+        const { error: messageError } = await supabase
+          .from('mensagens')
+          .insert({
+            conversa_id: existingConvoId,
+            remetente_id: user.id,
+            conteudo: message.trim()
+          });
+        
+        if (messageError) throw messageError;
+
+      } else {
+        // 3. Se não encontrou, cria a conversa e a mensagem do zero.
+        const { error: rpcError } = await supabase
+          .rpc('create_conversation_with_message', {
+            other_user_id: selectedUser.id,
+            message_content: message.trim()
+          });
+
+        if (rpcError) throw rpcError;
+      }
+
+      // 4. Sucesso em ambos os casos.
+      // O alert não é mais necessário, a transição para a tela de mensagens é a confirmação.
+      onNewConversation(); // Fecha o modal e atualiza a lista de conversas
+
+    } catch (err) {
+      console.error("Erro em handleStartConversation:", err);
+      setError("Não foi possível enviar a mensagem. Tente novamente.");
+    } finally {
+      setLoading(false);
     }
   };
 
