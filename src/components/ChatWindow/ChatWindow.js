@@ -13,7 +13,6 @@ function ChatWindow({ user, conversaId }) {
   const fetchMensagens = async () => {
     if (!conversaId) return;
     
-    // MUDANÇA NA QUERY: Adicionado 'sobrenome' à busca
     const { data, error: fetchError } = await supabase
       .from('mensagens')
       .select('*, remetente:remetente_id(id, nome, sobrenome, foto_url)')
@@ -28,13 +27,36 @@ function ChatWindow({ user, conversaId }) {
     }
   };
 
+  // === NOVO: marca conversa como lida ao abrir ===
+  const marcarComoLida = async () => {
+  if (!conversaId || !user?.id) return;
+  try {
+    const { data, error } = await supabase
+      .from('participantes_da_conversa')
+      .update({ last_read_at: new Date().toISOString() })
+      .eq('conversa_id', conversaId)
+      .eq('user_id', user.id);
+
+    if (error) throw error;
+    console.log('marcarComoLida: sucesso', data);
+
+    // NOTIFICA O HEADER IMEDIATAMENTE NESSA ABA
+    window.dispatchEvent(new CustomEvent('conversaLida', { detail: { conversaId } }));
+  } catch (err) {
+    console.error('Erro ao marcar como lida:', err);
+  }
+};
+
   useEffect(() => {
     mensagensEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [mensagens]);
 
   useEffect(() => {
+    if (!conversaId) return;
+
     setLoading(true);
     fetchMensagens().then(() => setLoading(false));
+    marcarComoLida(); // marca como lida logo que abrir
 
     const subscription = supabase
       .channel(`public:mensagens:conversa_id=eq.${conversaId}`)
@@ -46,6 +68,7 @@ function ChatWindow({ user, conversaId }) {
         }, 
         () => {
           fetchMensagens();
+          marcarComoLida(); // marca como lida quando chega msg nova e você está na conversa
         }
       )
       .subscribe();
@@ -55,7 +78,6 @@ function ChatWindow({ user, conversaId }) {
     };
 
   }, [conversaId]);
-
 
   const handleEnviarMensagem = async (e) => {
     e.preventDefault();
@@ -77,6 +99,7 @@ function ChatWindow({ user, conversaId }) {
     } else {
       setNovaMensagem('');
       fetchMensagens();
+      marcarComoLida();
     }
     setEnviando(false);
   };
@@ -88,7 +111,6 @@ function ChatWindow({ user, conversaId }) {
     <div className="chat-window">
       <div className="mensagens-feed">
         {mensagens.map(msg => {
-          // Lógica para exibir nome completo
           const remetenteProfile = msg.remetente;
           const nomeCompleto = remetenteProfile ? `${remetenteProfile.nome} ${remetenteProfile.sobrenome || ''}`.trim() : '';
 

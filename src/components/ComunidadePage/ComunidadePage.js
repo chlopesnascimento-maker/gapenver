@@ -48,9 +48,30 @@ function ComunidadePage({ user, navigateTo }) {
     }
   }, [activeTab, user, categoriaSelecionada]); // <-- Adicionamos o novo filtro como dependência
 
-  const handleRowClick = (topicoId) => {
-    navigateTo('topicoDetalhe', { topicId: topicoId });
-  };
+  const handleRowClick = async (topicoId) => {
+  try {
+    // Marca como lido no Supabase
+    await supabase
+      .from('topicos_lidos')
+      .upsert({
+        topico_id: topicoId,
+        user_id: user.id,
+        lido_em: new Date().toISOString()
+      });
+
+    // Atualiza o estado local para sumir o "NOVO" imediatamente
+    setTopicos(prev =>
+      prev.map(t =>
+        t.id === topicoId ? { ...t, foi_lido: true } : t
+      )
+    );
+  } catch (err) {
+    console.error('Erro ao marcar tópico como lido:', err);
+  }
+
+  // Continua navegando para a página do tópico
+  navigateTo('topicoDetalhe', { topicId: topicoId });
+};
 
   return (
     <div className="comunidade-container">

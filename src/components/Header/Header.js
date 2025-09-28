@@ -36,32 +36,113 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
   // ==========================================================
   // ADIÇÃO 2: Efeito para buscar a contagem e ouvir em tempo real
   // ==========================================================
+  // ==========================================================
+  // Contagem de mensagens não lidas (melhorada e em tempo real)
+  // ==========================================================
   useEffect(() => {
     if (!user) {
       setUnreadMessages(0);
       return;
     }
-    const fetchCount = async () => {
-      const { data, error } = await supabase.rpc('contar_mensagens_nao_lidas');
-      if (error) {
-        console.error('Erro ao contar mensagens não lidas:', error);
-      } else {
-        setUnreadMessages(data);
+
+    let mounted = true;
+    let refreshTimeout = null;
+
+    // Função otimizada: busca participações e depois busca todas as mensagens relevantes
+    const fetchUnread = async () => {
+      try {
+        // 1) pega participações do usuário (com last_read_at)
+        const { data: participacoes, error: partError } = await supabase
+          .from('participantes_da_conversa')
+          .select('conversa_id, last_read_at')
+          .eq('user_id', user.id);
+
+        if (partError) {
+          console.error('Erro ao buscar participações:', partError);
+          if (mounted) setUnreadMessages(0);
+          return;
+        }
+
+        if (!participacoes || participacoes.length === 0) {
+          if (mounted) setUnreadMessages(0);
+          return;
+        }
+
+        const conversaIds = participacoes.map(p => p.conversa_id);
+
+        // 2) pega mensagens de todas as conversas do usuário (exceto as que ele mesmo enviou)
+        const { data: mensagens, error: msgsError } = await supabase
+          .from('mensagens')
+          .select('id, conversa_id, created_at, remetente_id')
+          .in('conversa_id', conversaIds)
+          .neq('remetente_id', user.id);
+
+        if (msgsError) {
+          console.error('Erro ao buscar mensagens:', msgsError);
+          if (mounted) setUnreadMessages(0);
+          return;
+        }
+
+        // 3) conta somente mensagens com created_at > last_read_at da conversa
+        const lastReadMap = {};
+        participacoes.forEach(p => {
+          lastReadMap[p.conversa_id] = p.last_read_at ? new Date(p.last_read_at) : new Date(0);
+        });
+
+        let total = 0;
+        for (const m of (mensagens || [])) {
+          const msgDate = new Date(m.created_at);
+          const lr = lastReadMap[m.conversa_id] || new Date(0);
+          if (msgDate > lr) total += 1;
+        }
+
+        if (mounted) {
+          setUnreadMessages(total);
+          console.log("fetchUnread -> total:", total);
+        }
+      } catch (e) {
+        console.error('Erro em fetchUnread:', e);
+        if (mounted) setUnreadMessages(0);
       }
     };
-    fetchCount();
 
-    const messagesChannel = supabase
-      .channel('public:mensagens')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'mensagens' }, 
-        () => fetchCount()
-      )
+    // chama a primeira vez
+    fetchUnread();
+
+    // ==========================================================
+    // Listener local para quando o ChatWindow marcar como lida
+    // ==========================================================
+    const handleConversaLida = (e) => {
+      console.log("evento conversaLida recebido (header):", e?.detail);
+      clearTimeout(refreshTimeout);
+      refreshTimeout = setTimeout(fetchUnread, 50);
+    };
+    window.addEventListener('conversaLida', handleConversaLida);
+
+    // ==========================================================
+    // Realtime do Supabase
+    // ==========================================================
+    const channel = supabase
+      .channel('mensagens_notificacoes_realtime')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensagens' }, () => {
+        clearTimeout(refreshTimeout);
+        refreshTimeout = setTimeout(fetchUnread, 150);
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'participantes_da_conversa', filter: `user_id=eq.${user.id}` }, () => {
+        console.log("realtime: participantes_da_conversa UPDATE recebido");
+        clearTimeout(refreshTimeout);
+        refreshTimeout = setTimeout(fetchUnread, 50);
+      })
       .subscribe();
 
     return () => {
-      supabase.removeChannel(messagesChannel);
+      mounted = false;
+      clearTimeout(refreshTimeout);
+      window.removeEventListener('conversaLida', handleConversaLida);
+      try { supabase.removeChannel(channel); } catch (e) { /* ignora */ }
     };
   }, [user]);
+
 
   const handleMenuClick = (page) => {
     navigateTo(page);
