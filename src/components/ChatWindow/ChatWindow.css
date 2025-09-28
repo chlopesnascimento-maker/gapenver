@@ -45,6 +45,8 @@
   margin: 0;
   line-height: 1.5;
   white-space: pre-wrap;
+  overflow-wrap: break-word; /* <-- Adicione esta linha */
+  word-break: break-word;
 }
 
 /* Mensagens do usuário logado */

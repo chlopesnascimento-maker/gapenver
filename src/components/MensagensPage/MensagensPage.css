@@ -14,6 +14,7 @@
   border-right: 1px solid rgba(218, 165, 32, 0.2);
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
 }
 
 .sidebar-header {
@@ -94,6 +95,7 @@
 .chat-area {
   flex-grow: 1;
   display: flex;
+  min-width: 0;
 }
 
 .sem-conversa-selecionada {
@@ -133,4 +135,25 @@
 .conversa-delete-btn:hover {
   background-color: #e0e0e0;
   color: #333;
+}
+
+.unread-badge {
+  background-color: #d33650; /* Um vermelho vibrante */
+  color: white;
+  border-radius: 50%; /* Deixa a bolha redonda */
+  padding: 6px 6px;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1;
+  position: absolute; /* Posiciona em relação ao .conversa-item */
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%); /* Centraliza verticalmente */
+  min-width: 22px; /* Garante que mesmo com 1 dígito, a bolha seja redonda */
+  text-align: center;
+}
+
+/* Garante que o .conversa-item possa posicionar o badge */
+.conversa-item {
+  position: relative;
 }

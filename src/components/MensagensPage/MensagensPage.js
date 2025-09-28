@@ -16,7 +16,31 @@ function MensagensPage({ user }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-// NO SEU ARQUIVO MensagensPage.js
+  useEffect(() => {
+    // Define a função que vai "ouvir" o evento
+    const handleConversaLida = (event) => {
+      const { conversaId } = event.detail;
+      
+      // Atualiza o estado local para zerar a contagem da conversa específica
+      setConversas(conversasAtuais =>
+        conversasAtuais.map(conversa =>
+          conversa.id === conversaId
+            ? { ...conversa, unread_count: 0 } // Zera o contador da conversa lida
+            : conversa
+        )
+      );
+    };
+
+    // Adiciona o "ouvinte" ao navegador
+    window.addEventListener('conversaLida', handleConversaLida);
+
+    // IMPORTANTE: Limpa o "ouvinte" quando o componente é desmontado
+    // para evitar vazamentos de memória.
+    return () => {
+      window.removeEventListener('conversaLida', handleConversaLida);
+    };
+  }, []); // O array vazio [] garante que isso rode apenas uma vez
+
 
 async function fetchConversas() {
   if (!user) return;
@@ -173,6 +197,12 @@ const fotoUrl = buildFotoUrl(profile);
                   <span className="conversa-nome">{nomeDisplay}</span>
                   <span className="conversa-preview">Última mensagem...</span>
                 </div>
+
+                {conversa.unread_count > 0 && (
+  <span className="unread-badge">
+    {conversa.unread_count}
+  </span>
+)}
                 {/* BOTÃO DE DELETAR ADICIONADO AQUI */}
                 <button
                   className="conversa-delete-btn"
