@@ -16,126 +16,150 @@ function MensagensPage({ user }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  async function fetchConversas() {
-    if (!user) return;
-    setLoading(true);
-    setError(null);
+async function fetchConversas() {
+  if (!user) return;
+  setLoading(true);
+  setError(null);
 
-    try {
-      // 1) pega IDs de conversa do usuário
-      const { data: participacoes, error: participacaoError } = await supabase
-        .from('participantes_da_conversa')
-        .select('conversa_id')
-        .eq('user_id', user.id);
+  try {
+    // 1) pega IDs de conversa do usuário
+    const { data: participacoes, error: participacaoError } = await supabase
+      .from('participantes_da_conversa')
+      .select('conversa_id')
+      .eq('user_id', user.id);
 
-      if (participacaoError) throw participacaoError;
-      const conversaIds = participacoes.map(p => p.conversa_id);
-      if (conversaIds.length === 0) {
-        setConversas([]);
-        setLoading(false);
-        return;
-      }
+    console.log('DEBUG participacoes:', participacoes, 'error:', participacaoError);
+    if (participacaoError) throw participacaoError;
 
-      // 2) tentativa direta com join (o ideal)
-      const { data: conversasData, error: conversasError } = await supabase
-        .from('conversas')
-        .select(`
-          id,
-          last_message_at,
-          participantes:participantes_da_conversa (
-            user_id,
-            profiles!user_id (id, nome, sobrenome, foto_url, photoURL)
+    const conversaIds = participacoes.map(p => p.conversa_id);
+    if (conversaIds.length === 0) {
+      setConversas([]);
+      setLoading(false);
+      return;
+    }
+
+    // 2) tentativa direta com join (o ideal)
+    const { data: conversasData, error: conversasError } = await supabase
+      .from('conversas')
+      .select(`
+        id,
+        last_message_at,
+        participantes:participantes_da_conversa (
+          user_id,
+          profiles!participantes_da_conversa_user_id_fkey (
+            id, nome, sobrenome, foto_url, photoURL
           )
-        `)
-        .in('id', conversaIds)
-        .order('last_message_at', { ascending: false });
+        )
+      `)
+      .in('id', conversaIds)
+      .order('last_message_at', { ascending: false });
 
-      // debug
-      console.log('conversasData (com join):', conversasData, 'erro:', conversasError);
+    console.log(
+      'DEBUG conversasData (join):',
+      JSON.stringify(conversasData, null, 2),
+      'error:',
+      conversasError
+    );
 
-      // se veio bem formado (com participantes e profiles), usa direto
-      const needsFallback = !conversasData || conversasData.some(c => !c.participantes || c.participantes.length === 0);
+    const needsFallback =
+      !conversasData ||
+      conversasData.some(c => !c.participantes || c.participantes.length < 2);
 
-      if (!conversasError && !needsFallback) {
-        setConversas(conversasData);
-        setLoading(false);
-        return;
-      }
+    if (!conversasError && !needsFallback) {
+      setConversas(conversasData);
+      setLoading(false);
+      return;
+    }
 
-      // 3) fallback: buscar participantes e perfis separadamente e montar objeto
-      console.warn('Usando fallback: montando participantes/profiles manualmente');
+    // 3) fallback: buscar participantes (com tentativa de trazer profiles) e preencher o que faltar
+    console.warn('Usando fallback: montando participantes/profiles manualmente');
 
-      const { data: participantesRows, error: partError } = await supabase
-        .from('participantes_da_conversa')
-        .select('conversa_id, user_id')
-        .in('conversa_id', conversaIds);
+    const { data: participantesRows, error: partError } = await supabase
+      .from('participantes_da_conversa')
+      .select(`
+        conversa_id,
+        user_id,
+        profiles!participantes_da_conversa_user_id_fkey (
+          id, nome, sobrenome, foto_url, photoURL
+        )
+      `)
+      .in('conversa_id', conversaIds);
 
-      if (partError) throw partError;
+    if (partError) throw partError;
+    console.log("DEBUG participantesRows raw:", participantesRows);
 
-      // mapa conversaId -> [userId]
-      const mapaParticipantes = {};
-      participantesRows.forEach(r => {
-        mapaParticipantes[r.conversa_id] = mapaParticipantes[r.conversa_id] || [];
-        mapaParticipantes[r.conversa_id].push(r.user_id);
+    // normaliza e cria mapa conversaId -> [{ user_id, profiles }]
+    const mapaParticipantes = {};
+    const missingProfileIds = new Set();
+
+    participantesRows.forEach(r => {
+      // perfil pode vir como array ([]) ou objeto ({}) dependendo do join
+      let prof = null;
+      if (Array.isArray(r.profiles) && r.profiles.length) prof = r.profiles[0];
+      else if (r.profiles && typeof r.profiles === 'object') prof = r.profiles;
+
+      if (!prof) missingProfileIds.add(r.user_id);
+
+      mapaParticipantes[r.conversa_id] = mapaParticipantes[r.conversa_id] || [];
+      mapaParticipantes[r.conversa_id].push({
+        user_id: r.user_id,
+        profiles: prof || null
       });
+    });
 
-      // pega todos os userIds (exceto o user atual) para consultar profiles
-      const allUserIdsSet = new Set();
-      Object.values(mapaParticipantes).forEach(arr => {
-        arr.forEach(u => {
-          if (u !== user.id) allUserIdsSet.add(u);
+    // se tiver usuários sem profile via join, busca direto na tabela profiles
+    let missingProfiles = [];
+    if (missingProfileIds.size > 0) {
+      const ids = Array.from(missingProfileIds);
+      const { data: fetchedMissingProfiles, error: missingProfilesError } = await supabase
+        .from('profiles')
+        .select('id, nome, sobrenome, foto_url, photoURL')
+        .in('id', ids);
+
+      if (missingProfilesError) throw missingProfilesError;
+      missingProfiles = fetchedMissingProfiles || [];
+      console.log('DEBUG missingProfiles fetched:', missingProfiles);
+
+      // atribui os profiles encontrados aos participantes faltantes no mapa
+      missingProfiles.forEach(p => {
+        Object.keys(mapaParticipantes).forEach(convId => {
+          mapaParticipantes[convId] = mapaParticipantes[convId].map(part => {
+            if (part.user_id === p.id && !part.profiles) {
+              return { ...part, profiles: p };
+            }
+            return part;
+          });
         });
       });
-      const allUserIds = Array.from(allUserIdsSet);
-
-      // buscar profiles dos outros participantes
-      let profilesById = {};
-      if (allUserIds.length > 0) {
-        const { data: profilesData, error: profilesError } = await supabase
-          .from('profiles')
-          .select('id, nome, sobrenome, foto_url, photoURL')
-          .in('id', allUserIds);
-
-        if (profilesError) throw profilesError;
-        profilesById = profilesData.reduce((acc, p) => {
-          acc[p.id] = p;
-          return acc;
-        }, {});
-      }
-
-      // buscar dados das conversas (simples) para manter ordem e last_message_at
-      const { data: conversasSimples, error: convSimError } = await supabase
-        .from('conversas')
-        .select('id, last_message_at')
-        .in('id', conversaIds)
-        .order('last_message_at', { ascending: false });
-
-      if (convSimError) throw convSimError;
-
-      // montar conversas com participantes + profiles colocados no mesmo shape esperado
-      const conversasMontadas = conversasSimples.map(c => {
-        const userIds = mapaParticipantes[c.id] || [];
-        // montar array de objetos similar ao que o join traria
-        const participantes = userIds.map(uid => ({
-          user_id: uid,
-          profiles: profilesById[uid] || null
-        }));
-        return {
-          ...c,
-          participantes
-        };
-      });
-
-      console.log('conversasMontadas (fallback):', conversasMontadas, 'profilesById:', profilesById);
-      setConversas(conversasMontadas);
-      setLoading(false);
-
-    } catch (err) {
-      console.error('Erro em fetchConversas:', err);
-      setError('Não foi possível carregar suas conversas.');
-      setLoading(false);
     }
+
+    // 4) buscar dados simples das conversas (pra manter ordem / last_message_at)
+    const { data: conversasSimples, error: convSimError } = await supabase
+      .from('conversas')
+      .select('id, last_message_at')
+      .in('id', conversaIds)
+      .order('last_message_at', { ascending: false });
+
+    if (convSimError) throw convSimError;
+
+    // montar conversas com participantes + profiles no mesmo shape esperado
+    const conversasMontadas = conversasSimples.map(c => {
+      const participantes = mapaParticipantes[c.id] || [];
+      return {
+        ...c,
+        participantes
+      };
+    });
+
+    console.log('conversasMontadas (fallback):', JSON.stringify(conversasMontadas, null, 2));
+    setConversas(conversasMontadas);
+    setLoading(false);
+  } catch (err) {
+    console.error('Erro em fetchConversas:', err);
+    setError('Não foi possível carregar suas conversas.');
+    setLoading(false);
   }
+}
 
   // helper: monta nome
   const buildNomeDisplay = (profile) => {
@@ -181,12 +205,46 @@ function MensagensPage({ user }) {
           {error && <p className="error-message">{error}</p>}
 
           {!loading && conversas.map(conversa => {
-            const outros = (conversa.participantes || []).filter(p => p.user_id !== user.id);
-            const primeiro = outros[0] || conversa.participantes?.find(p => !!p.profiles) || null;
-            const profile = primeiro?.profiles || null;
+          // helper (pode colocar no topo do componente)
+const getProfileFromParticipante = (participante) => {
+  if (!participante) return null;
 
-            const nomeDisplay = buildNomeDisplay(profile);
-            const fotoUrl = buildFotoUrl(profile);
+  // Se for array (caso do join com Supabase)
+  if (Array.isArray(participante.profiles) && participante.profiles.length) {
+    return participante.profiles[0];
+  }
+
+  // Se for objeto (join normal ou fallback)
+  if (participante.profiles && typeof participante.profiles === 'object') {
+    return participante.profiles;
+  }
+
+  // Se o schema tiver os campos direto
+  if (participante.nome || participante.foto_url || participante.photoURL) {
+    return {
+      nome: participante.nome || '',
+      sobrenome: participante.sobrenome || '',
+      foto_url: participante.foto_url || participante.photoURL || null
+    };
+  }
+
+  return null;
+};
+
+
+const outros = (conversa.participantes || []).filter(p => p.user_id !== user.id);
+const participanteAlvo = outros.length > 0 ? outros[0] : null;
+const profile = getProfileFromParticipante(participanteAlvo);
+
+ console.log("DEBUG conversa:", {
+    conversaId: conversa.id,
+    participantes: conversa.participantes,
+    userAtual: user.id
+  });
+
+const nomeDisplay = buildNomeDisplay(profile);
+const fotoUrl = buildFotoUrl(profile);
+;
 
             return (
               <div 
