@@ -1,34 +1,39 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase } from '../../supabaseClient';
 import './Header.css';
 import { FaTiktok, FaYoutube, FaInstagram, FaFacebook } from "react-icons/fa";
 
 function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [isKingdomMenuOpen, setIsKingdomMenuOpen] = useState(false);
+
+  // controle de montagem e animação (mas a animação será feita por JS inline para fugir de overrides)
+  const [isKingdomMenuMounted, setIsKingdomMenuMounted] = useState(false);
+
   const userMenuRef = useRef(null);
   const kingdomMenuRef = useRef(null);
-  const mobileOverlayRef = useRef(null);
+  const mobileOverlayRef = useRef(null); // overlay DOM node
+  const sidebarRef = useRef(null);       // sidebar DOM node
   const hamburgerRef = useRef(null);
   const [unreadMessages, setUnreadMessages] = useState(0);
 
-  // ... (toda a sua lógica de useEffect para fechar menu e buscar notificações continua a mesma)
   useEffect(() => {
     function handleClickOutside(event) {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
         setIsUserMenuOpen(false);
       }
-      if (isKingdomMenuOpen) {
+      if (isKingdomMenuMounted) {
         const clickedInsideOverlay = mobileOverlayRef.current?.contains(event.target);
         const clickedOnHamburger = hamburgerRef.current?.contains(event.target);
         if (!clickedInsideOverlay && !clickedOnHamburger) {
-          setIsKingdomMenuOpen(false);
+          // fecha com animação
+          closeMenu();
         }
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isKingdomMenuOpen]);
+  }, [isKingdomMenuMounted]);
 
   useEffect(() => {
     if (!user) {
@@ -94,19 +99,19 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
       try { supabase.removeChannel(channel); } catch (e) {}
     };
   }, [user]);
-  
+
   const handleMenuClick = (page, params = null) => {
     navigateTo(page, params);
     setIsUserMenuOpen(false);
-    setIsKingdomMenuOpen(false); // Garante que o menu mobile feche também
+    // fecha o menu lateral se estiver aberto
+    if (isKingdomMenuMounted) closeMenu();
   };
-  
+
   const defaultAvatarSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23e0e0e0"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`;
   const defaultAvatarDataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(defaultAvatarSvg)}`;
   const avatarSrc = userData?.foto_url || defaultAvatarDataUrl;
   const userRole = user?.app_metadata?.roles?.[0]?.toLowerCase();
 
-  // Componente interno para não repetir a lista de links
   const NavLinks = () => (
     userRole === 'banidos' ? (
       <li><a href="#" onClick={(e) => { e.preventDefault(); handleMenuClick('faleConosco'); }}>Fale Conosco</a></li>
@@ -126,13 +131,133 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
     )
   );
 
+  // ---------- animação controlada por JS (mais confiável que depender só do CSS) ----------
+  const openMenu = () => {
+    if (isKingdomMenuMounted) return;
+    console.log('MENU: open start');
+    setIsKingdomMenuMounted(true);
+
+    // esperar montar no DOM
+    requestAnimationFrame(() => {
+      // dar um tick extra
+      setTimeout(() => {
+        const overlay = mobileOverlayRef.current;
+        const sidebar = sidebarRef.current;
+        if (!overlay || !sidebar) {
+          console.warn('MENU: overlay/sidebar não encontrados no DOM');
+          return;
+        }
+
+        // prepara estado inicial (invisível / fora da tela)
+        overlay.style.transition = 'opacity 350ms ease';
+        overlay.style.opacity = '0';
+        overlay.style.visibility = 'visible';
+        overlay.style.pointerEvents = 'auto';
+
+        sidebar.style.transition = 'transform 450ms cubic-bezier(0.2,0.9,0.2,1)';
+        sidebar.style.transform = 'translateX(-110%)';
+        sidebar.style.willChange = 'transform';
+
+        // forçar reflow para garantir que o browser aplique os valores iniciais
+        // eslint-disable-next-line no-unused-expressions
+        overlay.offsetHeight;
+
+        // dispara a animação no próximo frame
+        requestAnimationFrame(() => {
+          overlay.style.opacity = '1';
+          sidebar.style.transform = 'translateX(0)';
+          console.log('MENU: opened (animation started)');
+        });
+      }, 12);
+    });
+  };
+
+  const closeMenu = () => {
+    if (!isKingdomMenuMounted) return;
+    console.log('MENU: close start');
+    const overlay = mobileOverlayRef.current;
+    const sidebar = sidebarRef.current;
+    if (overlay) overlay.style.opacity = '0';
+    if (sidebar) sidebar.style.transform = 'translateX(-110%)';
+
+    // aguarda o fim da transição do sidebar para desmontar
+    const onEnd = (e) => {
+      if (e.target !== sidebar) return;
+      sidebar.removeEventListener('transitionend', onEnd);
+      setIsKingdomMenuMounted(false);
+      // limpar inline styles deixados (opcional)
+      if (overlay) {
+        overlay.style.visibility = 'hidden';
+        overlay.style.pointerEvents = 'none';
+      }
+      console.log('MENU: closed (unmounted)');
+    };
+
+    if (sidebar) {
+      sidebar.addEventListener('transitionend', onEnd);
+      // fallback: se não disparar transitionend (por algum motivo), desmonta depois de 700ms
+      setTimeout(() => {
+        if (isKingdomMenuMounted) {
+          sidebar.removeEventListener('transitionend', onEnd);
+          setIsKingdomMenuMounted(false);
+          if (overlay) {
+            overlay.style.visibility = 'hidden';
+            overlay.style.pointerEvents = 'none';
+          }
+          console.log('MENU: closed (fallback unmounted)');
+        }
+      }, 800);
+    } else {
+      // se não existir sidebar por algum motivo
+      setIsKingdomMenuMounted(false);
+      if (overlay) {
+        overlay.style.visibility = 'hidden';
+        overlay.style.pointerEvents = 'none';
+      }
+    }
+  };
+
+  // Overlay content (portal)
+  const overlayContent = isKingdomMenuMounted ? (
+    <div
+      ref={mobileOverlayRef}
+      className="mobile-nav-overlay"
+      onMouseDown={(e) => {
+        // clicar no backdrop fecha
+        if (e.target === mobileOverlayRef.current) closeMenu();
+      }}
+    >
+      <div ref={sidebarRef} className="mobile-nav-sidebar" onMouseDown={(e) => e.stopPropagation()}>
+        <button className="hamburger-close" onClick={closeMenu}>×</button>
+        <ul className="mobile-nav-list">
+          <NavLinks />
+        </ul>
+        <div className="mobile-social-icons">
+          <a href="https://www.tiktok.com/@seuPerfil" target="_blank" rel="noopener noreferrer"><FaTiktok className="social-icon" /></a>
+          <a href="https://www.youtube.com/@seuCanal" target="_blank" rel="noopener noreferrer"><FaYoutube className="social-icon" /></a>
+          <a href="https://www.instagram.com/seuPerfil" target="_blank" rel="noopener noreferrer"><FaInstagram className="social-icon" /></a>
+          <a href="https://www.facebook.com/profile.php?id=61577103301956" target="_blank" rel="noopener noreferrer"><FaFacebook className="social-icon" /></a>
+        </div>
+      </div>
+    </div>
+  ) : null;
+
+  const overlayPortal = (typeof document !== 'undefined' && overlayContent) ? createPortal(overlayContent, document.body) : null;
+
   return (
     <>
       <header className="app-header">
         <div className="header-top">
-          {/* ... seu header-left, header-center, header-right ... */}
-           <div className="header-left">
-            <button ref={hamburgerRef} className="hamburger-menu" onClick={() => setIsKingdomMenuOpen(!isKingdomMenuOpen)} aria-label="Abrir menu">
+          <div className="header-left">
+            <button
+              ref={hamburgerRef}
+              className="hamburger-menu"
+              onClick={() => {
+                if (!isKingdomMenuMounted) openMenu();
+                else closeMenu();
+              }}
+              aria-label="Abrir menu"
+            >
               ☰
             </button>
             <a href="https://www.tiktok.com/@seuPerfil" target="_blank" rel="noopener noreferrer"><FaTiktok className="social-icon" /></a>
@@ -140,13 +265,14 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
             <a href="https://www.instagram.com/seuPerfil" target="_blank" rel="noopener noreferrer"><FaInstagram className="social-icon" /></a>
             <a href="https://www.facebook.com/profile.php?id=61577103301956" target="_blank" rel="noopener noreferrer"><FaFacebook className="social-icon" /></a>
           </div>
+
           <div className="header-center">
             <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('home'); }}>
               <img src="https://i.imgur.com/ZUQJmco.png" alt="Logo do site" className="site-logo" draggable={false} />
             </a>
           </div>
+
           <div className="header-right">
-            {/* ... toda a sua lógica de usuário logado/deslogado ... */}
             {!sessionChecked ? <span style={{ opacity: 0.7 }}>Carregando...</span> : user ? (
             <div className="user-actions">
               <button className="header-icon-btn" title="Mensagens Privadas" onClick={() => navigateTo('mensagens')}>
@@ -206,26 +332,16 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
             )}
           </div>
         </div>
+
         <nav className="header-nav" ref={kingdomMenuRef}>
           <ul className="nav-list">
             <NavLinks />
           </ul>
         </nav>
       </header>
-      
-      {/* O OVERLAY AGORA ESTÁ PREENCHIDO E TEM BOTÃO DE FECHAR */}
-      <div ref={mobileOverlayRef} className={`mobile-nav-overlay ${isKingdomMenuOpen ? "open" : ""}`}>
-        <button className="hamburger-close" onClick={() => setIsKingdomMenuOpen(false)}>×</button>
-        <ul className="mobile-nav-list">
-            <NavLinks />
-        </ul>
-        <div className="mobile-social-icons">
-            <a href="https://www.tiktok.com/@seuPerfil" target="_blank" rel="noopener noreferrer"><FaTiktok className="social-icon" /></a>
-            <a href="https://www.youtube.com/@seuCanal" target="_blank" rel="noopener noreferrer"><FaYoutube className="social-icon" /></a>
-            <a href="https://www.instagram.com/seuPerfil" target="_blank" rel="noopener noreferrer"><FaInstagram className="social-icon" /></a>
-            <a href="https://www.facebook.com/profile.php?id=61577103301956" target="_blank" rel="noopener noreferrer"><FaFacebook className="social-icon" /></a>
-        </div>
-      </div>
+
+      {/* portalize o overlay para o body (evita stacking-contexts) */}
+      {overlayPortal}
     </>
   );
 }
