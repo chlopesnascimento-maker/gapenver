@@ -1,74 +1,97 @@
-import React, { useEffect } from 'react';
-import './HomePage.css'; // Importando o CSS da HomePage
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../supabaseClient';
+import './HomePage.css';
 
-function HomePage() {
-  // Este 'useEffect' encontra todas as seções e adiciona a animação de scroll
-  // que tínhamos no nosso HTML original.
+// ADICIONAMOS A PROP 'navigateTo' AQUI
+function HomePage({ user, navigateTo }) { 
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    const sections = document.querySelectorAll('.section');
+    // ... (seu useEffect continua igual)
+    const fetchDashboardData = async () => {
+      setLoading(true);
+      const { data, error } = await supabase.rpc('get_homepage_dashboard_data');
+      if (error) {
+        console.error("Erro ao buscar dados do painel:", error);
+      } else {
+        setDashboardData(data);
+      }
+      setLoading(false);
+    };
+    fetchDashboardData();
+  }, []);
 
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-        }
-      });
-    }, {
-      threshold: 0.1 // A animação começa quando 10% do elemento está visível
-    });
-
-    sections.forEach(section => {
-      observer.observe(section);
-    });
-
-    // Função de "limpeza" para otimização
-    return () => sections.forEach(section => observer.unobserve(section));
-  }, []); // O array vazio [] garante que este código rode apenas uma vez
+  if (loading) {
+    return <div className="painel-loading">Carregando informações do Reino...</div>;
+  }
+  if (!dashboardData) {
+    return <div className="painel-loading">Não foi possível carregar os dados do Reino.</div>;
+  }
 
   return (
-    // Usamos <> (React.Fragment) para agrupar todos os elementos
-    <>
-      <div className="section">
-        <h1>Bem-vindos ao Reino de <b>GÁPENVER</b></h1>
-        <h2>Onde os rios sussurram segredos antigos. Nas florestas encantadas, árvores brilham sob a lua.</h2>
-               
+    <div className="painel-container">
+      <div className="painel-header">
+        {user ? (
+          <h1>Bem-vindo de volta ao Reino, {`${user.user_metadata.nome || ''} ${user.user_metadata.sobrenome || ''}`.trim() || 'Viajante'}.</h1>
+        ) : (
+          <h1>Bem-vindos ao Reino de <b>GÁPENVER</b></h1>
+        )}
+        <p>{dashboardData.lore_tip || 'Os ventos de Gápenver trazem novas histórias a cada dia.'}</p>
       </div>
 
-      <div className="section">
-        <h2>Castelos imponentes tocam as nuvens com suas torres.</h2>
-        
-      </div>
+   <div className="painel-grid">
+        {/* Card de Atividade Recente */}
+        <div className="widget-card card-atividade">
+          <h2>Atividade Recente no Reino</h2>
+          <ul className="widget-list">
+            {dashboardData.recent_topics?.map(topic => (
+              <li key={topic.id}>
+                <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('topicoDetalhe', { topicId: topic.id }); }}>
+                  "{topic.titulo}"
+                </a>
+                <span>por {topic.nome} {topic.sobrenome}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-      <div className="section">
-        <h2>Heróis lendários forjam seu destino em cada aurora.</h2>
-        
-      </div>
+        {/* Card de Ações do Usuário */}
+        {user ? (
+          <div className="widget-card card-acoes">
+            <h2>Suas Ações</h2>
+            {dashboardData.unread_count > 0 && (
+              <p className="notificacao-painel">
+                Você tem {dashboardData.unread_count} {dashboardData.unread_count > 1 ? 'mensagens não lidas' : 'mensagem não lida'}.
+                <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('mensagens'); }} className="widget-button">Ver Mensagens</a>
+              </p>
+            )}
+            <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('criarTopico'); }} className="widget-button full-width">Criar Novo Tópico</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('comunidade'); }} className="widget-button full-width">Ver Tópicos</a>
+          </div>
+        ) : (
+          <div className="widget-card cta-card card-acoes">
+            <h2>Faça Parte do Reino!</h2>
+            <p>Crie sua conta para participar...</p>
+            <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('register'); }} className="widget-button full-width">CRIAR MINHA CONTA</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('login'); }} className="widget-button secondary full-width">JÁ SOU UM CIDADÃO</a>
+          </div>
+        )}
 
-      <div className="section">
-        <h2>Magias ancestrais dançam no ar, esperando para serem descobertas.</h2>
-        <a href="#" className="cta-button">COMPRAR AGORA</a>
+        {/* Card de Novos Cidadãos */}
+        <div className="widget-card card-cidadaos">
+          <h2>Novos Cidadãos</h2>
+          <ul className="widget-list small">
+            {dashboardData.new_members?.map(member => (
+              <li key={member.id}>
+                <img src={member.foto_url || 'https://i.imgur.com/SbdJgVb.png'} alt={member.nome} />
+                <span>{member.nome} {member.sobrenome} chegou ao reino!</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
-
-      <div className="section">
-        <h2>Criaturas míticas espreitam nas sombras da noite eterna.</h2>
-        <a href="#" className="cta-button">COMPRAR AGORA</a>
-      </div>
-
-      <div className="section">
-        <h2>O tesouro perdido aguarda bravos aventureiros.</h2>
-        <a href="#" className="cta-button">COMPRAR AGORA</a>
-      </div>
-
-      <div className="section">
-        <h2>A profecia aguarda o escolhido para despertar o poder supremo.</h2>
-        <a href="#" className="cta-button">COMPRAR AGORA</a>
-      </div>
-
-      <div className="section">
-        <h2>No coração do reino, a esperança nunca se apaga.</h2>
-        <a href="#" className="cta-button">COMPRAR AGORA</a>
-      </div>
-    </>
+    </div>
   );
 }
 

@@ -180,7 +180,7 @@ function App() {
 
       <main>
         {currentPage === 'bannedPage' && <BannedPage />}
-        {currentPage === 'home' && <HomePage />}
+        {currentPage === 'home' && <HomePage user={user} navigateTo={navigateTo} />}
         {currentPage === 'login' && <LoginPage navigateTo={navigateTo} setLoading={setLoading} />}
         {currentPage === 'register' && <RegisterPage navigateTo={navigateTo} setLoading={setLoading} />}
         {currentPage === 'forgotPassword' && <ForgotPasswordPage navigateTo={navigateTo} setLoading={setLoading} />}

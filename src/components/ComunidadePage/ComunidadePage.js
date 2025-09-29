@@ -2,82 +2,101 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import './ComunidadePage.css';
 
-// Lista de categorias para o filtro, facilita a manutenção
 const categorias = ['Todos', 'Personagens', 'Mundo', 'Geral', 'Regras'];
 
 function ComunidadePage({ user, navigateTo }) {
+  console.log('--- COMPONENTE RENDERIZOU ---', { user });
+
   const [topicos, setTopicos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('publico');
-
-  // ==========================================================
-  // ADIÇÃO 1: Novo estado para controlar o filtro de categoria
-  // ==========================================================
   const [categoriaSelecionada, setCategoriaSelecionada] = useState('Todos');
 
   const currentUserRole = user?.app_metadata?.roles?.[0]?.toLowerCase() || 'default';
   const isStaff = ['admin', 'oficialreal', 'guardareal'].includes(currentUserRole);
 
   useEffect(() => {
+    console.log('-> useEffect disparado!', { activeTab, user, categoriaSelecionada });
+
+    // Adicionamos uma guarda para não executar enquanto o Supabase ainda está verificando a sessão do usuário.
+    if (user === undefined) {
+      console.log('Usuário ainda é indefinido, aguardando...');
+      return; // Sai do useEffect se o status do usuário ainda não foi definido.
+    }
+
     const fetchTopicos = async () => {
+      console.log('1. Iniciando fetchTopicos...');
       setLoading(true);
       setError(null);
 
-      // ==========================================================
-      // ALTERAÇÃO: Passamos o filtro de categoria para a nossa função no banco
-      // ==========================================================
       const { data, error: fetchError } = await supabase.rpc('get_topicos_com_status_leitura', {
         categoria_filtro: categoriaSelecionada
       });
 
+      console.log('2. Resposta do Supabase recebida:', { data, fetchError });
+
       if (fetchError) {
-        console.error('Erro ao buscar tópicos:', fetchError);
+        console.error('3. ERRO DETECTADO no fetch!', fetchError);
         setError('Não foi possível carregar os tópicos.');
       } else {
-        const filteredData = data.filter(topico => 
-            activeTab === 'staff' ? topico.apenas_staff === true : topico.apenas_staff === false
-        ).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-        setTopicos(filteredData);
+        console.log('3. SUCESSO no fetch! Começando a filtrar os dados...');
+        const filteredData = data.filter(topico =>
+          activeTab === 'staff' ? topico.apenas_staff === true : topico.apenas_staff === false
+        );
+        
+        console.log(`4. Dados filtrados (apenas onde apenas_staff é ${activeTab !== 'staff'}):`, filteredData);
+
+        // A ordenação foi movida para fora do filter para clareza
+        const sortedData = filteredData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        
+        console.log('5. Definindo o estado dos tópicos com os dados ordenados.');
+        setTopicos(sortedData);
       }
+      
+      console.log('6. Finalizando o fetch, definindo loading para false.');
       setLoading(false);
     };
 
-    if (user) {
-        fetchTopicos();
-    }
-  }, [activeTab, user, categoriaSelecionada]); // <-- Adicionamos o novo filtro como dependência
+    fetchTopicos();
+    
+  }, [activeTab, user, categoriaSelecionada]);
 
+  // Suas outras funções (handleRowClick, etc) continuam as mesmas
   const handleRowClick = async (topicoId) => {
-  try {
-    // Marca como lido no Supabase
-    await supabase
-      .from('topicos_lidos')
-      .upsert({
-        topico_id: topicoId,
-        user_id: user.id,
-        lido_em: new Date().toISOString()
-      });
+    if (!user) {
+        // Se o usuário não estiver logado, apenas navega sem marcar como lido
+        navigateTo('topicoDetalhe', { topicId: topicoId });
+        return;
+    }
 
-    // Atualiza o estado local para sumir o "NOVO" imediatamente
-    setTopicos(prev =>
-      prev.map(t =>
-        t.id === topicoId ? { ...t, foi_lido: true } : t
-      )
-    );
-  } catch (err) {
-    console.error('Erro ao marcar tópico como lido:', err);
-  }
+    try {
+        await supabase
+        .from('topicos_lidos')
+        .upsert({
+            topico_id: topicoId,
+            user_id: user.id,
+            lido_em: new Date().toISOString()
+        });
+        setTopicos(prev =>
+        prev.map(t =>
+            t.id === topicoId ? { ...t, foi_lido: true } : t
+        )
+        );
+    } catch (err) {
+        console.error('Erro ao marcar tópico como lido:', err);
+    }
+    navigateTo('topicoDetalhe', { topicId: topicoId });
+  };
 
-  // Continua navegando para a página do tópico
-  navigateTo('topicoDetalhe', { topicId: topicoId });
-};
 
   return (
     <div className="comunidade-container">
+      {/* O resto do seu JSX continua o mesmo */}
       <div className="comunidade-header">
         <h1>Comunidade</h1>
-        <button className="novo-topico-btn" onClick={() => navigateTo('criarTopico')}>Criar Novo Tópico</button>
+        {/* Oculta o botão de criar tópico se o usuário não estiver logado */}
+        {user && <button className="novo-topico-btn" onClick={() => navigateTo('criarTopico')}>Criar Novo Tópico</button>}
       </div>
 
       <div className="comunidade-tabs">
@@ -97,9 +116,6 @@ function ComunidadePage({ user, navigateTo }) {
         )}
       </div>
 
-      {/* ========================================================== */}
-      {/* ADIÇÃO 2: O menu de filtros por categoria                  */}
-      {/* ========================================================== */}
       <div className="category-filters">
         {categorias.map(cat => (
           <button
@@ -145,7 +161,7 @@ function ComunidadePage({ user, navigateTo }) {
                 <td className="col-categoria">{topico.categoria}</td>
                 <td className={`col-autor cargo-text-${topico.profile_cargo?.toLowerCase()}`}>{`${topico.profile_nome || ''} ${topico.profile_sobrenome || ''}`.trim()}</td>
                 <td className="col-status">
-                  {!topico.foi_lido && <span className="status-badge novo">NOVO</span>}
+                  {user && !topico.foi_lido && <span className="status-badge novo">NOVO</span>}
                 </td>
                 <td className="col-resposta">
                   {topico.ultima_resposta_staff_at ? '✔️' : '—'}

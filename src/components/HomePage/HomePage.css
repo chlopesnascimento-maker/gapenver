@@ -1,3 +1,6 @@
+/* =============================================== */
+/* ESTILOS GERAIS DA HOMEPAGE (PÁGINA DE VENDAS)  */
+/* =============================================== */
 .section {
     padding: 10px 20px;
     text-align: center;
@@ -34,4 +37,212 @@
     font-size: 2.5rem;
     max-width: 800px;
     margin-top: 0;
+}
+
+
+/* =============================================== */
+/* ESTILOS DO PAINEL DO REINO (LOGADO E DESLOGADO) */
+/* =============================================== */
+
+.painel-loading {
+  text-align: center;
+  padding: 100px 20px;
+  font-size: 1.5rem;
+  color: #DAA520;
+}
+
+.painel-container {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 20px;
+  color: #e0e0e0;
+}
+
+.painel-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.painel-header h1 {
+  font-family: 'Cinzel', serif;
+  color: #DAA520;
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+
+.painel-header p {
+  font-size: 1.1rem;
+  color: #a0a0a0;
+  font-style: italic;
+}
+
+/* --- O GRID E SEUS CARDS --- */
+
+.painel-grid {
+  display: grid;
+  gap: 30px;
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    "atividade acoes"
+    "atividade cidadaos";
+}
+
+.card-atividade { grid-area: atividade; }
+.card-acoes { grid-area: acoes; }
+.card-cidadaos { grid-area: cidadaos; }
+
+.widget-card {
+  background-color: rgba(44, 44, 84, 0.5);
+  border: 1px solid rgba(218, 165, 32, 0.2);
+  border-radius: 8px;
+  padding: 25px;
+}
+
+.widget-card h2 {
+  font-family: 'Cinzel', serif;
+  color: #DAA520;
+  margin-top: 0;
+  border-bottom: 1px solid rgba(218, 165, 32, 0.2);
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+}
+
+/* --- LISTAS DENTRO DOS CARDS --- */
+
+.widget-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.widget-list li {
+  display: flex;
+  flex-direction: column;
+  padding: 15px 0;
+  border-bottom: 1px solid rgba(218, 165, 32, 0.1);
+}
+.widget-list li:last-child {
+  border-bottom: none;
+}
+
+.widget-list li a {
+  color: #fff;
+  font-weight: bold;
+  text-decoration: none;
+  font-size: 1.1rem;
+  margin-bottom: 5px;
+}
+.widget-list li a:hover {
+  color: #FFD700;
+}
+
+.widget-list li span {
+  font-size: 0.85rem;
+  color: #a0a0a0;
+}
+
+.widget-list.small li {
+  flex-direction: row;
+  align-items: center;
+  gap: 15px;
+}
+.widget-list.small li img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* --- ELEMENTOS ESPECÍFICOS DOS CARDS --- */
+
+.notificacao-painel {
+  background-color: rgba(218, 165, 32, 0.1);
+  border: 1px solid rgba(218, 165, 32, 0.3);
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.widget-button {
+  display: block;
+  background: #DAA520;
+  color: #111827;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  box-sizing: border-box; /* Garante que padding e borda não causem overflow */
+}
+
+.widget-button.full-width {
+  width: 100%;
+  margin-top: 15px;
+}
+
+.widget-button.secondary {
+  background-color: transparent;
+  border: 1px solid #DAA520;
+  color: #DAA520;
+}
+
+.widget-button.secondary:hover {
+  background-color: rgba(218, 165, 32, 0.1);
+}
+
+.cta-card {
+  background-color: rgba(218, 165, 32, 0.1);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.cta-card p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #e0e0e0;
+  margin-bottom: 25px;
+}
+
+
+/* =============================================== */
+/* REGRAS PARA VERSÃO MOBILE (LAYOUT RESPONSIVO)   */
+/* =============================================== */
+
+@media (max-width: 768px) {
+  .painel-grid {
+    /* 1. Define o layout de 2 colunas para o mobile */
+    grid-template-columns: 1fr 1fr; 
+    grid-template-areas: none; /* Remove o mapa de áreas do desktop */
+    gap: 15px;
+  }
+
+  /* 2. LINHAS CRUCIAIS DA CORREÇÃO: */
+  /* Dizemos a TODOS os cards para esquecerem seus nomes e posições do desktop */
+  .card-atividade, .card-acoes, .card-cidadaos {
+    grid-area: auto;
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  /* 3. DEPOIS de resetar, aplicamos a regra especial para o card de atividade no mobile */
+  .card-atividade {
+    grid-column: 1 / -1; /* Faz ele ocupar a largura inteira */
+  }
+
+  /* 4. Ajustes finos de polimento */
+  .painel-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .widget-card {
+    padding: 20px;
+    margin-bottom: 0; 
+  }
 }
