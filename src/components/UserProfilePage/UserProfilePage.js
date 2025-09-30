@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import './UserProfilePage.css';
-// ==========================================================
-// PASSO 1: Importar nosso modal reutilizável
-// ==========================================================
 import EditUserModal from '../EditUserModal/EditUserModal';
 
 // Mapeamento dos banners e brasões dos reinos
@@ -44,9 +41,6 @@ const roleDisplayNames = {
   'default': 'Indefinido'
 };
 
-// ==========================================================
-// PASSO 2: Trazer a mesma lógica de hierarquia que já usamos
-// ==========================================================
 const roleHierarchy = {
   admin: 1,
   oficialreal: 2,
@@ -60,26 +54,19 @@ function UserProfilePage({ user, viewUserId }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // ==========================================================
-  // PASSO 3: Criar um estado para controlar a abertura do modal
-  // ==========================================================
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const fetchProfile = async () => {
       const targetId = viewUserId || user?.id;
       if (!targetId) return;
-
       setLoading(true);
       setError(null);
-
       const { data, error: fetchError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', targetId)
-        .single(); // Usar .single() é mais direto para buscar um único item
-
-      if (fetchError && fetchError.code !== 'PGRST116') { // Ignora o erro "nenhuma linha encontrada"
+        .single();
+      if (fetchError && fetchError.code !== 'PGRST116') {
         console.error("Erro detalhado ao buscar perfil:", fetchError);
         setError("Não foi possível carregar o perfil. Verifique o console.");
       } else if (data) {
@@ -96,18 +83,12 @@ function UserProfilePage({ user, viewUserId }) {
 
   const handleUpdateSuccess = () => {
     setIsEditModalOpen(false);
-    fetchProfile(); // Re-busca os dados do perfil para mostrar as informações atualizadas
+    fetchProfile();
   };
 
-  if (loading) {
-    return <div className="profile-page-container"><p>Carregando perfil...</p></div>;
-  }
-  if (error) {
-    return <div className="profile-page-container"><p className="error-message">{error}</p></div>;
-  }
-  if (!profile) {
-    return <div className="profile-page-container"><p>Perfil não encontrado.</p></div>;
-  }
+  if (loading) return <div className="profile-page-container"><p>Carregando perfil...</p></div>;
+  if (error) return <div className="profile-page-container"><p className="error-message">{error}</p></div>;
+  if (!profile) return <div className="profile-page-container"><p>Perfil não encontrado.</p></div>;
   
   const { nome, sobrenome, foto_url, sobre_mim, reino, nota, nota_expires_at, cargo, titulo } = profile;
   const notaExpirou = nota_expires_at && new Date(nota_expires_at) < new Date();
@@ -116,25 +97,29 @@ function UserProfilePage({ user, viewUserId }) {
   const isStaff = ['admin', 'oficialreal', 'guardareal'].includes(cargo?.toLowerCase());
   const displayName = roleDisplayNames[cargo?.toLowerCase()] || roleDisplayNames['default'];
   
-  // ==========================================================
-  // PASSO 4: Verificar se o usuário LOGADO pode editar o perfil VISTO
-  // ==========================================================
   const currentUserRole = user?.app_metadata?.roles?.[0]?.toLowerCase() || 'default';
   const profileUserRole = cargo?.toLowerCase() || 'default';
-
   const callerRank = roleHierarchy[currentUserRole];
   const targetRank = roleHierarchy[profileUserRole];
-  
-  const canEdit = user && profile && (
-    (callerRank < targetRank) || 
-    (currentUserRole === 'admin' && profileUserRole === 'admin')
-  );
+  const canEdit = user && profile && ((callerRank < targetRank) || (currentUserRole === 'admin' && profileUserRole === 'admin'));
 
   return (
     <div className="profile-page-container">
       <div className="profile-banner" style={{ backgroundImage: `url(${assets.banner})` }}>
         <div className="banner-overlay"></div>
-        <img src={foto_url || 'URL_PADRAO_AVATAR'} alt="Avatar do Usuário" className="profile-avatar"/>
+         {/* 👇 A estrutura que imita 100% a lógica da StaffPage 👇 */}
+        {isStaff ? (
+          // Container que apenas posiciona o portal no lugar certo
+          <div className="profile-avatar-positioner"> 
+            {/* Container que gera a animação (copia o .avatar-portal-container) */}
+            <div className="portal-fx-container"> 
+              <img src={foto_url || '/default-avatar.png'} alt="Avatar do Usuário" className="portal-avatar-img"/>
+            </div>
+          </div>
+        ) : (
+          // O avatar original para não-staffs
+          <img src={foto_url || '/default-avatar.png'} alt="Avatar do Usuário" className="profile-avatar"/>
+        )}
       </div>
 
       <div className="profile-content-area">
@@ -147,10 +132,6 @@ function UserProfilePage({ user, viewUserId }) {
           {isStaff && (
             <img src="https://i.imgur.com/J6hJQ7i.png" alt="Insígnia da Staff" className="staff-badge" />
           )}
-
-          {/* ========================================================== */}
-          {/* PASSO 5: Adicionar o botão, visível apenas se 'canEdit' for true */}
-          {/* ========================================================== */}
           {canEdit && (
             <button 
               className="profile-edit-button" 
@@ -159,24 +140,18 @@ function UserProfilePage({ user, viewUserId }) {
               Editar esse Perfil
             </button>
           )}
-
           {!notaExpirou && nota && (
             <div className="profile-note">"{nota}"</div>
           )}
         </div>
         
         <div className="profile-main-grid">
-          {/* ... O restante do seu JSX continua aqui ... */}
           <div className="profile-card about-card"><h2>Sobre Mim</h2><p>{sobre_mim || 'Nenhuma informação fornecida ainda.'}</p></div>
           <div className="profile-card main-info-card" style={{ backgroundImage: assets.background ? `url(${assets.background})` : 'none' }}><div className="card-overlay"><h2>Reino Principal</h2><div className="kingdom-badge"><img src={assets.crest} alt={`Brasão de ${reino}`} className="kingdom-crest"/><h3>{reino}</h3></div></div></div>
           <div className="profile-card extra-card"><h2>Conquistas</h2><p>Em breve...</p></div>
         </div>
       </div>
 
-      {/* ========================================================== */}
-      {/* PASSO 6: Adicionar o componente do modal no final */}
-      {/* Ele só será visível quando isEditModalOpen for true */}
-      {/* ========================================================== */}
       <EditUserModal
         userToEdit={profile}
         currentUserRole={currentUserRole}

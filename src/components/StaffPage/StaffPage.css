@@ -161,24 +161,25 @@
 
 /* 1. Portal girante no fundo */
 .avatar-portal-container::before {
-  content: '';
+ content: '';
   position: absolute;
   top: 50%;
   left: 50%;
   width: 170%;
   height: 170%;
   border-radius: 50%;
+  /* 👇 ÚNICA MUDANÇA É AQUI 👇 */
   background: conic-gradient(
-    #DAA520,
+    #DAA520, 
     #e74c3c,
-    #DAA520,
-    transparent 40%,
-    transparent,
-    #DAA520
+    #DAA520, 
+    rgb(218, 165, 32) 100%, /* Dourado transparente */
+    rgb(218, 165, 32) /* Dourado transparente */
   );
+  /* 👆 FIM DA MUDANÇA 👆 */
   animation: rotacaoPortal 2.5s linear infinite;
   transform: translate(-50%, -50%);
-  z-index: 0; /* sempre atrás */
+  z-index: 0;
 }
 
 /* 2. Faíscas agressivas */

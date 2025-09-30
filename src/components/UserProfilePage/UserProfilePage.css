@@ -34,7 +34,7 @@
   width: 150px;
   height: 150px;
   border-radius: 50%;
-  border: 5px solid #1a1a3d;
+  border: 3px solid #1a1a3d;
   object-fit: cover;
   position: relative;
   z-index: 10;
@@ -203,7 +203,7 @@
 .profile-title {
   display: inline-block;
   padding: 4px 25px;
-  margin: 15px 0;
+  margin: 07px 0;
   
   /* --- A MUDANÇA ESTÁ AQUI --- */
 
@@ -236,4 +236,97 @@
   box-shadow: 
     0 4px 10px rgba(0, 0, 0, 0.5),
     inset 0 2px 2px rgba(255, 255, 255, 0.4);
+}
+/* ================================================================= */
+/* --- EFEITO PORTAL (LÓGICA 1:1 DA STAFFPAGE, TAMANHO GRANDE) --- */
+/* ================================================================= */
+
+/* 1. Um container que apenas posiciona o portal no lugar certo */
+.profile-avatar-positioner {
+  width: 150px;
+  height: 150px;
+  position: relative;
+  z-index: 10;
+  transform: translateY(50%);
+}
+
+/* 2. O container que gera a animação, exatamente como na StaffPage */
+.portal-fx-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  animation: brilhoPortal 3s ease-in-out infinite;
+}
+
+/* 3. O anel giratório (::before), com z-index: 0 */
+/* SUGESTÃO FINAL SIMPLES - Tente esta pequena alteração */
+.portal-fx-container::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 170%;
+  height: 170%;
+  border-radius: 50%;
+  /* 👇 ÚNICA MUDANÇA É AQUI 👇 */
+  background: conic-gradient(
+    #DAA520, 
+    #e74c3c,
+    #DAA520, 
+    rgb(218, 165, 32) 100%, /* Dourado transparente */
+    rgb(218, 165, 32) /* Dourado transparente */
+  );
+  /* 👆 FIM DA MUDANÇA 👆 */
+  animation: rotacaoPortal 2.5s linear infinite;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+}
+
+/* 4. As faíscas (::after), com z-index: 2 */
+.portal-fx-container::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 140%;
+  height: 140%;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(255,255,255,1) 0%, transparent 70%) 20% 20%, radial-gradient(circle, rgba(255,215,0,0.95) 0%, transparent 70%) 80% 30%, radial-gradient(circle, rgba(231,76,60,0.95) 0%, transparent 70%) 40% 80%, radial-gradient(circle, rgba(255,255,255,0.9) 0%, transparent 70%) 70% 60%, radial-gradient(circle, rgba(218,165,32,1) 0%, transparent 70%) 30% 40%, radial-gradient(circle, rgba(255,255,255,1) 0%, transparent 70%) 60% 10%, radial-gradient(circle, rgba(255,69,0,0.95) 0%, transparent 70%) 90% 80%, radial-gradient(circle, rgba(255,215,0,1) 0%, transparent 70%) 10% 90%;
+  background-size: 10px 10px;
+  background-repeat: no-repeat;
+  animation: faiscasPortal 2s infinite linear;
+  transform: translate(-50%, -50%);
+  z-index: 2; /* Fica na frente do anel */
+}
+
+/* 5. A imagem (com classe nova), com z-index: 3 */
+.portal-avatar-img {
+  width: calc(100% - 6px);
+  height: calc(100% - 6px);
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  border-radius: 50%;
+  object-fit: cover;
+  z-index: 3; /* Fica na frente de TUDO */
+}
+
+/* Keyframes (escalados para o tamanho maior) */
+@keyframes rotacaoPortal {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+@keyframes faiscasPortal {
+  0%   { transform: translate(-50%, -50%) rotate(0deg) scale(1);   opacity: 1;   filter: blur(0px); }
+  25%  { transform: translate(-50%, -50%) rotate(90deg) scale(1.4); opacity: 0.9; filter: blur(1px); }
+  50%  { transform: translate(-50%, -50%) rotate(180deg) scale(0.8); opacity: 1;   filter: blur(0.5px); }
+  75%  { transform: translate(-50%, -50%) rotate(270deg) scale(1.2); opacity: 0.85; filter: blur(1px); }
+  100% { transform: translate(-50%, -50%) rotate(360deg) scale(1);   opacity: 1;   filter: blur(0px); }
+}
+@keyframes brilhoPortal {
+  0%, 100% { box-shadow: 0 0 12px 5px rgba(218, 165, 32, 0.7); }
+  50%      { box-shadow: 0 0 24px 8px rgba(255, 215, 0, 0.9); }
 }
