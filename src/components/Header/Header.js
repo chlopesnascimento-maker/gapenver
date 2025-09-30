@@ -311,8 +311,8 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
             ) : (
             <>
               <div className="desktop-auth-links">
-                <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('register'); }}>Cadastrar</a>
-                <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('login'); }}>Login</a>
+                <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('register'); }}><span>CADASTRE-SE</span></a>
+                <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('login'); }}><span>LOGIN</span></a>
               </div>
               <div className="mobile-login-container" ref={userMenuRef}>
                 <div className="avatar-circle" onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}>

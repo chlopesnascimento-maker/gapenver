@@ -139,29 +139,113 @@
 }
 .header-nav .nav-list a:hover { color: var(--accent); }
 
-/* --- CONTROLE DE VISIBILIDADE DESKTOP (AQUI ESTÁ A LÓGICA CORRETA) --- */
+/* --- CONTROLE DE VISIBILIDADE DESKTOP  --- */
 
-/* Mostra os links de texto no desktop */
 .desktop-auth-links {
   display: flex;
   align-items: center;
   gap: 8px;
 }
+
 .desktop-auth-links a,
 .desktop-auth-links a:visited {
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+
   color: var(--muted);
   text-decoration: none !important;
   font-weight: 600;
-  padding: 8px 12px;
+  padding: 8px 16px;
   border-radius: 18px;
   border: 1px solid transparent;
-  transition: all 0.2s ease-in-out;
+  transition: color 0.4s ease-in-out;
 }
+
+/* Texto sempre acima */
+.desktop-auth-links a span {
+  position: relative;
+  z-index: 2;
+}
+
+/* --- Brilho glossy (passando na diagonal) --- */
+.desktop-auth-links a::before {
+  content: "";
+  position: absolute;
+  top: -20px;
+  left: -100px; /* começa fora */
+  width: 70px;
+  height: 150%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg);
+  animation: left 0.9s cubic-bezier(0.19, 1, 0.22, 0.70);
+  z-index: 1;
+ pointer-events: none; /* não atrapalha clique */
+}
+
+/* dispara a animação apenas na entrada */
+.desktop-auth-links a:hover::before {
+  animation: shine-pass 0.9s cubic-bezier(0.19, 1, 0.22, 0.7) forwards;
+}
+
+/* Keyframes da animação */
+@keyframes shine-pass {
+  from { left: -100px; }
+  to   { left: 100%; }
+}
+
+
+/* --- Borda animada (draw-border adaptado) --- */
+/* --- Borda animada com gradiente --- */
+.desktop-auth-links a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  padding: 2px; /* espessura da borda */
+  box-sizing: border-box;
+  background: linear-gradient(45deg, #fff, #d4af37, #fff);
+  background-size: 200% 100%;
+  background-position: left center;
+
+  /* máscara para mostrar só a borda */
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease-out, opacity 0.2s ease-out;
+  z-index: 1;
+}
+
+/* --- Hover ativa tudo --- */
 .desktop-auth-links a:hover {
-  color: var(--accent);
-  border-color: var(--accent);
-  text-decoration: none !important;
+  color: #d4af37; /* dourado */
 }
+
+/* Brilho atravessa */
+.desktop-auth-links a:hover::before {
+  left: 100%;
+}
+
+/* Borda gradiente aparece da esquerda p/ direita */
+.desktop-auth-links a:hover::after {
+  transform: scaleX(1);
+  opacity: 1;
+  background-position: right center; /* dá a sensação de movimento */
+}
+
+
+
 
 /* Esconde TODOS os elementos de mobile no desktop por padrão */
 .hamburger-menu,
