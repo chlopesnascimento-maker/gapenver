@@ -1,0 +1,40 @@
+/* Arquivo: AvatarPortal.css */
+
+.portal-container {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 15px auto;
+  border-radius: 50%; /* Mantém o container redondo */
+  
+  /* REMOVIDO: border e box-shadow foram completamente removidos */
+}
+
+.particles-canvas > canvas {
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 1;
+}
+
+.portal-avatar-img {
+  /* MUDANÇA AQUI: Voltamos ao tamanho fixo para garantir que não haja distorção */
+  width: 86px; 
+  height: 86px;
+  border-radius: 50%;
+  
+  /* Esta é a propriedade mais importante para evitar distorção */
+  object-fit: cover; 
+  
+  /* Posicionamento perfeito no centro do container */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2; 
+
+  /* Uma borda sutil para o caso das partículas não carregarem */
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
