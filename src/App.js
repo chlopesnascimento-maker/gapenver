@@ -159,6 +159,33 @@ function App() {
     };
   }, []);
 
+   useEffect(() => {
+    // Handler para bloquear o menu de contexto
+    const handleContextMenu = (e) => {
+      if (e.target.tagName === 'IMG') {
+        e.preventDefault();
+      }
+    };
+
+    // Handler para bloquear o arrastar da imagem
+    const handleDragStart = (e) => {
+      if (e.target.tagName === 'IMG') {
+        e.preventDefault();
+      }
+    };
+
+    // Adiciona os event listeners ao documento
+    document.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('dragstart', handleDragStart);
+
+    // Função de limpeza: remove os listeners quando o componente for desmontado
+    // Isso é crucial para a performance e para evitar bugs em React
+    return () => {
+      document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('dragstart', handleDragStart);
+    };
+  }, []);
+
   // Lógica de permissão
   const userRole = user?.app_metadata?.roles?.[0];
   const canAccessPanel = ['admin', 'oficialreal', 'guardareal'].includes(userRole);
@@ -224,7 +251,8 @@ function App() {
         {currentPage === "cidadaosDoReino" && (
           <CidadaosdoReino navigateTo={navigateTo} user={user} {...pageParams} />
         )}
-      </main>
+              </main>
+
 
       <Footer />
 

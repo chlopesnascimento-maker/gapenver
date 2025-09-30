@@ -223,3 +223,8 @@ a, button {
   /* Toda mudança de cor, fundo, sombra, etc., levará 0.25s para acontecer */
   transition: all 0.25s ease-in-out;
 }
+
+img {
+  user-select: none;
+  -webkit-user-drag: none;
+}
