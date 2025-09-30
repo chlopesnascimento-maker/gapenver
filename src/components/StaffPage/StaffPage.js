@@ -50,11 +50,13 @@ function StaffPage({ navigateTo }) {
             onClick={() => navigateTo('userProfile', { userId: member.id })}
             style={{ cursor: 'pointer' }}
           >
-            <img
-              src={member.foto_url || '/default-avatar.png'}
-              alt={`${member.nome} ${member.sobrenome}`}
-              className="staff-photo"
-            />
+            <div className="avatar-portal-container">
+  <img
+    src={member.foto_url || '/default-avatar.png'}
+    alt={`${member.nome} ${member.sobrenome}`}
+    className="staff-avatar-img" 
+  />
+</div>
             <div className="staff-info">
               <h3>{member.nome} {member.sobrenome}</h3>
               <span className={`staff-role staff-role-${member.cargo.toLowerCase()}`}>

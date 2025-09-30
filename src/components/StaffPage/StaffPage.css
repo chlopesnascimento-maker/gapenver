@@ -35,13 +35,79 @@
   transform: translateY(-5px);
 }
 
-.staff-photo {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  object-fit: cover;
-  margin-bottom: 15px;
+.staff-info h3 {
+  margin: 5px 0;
 }
+
+/* Base exclusiva para StaffPage */
+.staff-role {
+  font-size: 0.9rem;
+  font-weight: bold;
+  display: inline-block;
+  margin-top: 5px;
+  background: none;
+  border: none;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  text-transform: none;
+}
+
+/* Admin exclusivo do StaffPage */
+.staff-role-admin {
+  color: #e74c3c;
+  text-shadow: 0 0 6px rgba(231, 76, 60, 0.6);
+}
+
+/* Oficial Real exclusivo do StaffPage */
+.staff-role-oficialreal {
+  color: #e67e22;
+  text-shadow: 0 0 6px rgba(230, 126, 34, 0.6);
+}
+
+/* Moderador exclusivo do StaffPage */
+.staff-role-guardareal {
+  color: #2ecc71;
+  text-shadow: 0 0 6px rgba(46, 204, 113, 0.6);
+}
+.staff-page {
+  padding: 40px;
+  text-align: center;
+  color: #e0e0e0;
+}
+
+.staff-page h2 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.staff-page p {
+  margin-bottom: 30px;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.staff-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
+}
+
+.staff-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  padding: 20px;
+  width: 220px;
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+
+.staff-card:hover {
+  transform: translateY(-5px);
+}
+
+/* A regra .staff-photo foi removida, pois agora usamos .staff-avatar-img */
 
 .staff-info h3 {
   margin: 5px 0;
@@ -78,6 +144,102 @@
   color: #2ecc71;
   text-shadow: 0 0 6px rgba(46, 204, 113, 0.6);
 }
+
+/* ======================================================= */
+/* --- EFEITO PORTAL APRIMORADO (BRILHO + FAÍSCAS) --- */
+/* ======================================================= */
+
+.avatar-portal-container {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 15px auto;
+  border-radius: 50%;
+  overflow: hidden; /* deixa espaço pros efeitos saírem da borda */
+  animation: brilhoPortal 3s ease-in-out infinite;
+}
+
+/* 1. Portal girante no fundo */
+.avatar-portal-container::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 170%;
+  height: 170%;
+  border-radius: 50%;
+  background: conic-gradient(
+    #DAA520,
+    #e74c3c,
+    #DAA520,
+    transparent 40%,
+    transparent,
+    #DAA520
+  );
+  animation: rotacaoPortal 2.5s linear infinite;
+  transform: translate(-50%, -50%);
+  z-index: 0; /* sempre atrás */
+}
+
+/* 2. Faíscas agressivas */
+.avatar-portal-container::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 140%;
+  height: 140%;
+  border-radius: 50%;
+  pointer-events: none;
+
+  background: 
+    radial-gradient(circle, rgba(255,255,255,1) 0%, transparent 70%) 20% 20%,
+    radial-gradient(circle, rgba(255,215,0,0.95) 0%, transparent 70%) 80% 30%,
+    radial-gradient(circle, rgba(231,76,60,0.95) 0%, transparent 70%) 40% 80%,
+    radial-gradient(circle, rgba(255,255,255,0.9) 0%, transparent 70%) 70% 60%,
+    radial-gradient(circle, rgba(218,165,32,1) 0%, transparent 70%) 30% 40%,
+    radial-gradient(circle, rgba(255,255,255,1) 0%, transparent 70%) 60% 10%,
+    radial-gradient(circle, rgba(255,69,0,0.95) 0%, transparent 70%) 90% 80%,
+    radial-gradient(circle, rgba(255,215,0,1) 0%, transparent 70%) 10% 90%;
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+
+  animation: faiscasPortal 2s infinite linear;
+  transform: translate(-50%, -50%);
+  z-index: 2; /* acima do portal, abaixo do avatar */
+}
+
+/* 3. Avatar sempre no topo */
+.staff-avatar-img {
+  width: calc(100% - 6px);
+  height: calc(100% - 6px);
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  border-radius: 50%;
+  object-fit: cover;
+  z-index: 3; /* topo absoluto */
+}
+
+/* === Keyframes === */
+@keyframes rotacaoPortal {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes faiscasPortal {
+  0%   { transform: translate(-50%, -50%) rotate(0deg) scale(1);   opacity: 1;   filter: blur(0px); }
+  25%  { transform: translate(-50%, -50%) rotate(90deg) scale(1.4); opacity: 0.9; filter: blur(1px); }
+  50%  { transform: translate(-50%, -50%) rotate(180deg) scale(0.8); opacity: 1;   filter: blur(0.5px); }
+  75%  { transform: translate(-50%, -50%) rotate(270deg) scale(1.2); opacity: 0.85; filter: blur(1px); }
+  100% { transform: translate(-50%, -50%) rotate(360deg) scale(1);   opacity: 1;   filter: blur(0px); }
+}
+
+@keyframes brilhoPortal {
+  0%, 100% { box-shadow: 0 0 6px 2px rgba(218, 165, 32, 0.5); }
+  50%      { box-shadow: 0 0 12px 5px rgba(255, 215, 0, 0.8); }
+}
+
 
 
 
