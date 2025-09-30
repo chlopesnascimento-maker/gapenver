@@ -9,7 +9,7 @@ function StaffPage({ navigateTo }) {
     const fetchStaff = async () => {
       const { data, error } = await supabase
         .from('public_staff')
-        .select('id, nome, sobrenome, foto_url, cargo'); // sem filtro
+        .select('id, nome, sobrenome, foto_url, cargo, titulo'); // sem filtro
 
       if (error) {
         console.error('Erro ao buscar staff:', error);
@@ -59,6 +59,9 @@ function StaffPage({ navigateTo }) {
 </div>
             <div className="staff-info">
               <h3>{member.nome} {member.sobrenome}</h3>
+              {member.titulo && (
+          <p className="staff-title">{member.titulo}</p>
+        )}
               <span className={`staff-role staff-role-${member.cargo.toLowerCase()}`}>
                 {member.cargo === 'admin' ? 'Administrador' :
                  member.cargo === 'oficialreal' ? 'Oficial Real' :

@@ -82,7 +82,7 @@
 }
 
 .staff-page p {
-  margin-bottom: 30px;
+  margin-bottom: 1px;
   font-style: italic;
   opacity: 0.8;
 }
@@ -241,5 +241,9 @@
 }
 
 
-
-
+.staff-title {
+  font-size: 0.85rem;
+  font-style: italic;
+  color: #aaa;
+  margin: 5px 0 10px 0; /* Espaçamento entre o nome e o cargo */
+}

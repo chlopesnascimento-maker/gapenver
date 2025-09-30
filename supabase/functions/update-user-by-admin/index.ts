@@ -65,7 +65,16 @@ serve(async (req) => {
     if (updates.nome) profileUpdates.nome = updates.nome.trim();
     if (updates.sobrenome) profileUpdates.sobrenome = updates.sobrenome.trim();
 
-    // Lógica de alteração de Cargo
+    // --- LÓGICA DO TÍTULO (ADIÇÃO) ---
+    // Verificamos se o chamador é um admin E se o campo 'titulo' foi enviado na requisição.
+    // O 'typeof' é importante para permitir que um título seja definido como uma string vazia ("").
+    if (callerRole === 'admin' && typeof updates.titulo !== 'undefined') {
+        // Se a condição for verdadeira, adicionamos o título ao objeto de atualizações.
+        profileUpdates.titulo = String(updates.titulo).trim();
+    }
+    // --- FIM DA ADIÇÃO ---
+
+    // Lógica de alteração de Cargo (SUA LÓGICA ORIGINAL, INTACTA)
     if (new_role) {
       const newRoleSanitized = String(new_role).toLowerCase();
       

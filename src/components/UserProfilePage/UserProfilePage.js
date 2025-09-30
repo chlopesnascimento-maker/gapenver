@@ -109,7 +109,7 @@ function UserProfilePage({ user, viewUserId }) {
     return <div className="profile-page-container"><p>Perfil não encontrado.</p></div>;
   }
   
-  const { nome, sobrenome, foto_url, sobre_mim, reino, nota, nota_expires_at, cargo } = profile;
+  const { nome, sobrenome, foto_url, sobre_mim, reino, nota, nota_expires_at, cargo, titulo } = profile;
   const notaExpirou = nota_expires_at && new Date(nota_expires_at) < new Date();
   const reinoKey = reino?.toLowerCase() || 'reinos independentes';
   const assets = reinoAssets[reinoKey] || reinoAssets['reinos independentes'];
@@ -140,6 +140,9 @@ function UserProfilePage({ user, viewUserId }) {
       <div className="profile-content-area">
         <div className="profile-header">
           <h1 className="profile-name">{nome} {sobrenome}</h1>
+          {isStaff && titulo && (
+            <h3 className="profile-title">{titulo}</h3>
+          )}
           <h2 className={`profile-cargo cargo-${cargo?.toLowerCase()}`}>{displayName}</h2>
           {isStaff && (
             <img src="https://i.imgur.com/J6hJQ7i.png" alt="Insígnia da Staff" className="staff-badge" />

@@ -122,7 +122,7 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
         <li><a href="#" onClick={() => alert('Página em breve!')}>Corvusk</a></li>
         <li><a href="#" onClick={() => alert('Página em breve!')}>Lo'otrak</a></li>
         <li><a href="#" onClick={(e) => { e.preventDefault(); handleMenuClick('cidadaosDoReino'); }}>Cidadãos do Reino</a></li>
-        <li><a href="#" onClick={(e) => { e.preventDefault(); handleMenuClick('comunidade'); }}>Tópicos</a></li>
+        <li><a href="#" onClick={(e) => { e.preventDefault(); handleMenuClick('comunidade'); }}>Fórum</a></li>
         <li><a href="#" onClick={() => alert('Página em breve!')}>Sugestões</a></li>
         <li><a href="#" onClick={() => alert('Página em breve!')}>Mapa Mundo</a></li>
         <li><a href="#" onClick={(e) => { e.preventDefault(); handleMenuClick('faleConosco'); }}>Fale Conosco</a></li>

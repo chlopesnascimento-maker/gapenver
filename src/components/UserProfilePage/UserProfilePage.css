@@ -199,3 +199,41 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(218, 165, 32, 0.5);
 }
+
+.profile-title {
+  display: inline-block;
+  padding: 4px 25px;
+  margin: 15px 0;
+  
+  /* --- A MUDANÇA ESTÁ AQUI --- */
+
+  /* PASSO 1: A borda fica transparente para a mágica acontecer */
+  border: 2px solid transparent;
+
+  /* PASSO 2: Criamos DUAS camadas de fundo */
+  background:
+    /* Camada de CIMA: O preenchimento dourado que já tínhamos */
+    linear-gradient(145deg, #f0e68c, #daa520),
+    /* Camada de BAIXO: O novo gradiente metálico para a borda */
+    linear-gradient(145deg, #b8860b, #ffffa0, #b8860b);
+
+  /* PASSO 3: Dizemos ao navegador como desenhar as camadas */
+  /* A camada de cima (preenchimento) só ocupa o espaço interno (padding-box) */
+  /* A camada de baixo (borda) ocupa todo o espaço (border-box) */
+  background-clip: padding-box, border-box;
+  background-origin: padding-box, border-box;
+
+  /* --- O ESTILO DO TEXTO CONTINUA O MESMO --- */
+
+  color: white;
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.75);
+  border-radius: 25px;
+  box-shadow: 
+    0 4px 10px rgba(0, 0, 0, 0.5),
+    inset 0 2px 2px rgba(255, 255, 255, 0.4);
+}

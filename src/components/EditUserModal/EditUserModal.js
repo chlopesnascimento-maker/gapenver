@@ -8,25 +8,36 @@ function EditUserModal({ userToEdit, currentUserRole, isOpen, onClose, onUpdateS
   const [editedPassword, setEditedPassword] = useState('');
   const [editedRole, setEditedRole] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  
+  // NOVO: Criamos um estado para o novo campo de título
+  const [editedTitulo, setEditedTitulo] = useState('');
 
-useEffect(() => {
-  if (userToEdit) {
-    // Esta linha inteligente verifica se a "caixinha" user_metadata existe.
-    // Se existir, usa ela. Se não, usa o próprio objeto principal.
-    const data = userToEdit.user_metadata ? userToEdit.user_metadata : userToEdit;
+  useEffect(() => {
+    if (userToEdit) {
+      const data = userToEdit.user_metadata ? userToEdit.user_metadata : userToEdit;
 
-    setEditedNome(data.nome || '');
-    setEditedSobrenome(data.sobrenome || '');
-    setEditedRole(data.cargo || 'default');
-    setEditedPassword('');
-  }
-}, [userToEdit]);
+      setEditedNome(data.nome || '');
+      setEditedSobrenome(data.sobrenome || '');
+      setEditedRole(data.cargo || 'default');
+      
+      // NOVO: Populamos o estado do título com o valor do perfil
+      setEditedTitulo(data.titulo || ''); 
+      
+      setEditedPassword('');
+    }
+  }, [userToEdit]);
 
   const handleUpdateUser = async () => {
     if (!userToEdit) return;
     setIsUpdating(true);
     try {
-      const updates = { nome: editedNome, sobrenome: editedSobrenome };
+      // ALTERADO: Adicionamos o 'titulo' ao objeto de atualizações
+      const updates = { 
+        nome: editedNome, 
+        sobrenome: editedSobrenome,
+        titulo: editedTitulo // O título será enviado para a sua função Supabase
+      };
+
       const { error } = await supabase.functions.invoke('update-user-by-admin', {
         body: { 
           user_id: userToEdit.id, 
@@ -34,6 +45,7 @@ useEffect(() => {
           new_role: editedRole 
         },
       });
+
       if (error) throw error;
       alert('Usuário atualizado com sucesso!');
       onUpdateSuccess();
@@ -71,8 +83,8 @@ useEffect(() => {
     <div className="modal-overlay">
       <div className="modal-content">
         <h2 className="modal-title">
-  Editando: {userToEdit.user_metadata?.nome || userToEdit.nome} {userToEdit.user_metadata?.sobrenome || userToEdit.sobrenome}
-</h2>
+          Editando: {userToEdit.user_metadata?.nome || userToEdit.nome} {userToEdit.user_metadata?.sobrenome || userToEdit.sobrenome}
+        </h2>
         <div className="form-group">
           <label>Nome:</label>
           <input type="text" value={editedNome} onChange={(e) => setEditedNome(e.target.value)} />
@@ -81,6 +93,20 @@ useEffect(() => {
           <label>Sobrenome:</label>
           <input type="text" value={editedSobrenome} onChange={(e) => setEditedSobrenome(e.target.value)} />
         </div>
+
+        {/* NOVO: Campo de Título, visível apenas para admins */}
+        {currentUserRole === 'admin' && (
+          <div className="form-group">
+            <label>Título (visível apenas para Staff):</label>
+            <input 
+              type="text" 
+              value={editedTitulo} 
+              onChange={(e) => setEditedTitulo(e.target.value)} 
+              placeholder="Ex: Rei de Gápenver"
+            />
+          </div>
+        )}
+
         {currentUserRole === 'admin' && (
           <div className="form-group">
             <label>Nova Senha (deixe em branco para não alterar):</label>
