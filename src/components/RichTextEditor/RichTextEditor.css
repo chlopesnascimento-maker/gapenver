@@ -1,0 +1,95 @@
+/* Estilos para o container do editor */
+.rich-text-editor {
+  border: 1px solid rgba(218, 165, 32, 0.5);
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.3);
+  color: #fff;
+}
+
+/* A área onde o texto é digitado */
+.rich-text-editor .prose {
+  padding: 10px;
+  min-height: 150px;
+  outline: none;
+}
+.rich-text-editor .prose p {
+  margin: 0;
+}
+
+/* Estilos para a barra de ferramentas */
+.editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 8px;
+  border-bottom: 1px solid rgba(218, 165, 32, 0.5);
+}
+
+/* Seletor específico para garantir que ele vença a "briga" contra os botões do formulário */
+.rich-text-editor .editor-toolbar button {
+  font-family: monospace;
+  font-weight: bold;
+  font-size: 1rem;
+  background-color: transparent;
+  color: #ccc;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.rich-text-editor .editor-toolbar button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.rich-text-editor .editor-toolbar button.is-active {
+  background-color: var(--accent, #DAA520);
+  color: #000;
+}
+
+.form-resposta .rich-text-editor .editor-toolbar button {
+  background-color: transparent;
+  color: #ccc;
+  border: 1px solid transparent;
+}
+
+.form-resposta .rich-text-editor .editor-toolbar button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.form-resposta .rich-text-editor .editor-toolbar button.is-active {
+  background-color: var(--accent, #DAA520);
+  color: #000;
+}
+
+/* ======================================================= */
+/* --- SOLUÇÃO FINAL E DEFINITIVA PARA O FORM DE RESPOSTA --- */
+/* ======================================================= */
+
+/* Usando a propriedade 'background' para anular o gradiente herdado */
+.form-resposta .rich-text-editor .editor-toolbar button {
+  /* A ÚNICA MUDANÇA É AQUI 👇 */
+  background: transparent !important;
+  color: #ccc !important;
+  border: 1px solid transparent !important;
+  
+  /* Resetando outras propriedades que a regra inimiga está aplicando */
+  padding: 4px 8px !important;
+  font-weight: bold !important;
+  font-family: monospace !important;
+  float: none !important; 
+}
+
+.form-resposta .rich-text-editor .editor-toolbar button:hover {
+  /* E AQUI 👇 */
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+}
+
+.form-resposta .rich-text-editor .editor-toolbar button.is-active {
+  /* E AQUI 👇 */
+  background: var(--accent, #DAA520) !important;
+  color: #000 !important;
+}

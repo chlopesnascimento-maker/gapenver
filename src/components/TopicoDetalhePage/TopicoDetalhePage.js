@@ -3,6 +3,9 @@ import { supabase } from '../../supabaseClient';
 import './TopicoDetalhePage.css';
 import AutorCard from '../AutorCard/AutorCard';
 import MoverTopicoModal from '../MoverTopicoModal/MoverTopicoModal';
+import RichTextEditor from '../RichTextEditor/RichTextEditor'; // Ajuste o caminho se necessário
+import DOMPurify from 'dompurify';
+import '../RichTextEditor/RichTextEditor.css';
 
 function TopicoDetalhePage({ user, pageState, navigateTo }) {
   // --- ESTADOS ---
@@ -324,12 +327,10 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
               {/* --- NOVO: Formulário de edição inline para o tópico --- */}
               {isEditingTopic ? (
                 <>
-                  <textarea
-                    className="edit-textarea"
-                    value={editedContent}
-                    onChange={(e) => setEditedContent(e.target.value)}
-                    rows="8"
-                  />
+                  <RichTextEditor
+    content={editedContent}
+    onChange={setEditedContent}
+/>
                   {isStaff && !isOwnTopic && (
                     <div className="edit-reason-box">
                       <label>Motivo da Edição do Tópico (obrigatório)</label>
@@ -354,7 +355,10 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
                     <h2>{topico.titulo}</h2>
                     <span>{new Date(topico.created_at).toLocaleString('pt-BR')}</span>
                   </div>
-                  <p className="conteudo-texto">{topico.conteudo}</p>
+                  <div 
+    className="conteudo-texto" 
+    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(topico.conteudo) }} 
+/>
                   
                   {/* NOVO: Exibição do histórico de edição do tópico */}
                   {topico.usuario_editou_em && (
@@ -390,12 +394,10 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
                             <div key={resposta.id} className="post-card edit-mode">
                                 <AutorCard profile={resposta.profiles} />
                                 <div className="conteudo-card">
-                                    <textarea
-                                        className="edit-textarea"
-                                        value={editedContent}
-                                        onChange={(e) => setEditedContent(e.target.value)}
-                                        rows="5"
-                                    />
+                                   <RichTextEditor
+    content={editedContent}
+    onChange={setEditedContent}
+/>
                                     {isStaff && !isOwnReply && (
                                       <div className="edit-reason-box">
                                           <label>Motivo da Edição da Mensagem (obrigatório)</label>
@@ -423,7 +425,10 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
                             <AutorCard profile={resposta.profiles} />
                             <div className="conteudo-card">
                                 <div className="conteudo-header"><span>{new Date(resposta.created_at).toLocaleString('pt-BR')}</span></div>
-                                <p className="conteudo-texto">{resposta.conteudo}</p>
+                                <div 
+    className="conteudo-texto" 
+    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(resposta.conteudo) }} 
+/>
                                 
                                 {resposta.usuario_editou_em && (
                                     <div className="info-edicao">(Editado pelo autor em {new Date(resposta.usuario_editou_em).toLocaleDateString('pt-BR')})</div>
@@ -454,13 +459,10 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
             ) : ( 
                 <form onSubmit={handleEnviarResposta} className="form-resposta">
                     <h4>Respondendo ao tópico de <span className="destaque-nome">{topico.profiles.nome}</span></h4>
-                    <textarea
-                        value={novaResposta}
-                        onChange={(e) => setNovaResposta(e.target.value)}
-                        placeholder="Escreva sua resposta..."
-                        rows="5"
-                        required
-                    />
+                   <RichTextEditor
+    content={novaResposta}
+    onChange={setNovaResposta}
+/>
                     <div className="form-resposta-actions">
                         <button type="button" className="btn-cancelar-resposta" onClick={() => setMostrarFormulario(false)}>Cancelar</button>
                         <button type="submit" className="btn-publicar" disabled={enviando}>
