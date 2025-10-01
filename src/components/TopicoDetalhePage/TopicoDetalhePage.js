@@ -18,10 +18,13 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
   
   const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
   
-  // --- NOVOS ESTADOS PARA A EDIÇÃO ---
+  // --- ESTADOS PARA EDIÇÃO DE RESPOSTAS ---
   const [editingReplyId, setEditingReplyId] = useState(null);
   const [editedContent, setEditedContent] = useState('');
   const [editReason, setEditReason] = useState('');
+
+  // --- NOVO: ESTADO PARA EDIÇÃO DO TÓPICO ---
+  const [isEditingTopic, setIsEditingTopic] = useState(false);
 
   const currentUserRole = user?.app_metadata?.roles?.[0]?.toLowerCase() || 'default';
   const isStaff = ['admin', 'oficialreal', 'guardareal'].includes(currentUserRole);
@@ -35,6 +38,7 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
     setLoading(true);
     setError(null);
 
+    // ALTERADO: Adicionamos a busca pelo perfil do editor do TÓPICO
     const { data: topicoData, error: topicoError } = await supabase
         .from('topicos').select('*, profiles(*)').eq('id', topicId).single();
 
@@ -46,7 +50,6 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
     }
     setTopico(topicoData);
 
-    // Buscamos as respostas incluindo o perfil de quem AUTOR e de quem EDITOU
     const { data: respostasData, error: respostasError } = await supabase
       .from('respostas')
       .select('*, profiles:user_id(nome, sobrenome, cargo, foto_url), editor:editado_por_user_id(nome, sobrenome)')
@@ -68,8 +71,7 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
   }, [fetchDados]);
 
   const handleModerateAction = async (action, targetId, payload = {}) => {
-    // eslint-disable-next-line no-restricted-globals
-    if (!confirm(`Você tem certeza que deseja executar a ação "${action}"?`)) return;
+    if (!window.confirm(`Você tem certeza que deseja executar a ação "${action}"?`)) return;
     const { error: moderateError } = await supabase.functions.invoke('moderate-content', { body: { action, targetId, payload } });
     if (moderateError) {
       alert(`Erro ao moderar: ${moderateError.message || moderateError}`);
@@ -84,8 +86,7 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
   };
 
   const handleDeleteOwnReply = async (replyId) => {
-    // eslint-disable-next-line no-restricted-globals
-    if (!confirm("Você tem certeza que deseja excluir seu próprio comentário?")) return;
+    if (!window.confirm("Você tem certeza que deseja excluir seu próprio comentário?")) return;
     const { error: deleteError } = await supabase.from('respostas').delete().eq('id', replyId);
     if (deleteError) {
         alert(`Erro ao excluir comentário: ${deleteError.message}`);
@@ -112,35 +113,32 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
     }
   };
 
-  // --- NOVAS FUNÇÕES PARA O SISTEMA DE EDIÇÃO ---
-  const handleStartEdit = (resposta) => {
+  const handleStartEditReply = (resposta) => {
     setEditingReplyId(resposta.id);
     setEditedContent(resposta.conteudo);
     setEditReason('');
+    setIsEditingTopic(false);
   };
 
-  const handleSaveEdit = async () => {
+  const handleSaveEditReply = async () => {
     setEnviando(true);
-
-    // Se for um membro da Staff editando a resposta de outra pessoa
-    if (isStaff && user.id !== editingReplyId) {
+    const isOwnReply = user && user.id === editingReplyId;
+    if (isStaff && !isOwnReply) {
       if (!editedContent.trim() || !editReason.trim()) {
         alert("O conteúdo e o motivo da edição são obrigatórios.");
         setEnviando(false);
         return;
       }
-      // Chama a função de moderação segura
       await handleModerateAction('edit_reply', editingReplyId, {
         newContent: editedContent,
         editReason: editReason,
       });
-    } else { // Se for o próprio usuário editando
+    } else {
       if (!editedContent.trim()) {
         alert("O conteúdo não pode estar vazio.");
         setEnviando(false);
         return;
       }
-      // Faz o update direto, confiando na RLS que criamos
       const { error } = await supabase
         .from('respostas')
         .update({
@@ -148,26 +146,69 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
           usuario_editou_em: new Date().toISOString()
         })
         .eq('id', editingReplyId);
-
-      if (error) {
-        alert(`Erro ao salvar edição: ${error.message}`);
-      }
+      if (error) alert(`Erro ao salvar edição: ${error.message}`);
     }
-
     setEnviando(false);
-    setEditingReplyId(null); // Fecha o modo de edição
-    // fetchDados() é chamado dentro de handleModerateAction, ou precisamos chamar aqui
-    if (!isStaff || user.id === editingReplyId) {
-        fetchDados();
-    }
+    setEditingReplyId(null);
+    if (isStaff && !isOwnReply) { /* fetchDados já é chamado em handleModerateAction */ } 
+    else { fetchDados(); }
   };
 
+  // --- NOVO: FUNÇÕES PARA EDIÇÃO DO TÓPICO ---
+  const handleStartEditTopic = () => {
+    setIsEditingTopic(true);
+    setEditedContent(topico.conteudo);
+    setEditReason('');
+    setEditingReplyId(null);
+  };
+
+  const handleSaveEditTopic = async () => {
+    setEnviando(true);
+    if (!editedContent.trim()) {
+      alert("O conteúdo não pode estar vazio.");
+      setEnviando(false);
+      return;
+    }
+    const updateData = { conteudo: editedContent };
+    const isOwnTopic = user && user.id === topico.user_id;
+
+    if (isStaff && !isOwnTopic) {
+      if (!editReason.trim()) {
+        alert("O motivo da edição é obrigatório para a moderação.");
+        setEnviando(false);
+        return;
+      }
+      // Adiciona colunas de moderação (requer que elas existam na tabela 'topicos')
+      updateData.editado_em = new Date().toISOString();
+      updateData.editado_por_user_id = user.id;
+      updateData.motivo_edicao = editReason;
+    } else {
+      // Adiciona coluna de auto-edição (requer que ela exista na tabela 'topicos')
+      updateData.usuario_editou_em = new Date().toISOString();
+    }
+
+    const { error } = await supabase
+      .from('topicos')
+      .update(updateData)
+      .eq('id', topicId);
+
+    setEnviando(false);
+    if (error) {
+      alert(`Erro ao salvar edição do tópico: ${error.message}`);
+    } else {
+      setIsEditingTopic(false);
+      fetchDados();
+    }
+  };
 
   if (loading) return <div className="detalhe-container"><p>Carregando tópico...</p></div>;
   if (error) return <div className="detalhe-container"><p className="error-message">{error}</p></div>;
   if (!topico) return <div className="detalhe-container"><p>Tópico não encontrado.</p></div>;
 
+  // --- ALTERADO: Lógica de permissão de edição do tópico corrigida ---
+  const isOwnTopic = user && user.id === topico.user_id;
   const isTopicClosed = topico.status === 'fechado';
+  const canEditTopic = isStaff || (isOwnTopic && !isTopicClosed);
 
   return (
     <div className="detalhe-container">
@@ -189,11 +230,56 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
         <div className="post-card post-principal">
             <AutorCard profile={topico.profiles} />
             <div className="conteudo-card">
-              <div className="conteudo-header">
-                <h2>{topico.titulo}</h2>
-                <span>{new Date(topico.created_at).toLocaleString('pt-BR')}</span>
-              </div>
-              <p className="conteudo-texto">{topico.conteudo}</p>
+              {/* --- NOVO: Formulário de edição inline para o tópico --- */}
+              {isEditingTopic ? (
+                <>
+                  <textarea
+                    className="edit-textarea"
+                    value={editedContent}
+                    onChange={(e) => setEditedContent(e.target.value)}
+                    rows="8"
+                  />
+                  {isStaff && !isOwnTopic && (
+                    <div className="edit-reason-box">
+                      <label>Motivo da Edição do Tópico (obrigatório)</label>
+                      <input
+                        type="text"
+                        value={editReason}
+                        onChange={(e) => setEditReason(e.target.value)}
+                        placeholder="Ex: Correção de título ou conteúdo"
+                      />
+                    </div>
+                  )}
+                  <div className="form-resposta-actions">
+                    <button className="btn-cancelar-resposta" onClick={() => setIsEditingTopic(false)} disabled={enviando}>Cancelar</button>
+                    <button className="btn-publicar" onClick={handleSaveEditTopic} disabled={enviando}>
+                      {enviando ? 'Salvando...' : 'Salvar Tópico'}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="conteudo-header">
+                    <h2>{topico.titulo}</h2>
+                    <span>{new Date(topico.created_at).toLocaleString('pt-BR')}</span>
+                  </div>
+                  <p className="conteudo-texto">{topico.conteudo}</p>
+                  
+                  {/* NOVO: Exibição do histórico de edição do tópico */}
+                  {topico.usuario_editou_em && (
+                      <div className="info-edicao">(Editado pelo autor em {new Date(topico.usuario_editou_em).toLocaleDateString('pt-BR')})</div>
+                  )}
+                  {topico.editado_em && topico.editor && (
+                      <div className="info-edicao">
+                          Editado por {`${topico.editor.nome} ${topico.editor.sobrenome || ''}`.trim()} em {new Date(topico.editado_em).toLocaleDateString('pt-BR')}: "{topico.motivo_edicao}"
+                      </div>
+                  )}
+
+                  <div className="reply-actions">
+                    {canEditTopic && <button onClick={handleStartEditTopic} className="btn-editar-comentario">Editar Tópico</button>}
+                  </div>
+                </>
+              )}
             </div>
         </div>
 
@@ -231,7 +317,7 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
                                     )}
                                     <div className="form-resposta-actions">
                                         <button className="btn-cancelar-resposta" onClick={() => setEditingReplyId(null)} disabled={enviando}>Cancelar</button>
-                                        <button className="btn-publicar" onClick={handleSaveEdit} disabled={enviando}>
+                                        <button className="btn-publicar" onClick={handleSaveEditReply} disabled={enviando}>
                                             {enviando ? 'Salvando...' : 'Salvar Edição'}
                                         </button>
                                     </div>
@@ -257,7 +343,7 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
                                 )}
 
                                 <div className="reply-actions">
-                                    {canEdit && <button onClick={() => handleStartEdit(resposta)} className="btn-editar-comentario">Editar</button>}
+                                    {canEdit && <button onClick={() => handleStartEditReply(resposta)} className="btn-editar-comentario">Editar</button>}
                                     {canDelete && <button onClick={() => isOwnReply ? handleDeleteOwnReply(resposta.id) : handleModerateAction('delete_reply', resposta.id)} className="btn-excluir-comentario">Excluir</button>}
                                 </div>
                             </div>
@@ -274,7 +360,7 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
                 </button>
             ) : ( 
                 <form onSubmit={handleEnviarResposta} className="form-resposta">
-                    <h4>Respondendo ao tópico de <span className="destaque-nome">#{topico.profiles.nome}</span></h4>
+                    <h4>Respondendo ao tópico de <span className="destaque-nome">{topico.profiles.nome}</span></h4>
                     <textarea
                         value={novaResposta}
                         onChange={(e) => setNovaResposta(e.target.value)}
