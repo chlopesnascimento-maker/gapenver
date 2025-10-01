@@ -26,6 +26,8 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
   // --- NOVO: ESTADO PARA EDIÇÃO DO TÓPICO ---
   const [isEditingTopic, setIsEditingTopic] = useState(false);
 
+  const [curtidasUsuario, setCurtidasUsuario] = useState(new Set());
+
   const currentUserRole = user?.app_metadata?.roles?.[0]?.toLowerCase() || 'default';
   const isStaff = ['admin', 'oficialreal', 'guardareal'].includes(currentUserRole);
 
@@ -62,6 +64,20 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
     } else {
         setRespostas(respostasData);
     }
+
+     if (user) {
+      const { data: curtidasData, error: curtidasError } = await supabase
+        .from('curtidas').select('topico_id, resposta_id').eq('user_id', user.id);
+      
+      if (!curtidasError) {
+        const curtidasSet = new Set();
+        curtidasData.forEach(c => {
+          if (c.topico_id) curtidasSet.add(c.topico_id);
+          if (c.resposta_id) curtidasSet.add(c.resposta_id);
+        });
+        setCurtidasUsuario(curtidasSet);
+      }
+    }
     
     setLoading(false);
   }, [topicId]);
@@ -69,6 +85,81 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
   useEffect(() => {
     fetchDados();
   }, [fetchDados]);
+
+ const handleCurtir = async (post, tipo) => {
+    if (!user) {
+      alert("Você precisa estar logado para curtir.");
+      return;
+    }
+
+    const postId = post.id;
+    const autorPostId = post.user_id;
+    const jaCurtiu = curtidasUsuario.has(postId);
+    const incremento = jaCurtiu ? -1 : 1;
+
+    // --- 1. ATUALIZAÇÃO OTIMISTA DA UI ---
+
+    // Atualiza o estado das curtidas do usuário (para mudar a cor do coração)
+    setCurtidasUsuario(prev => {
+      const novoSet = new Set(prev);
+      if (jaCurtiu) {
+        novoSet.delete(postId);
+      } else {
+        novoSet.add(postId);
+      }
+      return novoSet;
+    });
+
+    // Atualiza a contagem de curtidas no perfil do autor (seja no tópico ou na resposta)
+    if (tipo === 'topico') {
+      setTopico(prevTopico => ({
+        ...prevTopico,
+        profiles: {
+          ...prevTopico.profiles,
+          total_curtidas: (prevTopico.profiles.total_curtidas || 0) + incremento
+        }
+      }));
+    } else { // tipo === 'resposta'
+      setRespostas(prevRespostas => prevRespostas.map(r => 
+        r.id === postId ? {
+          ...r,
+          profiles: {
+            ...r.profiles,
+            total_curtidas: (r.profiles.total_curtidas || 0) + incremento
+          }
+        } : r
+      ));
+    }
+
+    // --- 2. OPERAÇÃO NO BANCO DE DADOS EM SEGUNDO PLANO ---
+
+    if (jaCurtiu) {
+      // DESCURTIR
+      const { error } = await supabase.from('curtidas').delete()
+        .eq('user_id', user.id)
+        .eq(tipo === 'topico' ? 'topico_id' : 'resposta_id', postId);
+
+      // 3. Rollback em caso de erro
+      if (error) {
+        alert("Erro ao descurtir. A página será atualizada.");
+        fetchDados(); // Força a recarga para sincronizar o estado em caso de falha
+      }
+    } else {
+      // CURTIR
+      const { error } = await supabase.from('curtidas').insert({
+        user_id: user.id,
+        [tipo === 'topico' ? 'topico_id' : 'resposta_id']: postId,
+        autor_post_id: autorPostId
+      });
+
+      // 3. Rollback em caso de erro
+      if (error) {
+        alert("Erro ao curtir. A página será atualizada.");
+        fetchDados(); // Força a recarga para sincronizar o estado
+      }
+    }
+  };
+
 
   const handleModerateAction = async (action, targetId, payload = {}) => {
     if (!window.confirm(`Você tem certeza que deseja executar a ação "${action}"?`)) return;
@@ -277,6 +368,7 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
 
                   <div className="reply-actions">
                     {canEditTopic && <button onClick={handleStartEditTopic} className="btn-editar-comentario">Editar Tópico</button>}
+                    <svg onClick={() => handleCurtir(topico, 'topico')} className={`icone-curtir ${curtidasUsuario.has(topico.id) ? 'curtido' : ''}`} viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                   </div>
                 </>
               )}
@@ -345,6 +437,7 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
                                 <div className="reply-actions">
                                     {canEdit && <button onClick={() => handleStartEditReply(resposta)} className="btn-editar-comentario">Editar</button>}
                                     {canDelete && <button onClick={() => isOwnReply ? handleDeleteOwnReply(resposta.id) : handleModerateAction('delete_reply', resposta.id)} className="btn-excluir-comentario">Excluir</button>}
+                                    <svg onClick={() => handleCurtir(resposta, 'resposta')} className={`icone-curtir ${curtidasUsuario.has(resposta.id) ? 'curtido' : ''}`} viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                                 </div>
                             </div>
                         </div>

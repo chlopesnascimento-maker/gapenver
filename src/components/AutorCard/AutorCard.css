@@ -89,3 +89,22 @@
     text-transform: none;
   }
 }
+
+.autor-curtidas-container {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.autor-curtidas-icone {
+  width: 16px;
+  height: 16px;
+  fill: #DAA520; /* Cor do coração preenchido */
+}
+
+.autor-curtidas-container span {
+  color: #ccc;
+  font-size: 0.9rem;
+  font-weight: bold;
+}

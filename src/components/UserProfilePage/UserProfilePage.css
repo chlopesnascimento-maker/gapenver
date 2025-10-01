@@ -273,7 +273,7 @@
   /* 👇 ÚNICA MUDANÇA É AQUI 👇 */
   background: conic-gradient(
     #DAA520, 
-    #e74c3c,
+    #e76d3c,
     #DAA520, 
     rgb(218, 165, 32) 100%, /* Dourado transparente */
     rgb(218, 165, 32) /* Dourado transparente */

@@ -434,3 +434,22 @@
   border-top: 1px dashed rgba(255, 255, 255, 0.1);
 }
 
+.icone-curtir {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  stroke: #DAA520; /* Cor da borda do coração */
+  stroke-width: 2;
+  fill: transparent;
+  transition: all 0.2s ease-in-out;
+}
+
+.icone-curtir:hover {
+  transform: scale(1.1);
+}
+
+/* Estilo para quando o coração está curtido */
+.icone-curtir.curtido {
+  fill: #DAA520;
+  stroke: #DAA520;
+}
