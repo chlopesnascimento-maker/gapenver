@@ -96,6 +96,7 @@
   flex-grow: 1;
   display: flex;
   min-width: 0;
+  overflow: hidden;
 }
 
 .sem-conversa-selecionada {

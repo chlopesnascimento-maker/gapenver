@@ -91,8 +91,8 @@
   main {
     /* Reduz o preenchimento lateral em telas menores */
     /* Isso permitirá que o rodapé e outros elementos ocupem mais espaço */
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: 1px;
+    padding-right: 1px;
   }
 }
 

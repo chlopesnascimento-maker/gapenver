@@ -1,23 +1,58 @@
+/* ======================================================= */
+/* --- CHATWINDOW.CSS (VERSÃO COM SCROLL INTERNO) --- */
+/* ======================================================= */
+
+/* 1. O container principal vira um flexbox de altura total */
 .chat-window {
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100%;
+  height: 100%; /* Ocupa 100% da altura do seu pai (.chat-area) */
+  max-height: 100%;
 }
 
+/* 2. O cabeçalho (mobile) e o formulário (rodapé) NÃO podem encolher */
+.chat-window-header,
+.mensagem-form {
+  flex-shrink: 0;
+}
+
+/* 2. O feed de mensagens é o único que pode crescer e deve ter scroll */
 .mensagens-feed {
-  flex-grow: 1;
+  /* flex: 1; é uma forma curta de dizer: cresça e ocupe todo o espaço que sobrar */
+  flex: 1;
+  /* A MÁGICA: Cria a barra de rolagem SÓ AQUI se o conteúdo for grande */
   overflow-y: auto;
+  /* Hack de flexbox para garantir que o overflow funcione corretamente em todos os navegadores */
+  min-height: 0; 
+  
+  /* O resto das suas propriedades visuais */
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 15px;
+  align-items: flex-start;
 }
+
+.chat-window-header,
+.mensagem-form {
+  flex-shrink: 0;
+}
+
+
+/* --- ESTILOS VISUAIS (A MAIORIA JÁ ESTAVA AÍ) --- */
 
 .mensagem-balao {
   display: flex;
   gap: 10px;
   max-width: 70%;
+}
+.mensagem-balao.minha {
+  align-self: flex-end; 
+  flex-direction: row-reverse;
+}
+.mensagem-balao.outrem {
+  align-self: flex-start;
 }
 
 .mensagem-avatar {
@@ -32,6 +67,9 @@
   padding: 10px 15px;
   border-radius: 18px;
 }
+.mensagem-balao.minha .mensagem-conteudo {
+  background-color: #3e3e6b;
+}
 
 .remetente-nome {
   font-weight: bold;
@@ -40,71 +78,41 @@
   display: block;
   margin-bottom: 5px;
 }
-
-.mensagem-conteudo p {
-  margin: 0;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  overflow-wrap: break-word; /* <-- Adicione esta linha */
-  word-break: break-word;
-}
-
-/* Mensagens do usuário logado */
-.mensagem-balao.minha {
-  align-self: flex-end;
-  flex-direction: row-reverse; /* Inverte a ordem: conteúdo, depois avatar */
-}
-.mensagem-balao.minha .mensagem-conteudo {
-  background-color: #3e3e6b;
-}
 .mensagem-balao.minha .remetente-nome {
   text-align: right;
 }
 
-/* Mensagens de outras pessoas */
-.mensagem-balao.outrem {
-  align-self: flex-start;
+.conteudo-formatado p {
+  margin: 0;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
-/* Formulário de envio (ajustado para o novo editor) */
+/* Formulário de envio */
 .mensagem-form {
   display: flex;
   padding: 15px;
   border-top: 1px solid rgba(218, 165, 32, 0.2);
-  /* Adicionado para alinhar o botão ao editor, que pode crescer */
   align-items: flex-end; 
 }
-
-/* O container do RichTextEditor agora ocupa o espaço do input */
 .mensagem-form .rich-text-editor {
   flex-grow: 1;
-  /* Remove a borda padrão do editor para que possamos estilizá-lo por completo */
   border: none; 
 }
-
-/* Ajusta a área de texto interna do editor */
 .mensagem-form .rich-text-editor .prose {
   background-color: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(218, 165, 32, 0.5);
   border-radius: 20px;
   padding: 10px 20px;
   color: #fff;
-  min-height: 20px; /* Altura mínima inicial */
-  max-height: 120px; /* Impede que o chat cresça indefinidamente */
-  overflow-y: auto; /* Adiciona scroll se o texto for muito grande */
+  min-height: 20px;
+  max-height: 120px;
+  overflow-y: auto;
 }
-
-/* Esconde a barra de ferramentas por padrão */
-.mensagem-form .editor-toolbar {
-  display: none;
-}
-
-/* Mostra a barra de ferramentas quando o usuário clica no editor */
-.mensagem-form .rich-text-editor:focus-within .editor-toolbar {
-  display: flex;
-}
-
-/* Botão de Enviar (sem alterações, mas mantido para contexto) */
+.mensagem-form .editor-toolbar { display: none; }
+.mensagem-form .rich-text-editor:focus-within .editor-toolbar { display: flex; }
 .mensagem-form button {
   background: #DAA520;
   color: #111827;
@@ -114,7 +122,7 @@
   border-radius: 20px;
   font-weight: bold;
   cursor: pointer;
-  height: 44px; /* Altura fixa para alinhar com o editor */
+  height: 44px;
   align-self: flex-end;
 }
 
