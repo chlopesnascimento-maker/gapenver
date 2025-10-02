@@ -147,3 +147,57 @@
     linear-gradient(to right, #e66100, #efefef, #f6ca00);
 
 }
+
+.chat-window-header {
+  /* Por padrão (mobile-first), o cabeçalho é VISÍVEL */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 15px;
+  border-bottom: 1px solid rgba(218, 165, 32, 0.2);
+  background-color: #17172b;
+}
+
+/* Regra específica para DESKTOP: Esconde o cabeçalho */
+@media (min-width: 769px) {
+  .chat-window-header {
+    display: none;
+  }
+}
+
+/* ESTILO DO BOTÃO DE VOLTAR */
+.chat-window-header .back-button {
+  background: none;
+  border: none;
+  color: #DAA520;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.chat-window-header .back-button:hover {
+  background-color: rgba(218, 165, 32, 0.1);
+}
+
+.chat-window-header .back-button svg {
+  width: 28px;
+  height: 28px;
+  fill: #DAA520;
+}
+
+.chat-window-header img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.chat-window-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #fff;
+}

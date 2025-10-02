@@ -146,7 +146,7 @@
   font-weight: bold;
   line-height: 1;
   position: absolute; /* Posiciona em relação ao .conversa-item */
-  top: 50%;
+  top: 80%;
   right: 15px;
   transform: translateY(-50%); /* Centraliza verticalmente */
   min-width: 22px; /* Garante que mesmo com 1 dígito, a bolha seja redonda */
@@ -158,46 +158,105 @@
   position: relative;
 }
 
-/* 1. A nova "moldura" do avatar, que recebe o gradiente */
+/* ======================================================= */
+/* --- ESTILO ESPECIAL PARA CONVERSAS COM STAFF (CORRIGIDO) --- */
+/* ======================================================= */
+
+/* 1. O container do avatar agora vira a "âncora" para o badge */
+.conversa-avatar-wrapper {
+  position: relative;
+}
+
+/* 2. O badge de não lido é posicionado no canto do avatar */
+.unread-badge {
+  background-color: #d33650;
+  color: white;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  font-weight: bold;
+  line-height: 1;
+  text-align: center;
+  position: absolute;
+  
+  /* Posicionamento no canto inferior direito do avatar */
+  bottom: 0;
+  right: 0;
+
+  /* Estilo da "pílula" e borda para separação */
+  min-width: 20px;
+  height: 20px;
+  padding: 3px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #17172b; /* Cor do fundo da sidebar para criar um recorte */
+}
+
+/* 3. A "moldura" do avatar de Staff (continua igual) */
 .conversa-item.staff-conversa .conversa-avatar-wrapper {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  padding: 2px; /* Espaço para a borda */
+  padding: 2px;
   background: linear-gradient(to right, #e66100, #efefef, #f6ca00);
-  flex-shrink: 0; /* Impede que a moldura encolha */
+  flex-shrink: 0;
 }
 
-/* 2. A imagem DENTRO da moldura */
+/* 4. A imagem DENTRO da moldura (continua igual) */
 .conversa-item.staff-conversa .conversa-avatar-wrapper img {
-  /* O width e height 100% agora se referem à moldura, preenchendo-a perfeitamente */
   width: 100%;
   height: 100%;
 }
 
-/* 3. O ícone "G" brilhante, com tamanho profissional e preciso */
+/* 5. O ícone "G" brilhante (continua igual) */
 .conversa-item.staff-conversa::after {
   content: '';
   position: absolute;
   right: 25px;
   top: 50%;
-  
-  /* O tamanho que conversamos, sem "zoom" */
   width: 60px;
   height: 60px;
-  
-  /* Apenas a centralização vertical, sem o scale() */
   transform: translateY(-50%);
-
-  /* Cole aqui o link da sua nova imagem otimizada */
   background-image: url('https://i.imgur.com/m1hVBrn.png');
   background-size: contain;
   background-repeat: no-repeat;
   opacity: 1;
 }
 
-/* Esconde o X de deletar e o badge de não lido (continua igual) */
-.conversa-item.staff-conversa .conversa-delete-btn,
-.conversa-item.staff-conversa .unread-badge {
+/* 6. CORREÇÃO IMPORTANTE: Removemos a regra que escondia o badge */
+/* A regra antiga '.conversa-item.staff-conversa .unread-badge { display: none; }' foi APAGADA. */
+/* A regra abaixo agora só esconde o botão de deletar */
+.conversa-item.staff-conversa .conversa-delete-btn {
   display: none;
+}
+
+@media (max-width: 768px) {
+  /* No mobile, o container principal ocupa a tela toda */
+  .mensagens-container {
+    height: calc(100vh - 56px); /* Altura da tela menos o header mobile */
+    border: none;
+    flex-direction: column;
+  }
+  
+  /* Por padrão, a lista de conversas é mostrada e a área de chat é escondida */
+  .lista-conversas-sidebar {
+    width: 100%;
+    border-right: none;
+    height: 100%;
+    display: flex;
+  }
+  .chat-area {
+    display: none;
+    width: 100%;
+    height: 100%;
+  }
+  
+  /* QUANDO UMA CONVERSA ESTÁ ATIVA (a classe .chat-ativo está no container)... */
+  .mensagens-container.chat-ativo .lista-conversas-sidebar {
+    display: none; /* ...nós escondemos a lista de conversas... */
+  }
+  .mensagens-container.chat-ativo .chat-area {
+    display: flex; /* ...e mostramos a área de chat em tela cheia. */
+  }
 }

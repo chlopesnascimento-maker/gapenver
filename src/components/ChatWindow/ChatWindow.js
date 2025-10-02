@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../../supabaseClient';
 import './ChatWindow.css';
-import RichTextEditor from '../RichTextEditor/RichTextEditor'; // Ajuste o caminho se necessário
+import RichTextEditor from '../RichTextEditor/RichTextEditor';
 import DOMPurify from 'dompurify';
 
-// ALTERAÇÃO 1: Adicionamos 'deletedTimestamp' aqui
-function ChatWindow({ user, conversaId, deletedTimestamp, isStaffChat }) {
+function ChatWindow({ user, conversaId, deletedTimestamp, isStaffChat, participantProfile, onCloseChat }) {
   const [mensagens, setMensagens] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -142,12 +141,22 @@ const marcarComoLida = async () => {
     setEnviando(false);
   };
   
-  if (loading) return <div>Carregando mensagens...</div>;
+ if (loading) return <div>Carregando mensagens...</div>;
   if (error) return <div>{error}</div>;
 
-   return (
-    // ALTERAÇÃO 2: Adicionamos a classe 'staff-chat' condicionalmente
+  const participantName = participantProfile ? `${participantProfile.nome} ${participantProfile.sobrenome || ''}`.trim() : 'Conversa';
+
+  return (
     <div className={`chat-window ${isStaffChat ? 'staff-chat' : ''}`}>
+      <div className="chat-window-header">
+        <button onClick={onCloseChat} className="back-button">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+          </svg>
+        </button>
+        <img src={participantProfile?.foto_url || 'https://i.imgur.com/SbdJgVb.png'} alt={participantName} />
+        <h3>{participantName}</h3>
+      </div>
       <div className="mensagens-feed">
         {mensagens.map(msg => {
           const remetenteProfile = msg.remetente;

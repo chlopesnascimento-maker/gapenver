@@ -133,135 +133,71 @@ async function handleDeleteConversa(conversaId) {
   };
 
   return (
-    <div className="mensagens-container">
+    // ADICIONADO: A classe 'chat-ativo' que controla a visualização mobile
+    <div className={`mensagens-container ${activeConversaId ? 'chat-ativo' : ''}`}>
       <aside className="lista-conversas-sidebar">
         <div className="sidebar-header">
           <h2>Mensagens</h2>
           <button className="nova-mensagem-btn" onClick={() => setIsNewConversationModalOpen(true)}>+</button>
         </div>
-
         <div className="conversas-list">
           {loading && <p>Carregando conversas...</p>}
           {error && <p className="error-message">{error}</p>}
-
           {!loading && conversas.map(conversa => {
-          // helper (pode colocar no topo do componente)
-const getProfileFromParticipante = (participante) => {
-  if (!participante) return null;
-
-  // Se for array (caso do join com Supabase)
-  if (Array.isArray(participante.profiles) && participante.profiles.length) {
-    return participante.profiles[0];
-  }
-
-  // Se for objeto (join normal ou fallback)
-  if (participante.profiles && typeof participante.profiles === 'object') {
-    return participante.profiles;
-  }
-
-  // Se o schema tiver os campos direto
-  if (participante.nome || participante.foto_url || participante.photoURL) {
-    return {
-      nome: participante.nome || '',
-      sobrenome: participante.sobrenome || '',
-      foto_url: participante.foto_url || participante.photoURL || null
-    };
-  }
-
-  return null;
-};
-
-
-const outros = (conversa.participantes || []).filter(p => p.user_id !== user.id);
-const participanteAlvo = outros.length > 0 ? outros[0] : null;
-const profile = getProfileFromParticipante(participanteAlvo);
-
- console.log("DEBUG conversa:", {
-    conversaId: conversa.id,
-    participantes: conversa.participantes,
-    userAtual: user.id
-  });
-
-const isStaffConv = ['admin', 'oficialreal', 'guardareal'].includes(profile?.cargo?.toLowerCase());
-
+            const outros = (conversa.participantes || []).filter(p => p.user_id !== user.id);
+            const participanteAlvo = outros.length > 0 ? outros[0] : null;
+            const profile = participanteAlvo?.profiles;
+            const isStaffConv = ['admin', 'oficialreal', 'guardareal'].includes(profile?.cargo?.toLowerCase());
             const nomeDisplay = profile ? `${profile.nome} ${profile.sobrenome || ''}`.trim() : 'Conversa';
             const fotoUrl = profile?.foto_url || 'https://i.imgur.com/SbdJgVb.png';
+           return (
+  <div key={conversa.id} className={`conversa-item ${conversa.id === activeConversaId ? 'active' : ''} ${isStaffConv ? 'staff-conversa' : ''}`} onClick={() => setActiveConversaId(conversa.id)}>
+    <div className="conversa-avatar-wrapper">
+      <img src={fotoUrl} alt={nomeDisplay} onError={(e) => { e.currentTarget.src = 'https://i.imgur.com/SbdJgVb.png'; }} />
 
-            return (
-              <div 
-                key={conversa.id}
-                // --- ALTERADO AQUI: Adicionamos a classe especial se for com staff ---
-                className={`conversa-item ${conversa.id === activeConversaId ? 'active' : ''} ${isStaffConv ? 'staff-conversa' : ''}`}
-                onClick={() => setActiveConversaId(conversa.id)}
-              >
-                <div className="conversa-avatar-wrapper">
-  <img src={fotoUrl} alt={nomeDisplay} onError={(e) => { e.currentTarget.src = 'https://i.imgur.com/SbdJgVb.png'; }} />
-</div>
-                <div className="conversa-info">
-                  <span className="conversa-nome">{nomeDisplay}</span>
-                  <span className="conversa-preview">Última mensagem...</span>
-                </div>
+      {/* O contador de mensagens agora vive AQUI DENTRO */}
+      {conversa.unread_count > 0 && (<span className="unread-badge">{conversa.unread_count}</span>)}
+    </div>
+    <div className="conversa-info">
+      <span className="conversa-nome">{nomeDisplay}</span>
+      <span className="conversa-preview">Última mensagem...</span>
+    </div>
 
-                {conversa.unread_count > 0 && (
-                  <span className="unread-badge">{conversa.unread_count}</span>
-                )}
-                <button
-                  className="conversa-delete-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteConversa(conversa.id);
-                  }}
-                >
-                  &times;
-                </button>
-              </div>
-            );
+    <button className="conversa-delete-btn" onClick={(e) => { e.stopPropagation(); handleDeleteConversa(conversa.id); }}>&times;</button>
+  </div>
+);
           })}
         </div>
       </aside>
-
       <main className="chat-area">
-  {activeConversaId ? (
-    (() => {
-      const activeConversa = conversas.find(c => c.id === activeConversaId);
-      const deletedTimestamp = activeConversa ? activeConversa.my_deleted_at : null;
-
-      // LINHA DE DEBUG PARA VER O QUE ESTAMOS ENVIANDO
-      console.log("Enviando para ChatWindow ->", { conversaId: activeConversaId, deletedTimestamp });
-
-      const isStaffChat = activeConversa?.participantes?.some(p => {
-              const profile = p.profiles; // A função RPC já retorna o perfil do participante
-              if (!profile || !profile.cargo) return false;
-              return ['admin', 'oficialreal', 'guardareal'].includes(profile.cargo.toLowerCase());
-            }) || false;
-
-      return (
-        <ChatWindow
+        {activeConversaId ? (
+          (() => {
+            const activeConversa = conversas.find(c => c.id === activeConversaId);
+            const outros = (activeConversa?.participantes || []).filter(p => p.user_id !== user.id);
+            const participanteAlvo = outros.length > 0 ? outros[0] : null;
+            const profile = participanteAlvo?.profiles;
+            const deletedTimestamp = activeConversa ? activeConversa.my_deleted_at : null;
+            const isStaffChat = activeConversa?.participantes?.some(p => ['admin', 'oficialreal', 'guardareal'].includes(p.profiles?.cargo?.toLowerCase())) || false;
+            return (
+              <ChatWindow
                 user={user}
                 conversaId={activeConversaId}
                 deletedTimestamp={deletedTimestamp}
-                // --- ALTERAÇÃO 2: PASSANDO A PROPRIEDADE ---
                 isStaffChat={isStaffChat}
+                // ADICIONADO: As propriedades que faltavam para o cabeçalho funcionar
+                participantProfile={profile}
+                onCloseChat={() => setActiveConversaId(null)}
               />
-      );
-    })()
-  ) : (
-    <div className="sem-conversa-selecionada">
-      <h3>Selecione uma conversa para começar</h3>
-      <p>Suas mensagens privadas aparecerão aqui.</p>
-    </div>
-  )}
-</main>
-
-      <NovaConversaModal
-        user={user}
-        isOpen={isNewConversationModalOpen}
-        onClose={() => setIsNewConversationModalOpen(false)}
-        onNewConversation={() => {
-            setIsNewConversationModalOpen(false);
-            fetchConversas();
-        }}
-      />
+            );
+          })()
+        ) : (
+          <div className="sem-conversa-selecionada">
+            <h3>Selecione uma conversa para começar</h3>
+            <p>Suas mensagens privadas aparecerão aqui.</p>
+          </div>
+        )}
+      </main>
+      <NovaConversaModal user={user} isOpen={isNewConversationModalOpen} onClose={() => setIsNewConversationModalOpen(false)} onNewConversation={() => { setIsNewConversationModalOpen(false); fetchConversas(); }} />
     </div>
   );
 }
