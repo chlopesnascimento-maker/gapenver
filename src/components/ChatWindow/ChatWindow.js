@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../supabaseClient';
 import './ChatWindow.css';
+import RichTextEditor from '../RichTextEditor/RichTextEditor'; // Ajuste o caminho se necessário
+import DOMPurify from 'dompurify';
 
 // ALTERAÇÃO 1: Adicionamos 'deletedTimestamp' aqui
-function ChatWindow({ user, conversaId, deletedTimestamp }) {
+function ChatWindow({ user, conversaId, deletedTimestamp, isStaffChat }) {
   const [mensagens, setMensagens] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -11,13 +13,13 @@ function ChatWindow({ user, conversaId, deletedTimestamp }) {
   const [enviando, setEnviando] = useState(false);
   const mensagensEndRef = useRef(null);
 
-  // ALTERAÇÃO 2: A função de busca agora usa o timestamp
+  // A função de busca agora usa o timestamp
   const fetchMensagens = async () => {
     if (!conversaId) return;
     
     let query = supabase
       .from('mensagens')
-      .select('*, remetente:remetente_id(id, nome, sobrenome, foto_url)')
+      .select('*, remetente:remetente_id(id, nome, sobrenome, foto_url, cargo)')
       .eq('conversa_id', conversaId);
 
     // Se a data existir, aplicamos o filtro
@@ -102,44 +104,63 @@ const marcarComoLida = async () => {
   }, [conversaId, deletedTimestamp]);
 
   const handleEnviarMensagem = async (e) => {
-    // ... seu código original, sem alterações ...
     e.preventDefault();
-    if (!novaMensagem.trim()) return;
+    
+    // 1. Guarda o conteúdo que será enviado
+    const conteudoParaEnviar = novaMensagem;
+    
+    if (!conteudoParaEnviar || conteudoParaEnviar === '<p></p>') {
+      // A verificação agora é feita na cópia
+      alert("A mensagem não pode estar vazia.");
+      return;
+    }
+
+    // 2. ATUALIZAÇÃO OTIMISTA: Limpa a UI imediatamente
+    setNovaMensagem('');
     setEnviando(true);
+
+    // 3. Envia os dados para o Supabase em segundo plano
     const { error: insertError } = await supabase
       .from('mensagens')
       .insert({
-        conteudo: novaMensagem,
+        conteudo: conteudoParaEnviar, // Usa o conteúdo guardado
         conversa_id: conversaId,
         remetente_id: user.id
       });
+      
     if (insertError) {
       console.error("Erro ao enviar mensagem:", insertError);
       alert(`Não foi possível enviar a mensagem. Erro: ${insertError.message}`);
+      // BÔNUS: Em caso de erro, devolve a mensagem para a caixa de texto
+      setNovaMensagem(conteudoParaEnviar);
     } else {
-      setNovaMensagem('');
+      // A atualização em tempo real já é feita pelo fetchMensagens() do listener,
+      // mas podemos chamar aqui para garantir a atualização imediata caso o listener atrase.
       fetchMensagens();
-      marcarComoLida();
     }
+    
     setEnviando(false);
   };
   
-  // O RESTO DO SEU ARQUIVO (RETURN/JSX) PERMANECE IDÊNTICO
-
   if (loading) return <div>Carregando mensagens...</div>;
   if (error) return <div>{error}</div>;
 
-  return (
-    <div className="chat-window">
+   return (
+    // ALTERAÇÃO 2: Adicionamos a classe 'staff-chat' condicionalmente
+    <div className={`chat-window ${isStaffChat ? 'staff-chat' : ''}`}>
       <div className="mensagens-feed">
         {mensagens.map(msg => {
           const remetenteProfile = msg.remetente;
           const nomeCompleto = remetenteProfile ? `${remetenteProfile.nome} ${remetenteProfile.sobrenome || ''}`.trim() : '';
 
+          // ALTERAÇÃO 3: Verificamos se o autor da mensagem é da Staff
+          const isRemetenteStaff = ['admin', 'oficialreal', 'guardareal'].includes(remetenteProfile?.cargo?.toLowerCase());
+
           return (
             <div 
               key={msg.id} 
-              className={`mensagem-balao ${msg.remetente_id === user.id ? 'minha' : 'outrem'}`}
+              // ALTERAÇÃO 4: Adicionamos a classe 'staff-bubble' se o remetente for staff
+              className={`mensagem-balao ${msg.remetente_id === user.id ? 'minha' : 'outrem'} ${isRemetenteStaff ? 'staff-bubble' : ''}`}
             >
               <img 
                 src={remetenteProfile?.foto_url || 'https://i.imgur.com/SbdJgVb.png'} 
@@ -148,7 +169,10 @@ const marcarComoLida = async () => {
               />
               <div className="mensagem-conteudo">
                 <span className="remetente-nome">{nomeCompleto}</span>
-                <p>{msg.conteudo}</p>
+                <div 
+                  className="conteudo-formatado"
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(msg.conteudo) }} 
+                />
               </div>
             </div>
           );
@@ -157,12 +181,9 @@ const marcarComoLida = async () => {
       </div>
 
       <form className="mensagem-form" onSubmit={handleEnviarMensagem}>
-        <input
-          type="text"
-          placeholder="Digite sua mensagem..."
-          value={novaMensagem}
-          onChange={(e) => setNovaMensagem(e.target.value)}
-          disabled={enviando}
+        <RichTextEditor
+            content={novaMensagem}
+            onChange={setNovaMensagem}
         />
         <button type="submit" disabled={enviando}>
           {enviando ? 'Enviando...' : 'Enviar'}

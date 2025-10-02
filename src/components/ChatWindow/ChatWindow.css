@@ -66,23 +66,45 @@
   align-self: flex-start;
 }
 
-/* Formulário de envio */
+/* Formulário de envio (ajustado para o novo editor) */
 .mensagem-form {
   display: flex;
   padding: 15px;
   border-top: 1px solid rgba(218, 165, 32, 0.2);
+  /* Adicionado para alinhar o botão ao editor, que pode crescer */
+  align-items: flex-end; 
 }
 
-.mensagem-form input {
+/* O container do RichTextEditor agora ocupa o espaço do input */
+.mensagem-form .rich-text-editor {
   flex-grow: 1;
+  /* Remove a borda padrão do editor para que possamos estilizá-lo por completo */
+  border: none; 
+}
+
+/* Ajusta a área de texto interna do editor */
+.mensagem-form .rich-text-editor .prose {
   background-color: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(218, 165, 32, 0.5);
   border-radius: 20px;
   padding: 10px 20px;
   color: #fff;
-  outline: none;
+  min-height: 20px; /* Altura mínima inicial */
+  max-height: 120px; /* Impede que o chat cresça indefinidamente */
+  overflow-y: auto; /* Adiciona scroll se o texto for muito grande */
 }
 
+/* Esconde a barra de ferramentas por padrão */
+.mensagem-form .editor-toolbar {
+  display: none;
+}
+
+/* Mostra a barra de ferramentas quando o usuário clica no editor */
+.mensagem-form .rich-text-editor:focus-within .editor-toolbar {
+  display: flex;
+}
+
+/* Botão de Enviar (sem alterações, mas mantido para contexto) */
 .mensagem-form button {
   background: #DAA520;
   color: #111827;
@@ -92,4 +114,36 @@
   border-radius: 20px;
   font-weight: bold;
   cursor: pointer;
+  height: 44px; /* Altura fixa para alinhar com o editor */
+  align-self: flex-end;
+}
+
+/* 1. O fundo especial para a janela de chat */
+.chat-window.staff-chat {
+  background-image: url('https://i.imgur.com/PkzQ9Qn.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain; /* ou 'cover', dependendo do tamanho da sua logo */
+  /* A linha 'background-attachment: fixed;' foi REMOVIDA */
+
+}
+
+/* 2. A borda em degradê para o balão de um membro da Staff */
+.mensagem-balao.staff-bubble .mensagem-conteudo {
+  border: 2px solid transparent;
+  background-image:
+    /* Camada de CIMA: O preenchimento normal do balão */
+    linear-gradient(#2c2c54, #2c2c54),
+    /* Camada de BAIXO: O seu degradê para a borda */
+    linear-gradient(to right, #e66100, #efefef, #f6ca00);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  }
+  
+  /* 3. Ajuste para quando a mensagem da Staff for a SUA (mantém o fundo mais escuro) */
+.mensagem-balao.minha.staff-bubble .mensagem-conteudo {
+  background-image:
+    linear-gradient(#3e3e6b, #3e3e6b), /* Cor do seu balão */
+    linear-gradient(to right, #e66100, #efefef, #f6ca00);
+
 }

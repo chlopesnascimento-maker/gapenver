@@ -72,6 +72,20 @@ const RichTextEditor = ({ content, onChange }) => {
     },
   });
 
+   useEffect(() => {
+    if (editor) {
+      // Compara o conteúdo atual do editor com a prop 'content'
+      const isSame = editor.getHTML() === content;
+
+      // Se for diferente (ex: o pai limpou o estado para ''), atualiza o editor
+      if (!isSame) {
+        // 'setContent' atualiza o conteúdo, e 'false' impede que o evento 'onUpdate'
+        // seja disparado desnecessariamente, evitando loops.
+        editor.commands.setContent(content, false);
+      }
+    }
+  }, [content, editor]);
+
   return (
     <div className="rich-text-editor">
       <Toolbar editor={editor} />

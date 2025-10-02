@@ -182,39 +182,38 @@ const profile = getProfileFromParticipante(participanteAlvo);
     userAtual: user.id
   });
 
-const nomeDisplay = buildNomeDisplay(profile);
-const fotoUrl = buildFotoUrl(profile);
-;
+const isStaffConv = ['admin', 'oficialreal', 'guardareal'].includes(profile?.cargo?.toLowerCase());
+
+            const nomeDisplay = profile ? `${profile.nome} ${profile.sobrenome || ''}`.trim() : 'Conversa';
+            const fotoUrl = profile?.foto_url || 'https://i.imgur.com/SbdJgVb.png';
 
             return (
               <div 
                 key={conversa.id}
-                className={`conversa-item ${conversa.id === activeConversaId ? 'active' : ''}`}
+                // --- ALTERADO AQUI: Adicionamos a classe especial se for com staff ---
+                className={`conversa-item ${conversa.id === activeConversaId ? 'active' : ''} ${isStaffConv ? 'staff-conversa' : ''}`}
                 onClick={() => setActiveConversaId(conversa.id)}
               >
-                <img src={fotoUrl} alt={nomeDisplay} onError={(e) => { e.currentTarget.src = 'https://i.imgur.com/SbdJgVb.png'; }} />
+                <div className="conversa-avatar-wrapper">
+  <img src={fotoUrl} alt={nomeDisplay} onError={(e) => { e.currentTarget.src = 'https://i.imgur.com/SbdJgVb.png'; }} />
+</div>
                 <div className="conversa-info">
                   <span className="conversa-nome">{nomeDisplay}</span>
                   <span className="conversa-preview">Última mensagem...</span>
                 </div>
 
                 {conversa.unread_count > 0 && (
-  <span className="unread-badge">
-    {conversa.unread_count}
-  </span>
-)}
-                {/* BOTÃO DE DELETAR ADICIONADO AQUI */}
+                  <span className="unread-badge">{conversa.unread_count}</span>
+                )}
                 <button
                   className="conversa-delete-btn"
                   onClick={(e) => {
-                    e.stopPropagation(); // Impede que o clique selecione a conversa
+                    e.stopPropagation();
                     handleDeleteConversa(conversa.id);
                   }}
                 >
-                  &times; {/* Isso é um 'X' */}
+                  &times;
                 </button>
-                {/* FIM DA ADIÇÃO */}
-
               </div>
             );
           })}
@@ -230,12 +229,20 @@ const fotoUrl = buildFotoUrl(profile);
       // LINHA DE DEBUG PARA VER O QUE ESTAMOS ENVIANDO
       console.log("Enviando para ChatWindow ->", { conversaId: activeConversaId, deletedTimestamp });
 
+      const isStaffChat = activeConversa?.participantes?.some(p => {
+              const profile = p.profiles; // A função RPC já retorna o perfil do participante
+              if (!profile || !profile.cargo) return false;
+              return ['admin', 'oficialreal', 'guardareal'].includes(profile.cargo.toLowerCase());
+            }) || false;
+
       return (
         <ChatWindow
-          user={user}
-          conversaId={activeConversaId}
-          deletedTimestamp={deletedTimestamp}
-        />
+                user={user}
+                conversaId={activeConversaId}
+                deletedTimestamp={deletedTimestamp}
+                // --- ALTERAÇÃO 2: PASSANDO A PROPRIEDADE ---
+                isStaffChat={isStaffChat}
+              />
       );
     })()
   ) : (

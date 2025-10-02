@@ -157,3 +157,47 @@
 .conversa-item {
   position: relative;
 }
+
+/* 1. A nova "moldura" do avatar, que recebe o gradiente */
+.conversa-item.staff-conversa .conversa-avatar-wrapper {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  padding: 2px; /* Espaço para a borda */
+  background: linear-gradient(to right, #e66100, #efefef, #f6ca00);
+  flex-shrink: 0; /* Impede que a moldura encolha */
+}
+
+/* 2. A imagem DENTRO da moldura */
+.conversa-item.staff-conversa .conversa-avatar-wrapper img {
+  /* O width e height 100% agora se referem à moldura, preenchendo-a perfeitamente */
+  width: 100%;
+  height: 100%;
+}
+
+/* 3. O ícone "G" brilhante, com tamanho profissional e preciso */
+.conversa-item.staff-conversa::after {
+  content: '';
+  position: absolute;
+  right: 25px;
+  top: 50%;
+  
+  /* O tamanho que conversamos, sem "zoom" */
+  width: 60px;
+  height: 60px;
+  
+  /* Apenas a centralização vertical, sem o scale() */
+  transform: translateY(-50%);
+
+  /* Cole aqui o link da sua nova imagem otimizada */
+  background-image: url('https://i.imgur.com/m1hVBrn.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 1;
+}
+
+/* Esconde o X de deletar e o badge de não lido (continua igual) */
+.conversa-item.staff-conversa .conversa-delete-btn,
+.conversa-item.staff-conversa .unread-badge {
+  display: none;
+}
