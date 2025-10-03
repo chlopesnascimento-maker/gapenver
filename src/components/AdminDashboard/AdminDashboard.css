@@ -47,3 +47,65 @@
   transform: translateY(-5px);
   box-shadow: 0 8px 25px rgba(218, 165, 32, 0.3);
 }
+
+/* Mensagem de erro */
+.error-message {
+  background-color: rgba(231, 76, 60, 0.2);
+  border: 1px solid #e74c3c;
+  color: #e74c3c;
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Widget de Gênero */
+.gender-distribution {
+  margin-top: 15px;
+}
+.gender-bar {
+  display: flex;
+  width: 100%;
+  height: 20px;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #444;
+}
+.gender-segment {
+  height: 100%;
+  transition: width 0.5s ease-in-out;
+}
+.gender-segment.male {
+  background-color: #3498db; /* Azul */
+}
+.gender-segment.female {
+  background-color: #f862f8; /* Rosa/Roxo */
+}
+.gender-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+/* Widget de Países */
+.country-list {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0 0;
+  text-align: left;
+}
+.country-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.country-list li:last-child {
+  border-bottom: none;
+}
+.country-visits {
+  font-weight: bold;
+  color: #DAA520;
+}
