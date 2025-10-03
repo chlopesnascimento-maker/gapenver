@@ -1,5 +1,0 @@
-AMON PUBLIC:
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtyc2h0a3JoeGRhaHV6c215bml2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0MTc1ODQsImV4cCI6MjA3MTk5MzU4NH0._yZ2NoIlox2c6uZO2VStCWDCCeoVqnOwosrZcoGNzrg
-
-Link do projeto:
-https://krshtkrhxdahuzsmyniv.supabase.co

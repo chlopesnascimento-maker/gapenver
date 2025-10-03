@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
+import ReactGA from "react-ga4";
 
 // Importando o Supabase
 import { supabase } from './supabaseClient'; 
@@ -27,6 +28,10 @@ import CriarTopicoPage from './components/CriarTopicoPage/CriarTopicoPage';
 import TopicoDetalhePage from './components/TopicoDetalhePage/TopicoDetalhePage';
 import BannedPage from './components/BannedPage/BannedPage';
 import MensagensPage from './components/MensagensPage/MensagensPage';
+
+//INICIALIZAÇÃO DO GOOGLE ANALYTICS
+const MEASUREMENT_ID = "G-N6Q8RTN5PL"; 
+ReactGA.initialize(MEASUREMENT_ID);
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
