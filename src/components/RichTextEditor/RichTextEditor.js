@@ -3,6 +3,8 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import './RichTextEditor.css';
 
+
+
 // A barra de ferramentas com os botões, agora com sua própria lógica interna
 const Toolbar = ({ editor }) => {
   // NOVO: Um estado "fantasma" que vive APENAS dentro da Toolbar

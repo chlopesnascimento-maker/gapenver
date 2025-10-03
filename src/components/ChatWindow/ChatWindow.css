@@ -9,6 +9,7 @@
   width: 100%;
   height: 100%; /* Ocupa 100% da altura do seu pai (.chat-area) */
   max-height: 100%;
+  
 }
 
 /* 2. O cabeçalho (mobile) e o formulário (rodapé) NÃO podem encolher */
@@ -90,29 +91,58 @@
   word-break: break-word;
 }
 
-/* Formulário de envio */
 .mensagem-form {
   display: flex;
   padding: 15px;
   border-top: 1px solid rgba(218, 165, 32, 0.2);
   align-items: flex-end; 
 }
+
+/* 1. O CONTAINER PRINCIPAL DO EDITOR: agora ele é a moldura arredondada */
 .mensagem-form .rich-text-editor {
   flex-grow: 1;
-  border: none; 
-}
-.mensagem-form .rich-text-editor .prose {
+  border: 1px solid rgba(218, 165, 32, 0.5); /* A borda dourada que você gosta */
+  border-radius: 20px; /* O arredondamento que combina com o botão 'Enviar' */
   background-color: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(218, 165, 32, 0.5);
-  border-radius: 20px;
+  color: #fff;
+  display: flex; /* Essencial para organizar a toolbar e a área de texto */
+  flex-direction: column;
+  overflow: hidden; /* Garante que os cantos fiquem perfeitamente arredondados */
+}
+
+/* 2. A BARRA DE FERRAMENTAS: agora vive DENTRO da moldura */
+.mensagem-form .editor-toolbar {
+  /* A barra agora fica no topo, dentro do container */
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(218, 165, 32, 0.2); /* Linha divisória sutil */
+  order: -1; /* Garante que a toolbar venha antes da área de texto */
+}
+
+/* Remove a lógica de aparecer/desaparecer (agora a toolbar é sempre visível) */
+/* .mensagem-form .rich-text-editor:focus-within .editor-toolbar { display: flex; } */
+
+/* 3. A ÁREA DE TEXTO: perde a sua borda própria para se fundir ao container */
+.mensagem-form .rich-text-editor .prose {
+  background-color: transparent; /* Fundo transparente */
+  border: none; /* Sem borda própria */
+  border-radius: 0;
   padding: 10px 20px;
   color: #fff;
-  min-height: 20px;
+  min-height: 40px; /* Altura mínima ajustada */
   max-height: 120px;
   overflow-y: auto;
+  flex-grow: 1; /* Ocupa o espaço restante */
+   text-align: left; 
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
-.mensagem-form .editor-toolbar { display: none; }
-.mensagem-form .rich-text-editor:focus-within .editor-toolbar { display: flex; }
+
+/* ADICIONADO: Garante que o texto dentro dos parágrafos comece à esquerda */
+.mensagem-form .rich-text-editor .prose p {
+  text-align: left;
+}
+
 .mensagem-form button {
   background: #DAA520;
   color: #111827;
@@ -161,7 +191,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 15px;
+  padding: 30px 5px;
   border-bottom: 1px solid rgba(218, 165, 32, 0.2);
   background-color: #17172b;
 }
@@ -208,4 +238,60 @@
   margin: 0;
   font-size: 1.1rem;
   color: #fff;
+}
+
+@media (max-width: 768px) {
+  :root { --site-header-height: 76px; } /* ajuste conforme necessário */
+
+  .chat-window {
+    position: fixed;
+    top: var(--site-header-height);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: auto;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    background: transparent; /* ou seu background específico */
+  }
+
+  .mensagens-feed {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    min-height: 0;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .chat-window-header { position: relative; } /* já está no topo do bloco fixo */
+  .mensagem-form { position: relative; } /* fica no bottom do bloco fixo */
+}
+
+/* -----------------------------
+   OVERLAY DE BLUR (apenas mobile)
+   ----------------------------- */
+@media (max-width: 768px) {
+  /* Overlay portal fixo cobrindo toda a viewport - aplica blur no que estiver atrás */
+  .chat-blur-overlay-portal {
+    position: fixed;
+    inset: 0; /* top:0; right:0; bottom:0; left:0; */
+    background: rgba(0, 0, 0, 0.36); /* leve escurecimento */
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 2000; /* acima do header global */
+    cursor: default;
+  }
+
+  /* Faz a bolha ativa aparecer POR CIMA do overlay */
+  .mensagem-balao.active {
+    position: relative;
+    z-index: 3000; /* maior que o overlay (2000) para ficar visível por cima */
+    /* Opcional: adiciona sombra para destacar */
+    box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+  }
+
+  /* Força rolagem suave em iOS */
+  .mensagens-feed {
+    -webkit-overflow-scrolling: touch;
+  }
 }

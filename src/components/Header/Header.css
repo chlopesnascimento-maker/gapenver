@@ -486,3 +486,17 @@
   border: 2px solid #111827;
 }
 
+/* =========================
+   HEADER - BLUR QUANDO CHAT ATIVO (MOBILE)
+   ========================= */
+@media (max-width: 768px) {
+  /* quando o header tiver a classe .chat-active, ele fica embaçado e não interativo */
+  .app-header.chat-active {
+    -webkit-filter: blur(6px);
+    filter: blur(6px);
+    opacity: 0.98;
+    pointer-events: none; /* bloqueia cliques no header enquanto o chat estiver aberto */
+    transition: filter 180ms ease, opacity 180ms ease;
+  }
+
+}

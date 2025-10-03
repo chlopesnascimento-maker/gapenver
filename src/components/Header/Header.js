@@ -6,16 +6,29 @@ import { FaTiktok, FaYoutube, FaInstagram, FaFacebook } from "react-icons/fa";
 
 function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-
-  // controle de montagem e animação (mas a animação será feita por JS inline para fugir de overrides)
   const [isKingdomMenuMounted, setIsKingdomMenuMounted] = useState(false);
 
   const userMenuRef = useRef(null);
   const kingdomMenuRef = useRef(null);
-  const mobileOverlayRef = useRef(null); // overlay DOM node
-  const sidebarRef = useRef(null);       // sidebar DOM node
+  const mobileOverlayRef = useRef(null);
+  const sidebarRef = useRef(null);
   const hamburgerRef = useRef(null);
   const [unreadMessages, setUnreadMessages] = useState(0);
+
+  // === NOVO: estado que indica se há chat aberto/ativo ===
+  const [isChatActive, setIsChatActive] = useState(false);
+
+  // Escuta o evento customizado enviado pelo ChatWindow
+  useEffect(() => {
+    const handler = (e) => {
+      // aceita tanto { detail: { active: true } } quanto detail:true
+      const detail = e?.detail;
+      const active = typeof detail === 'object' ? !!detail.active : !!detail;
+      setIsChatActive(active);
+    };
+    window.addEventListener('chatActive', handler);
+    return () => window.removeEventListener('chatActive', handler);
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -26,7 +39,6 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
         const clickedInsideOverlay = mobileOverlayRef.current?.contains(event.target);
         const clickedOnHamburger = hamburgerRef.current?.contains(event.target);
         if (!clickedInsideOverlay && !clickedOnHamburger) {
-          // fecha com animação
           closeMenu();
         }
       }
@@ -103,7 +115,6 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
   const handleMenuClick = (page, params = null) => {
     navigateTo(page, params);
     setIsUserMenuOpen(false);
-    // fecha o menu lateral se estiver aberto
     if (isKingdomMenuMounted) closeMenu();
   };
 
@@ -131,42 +142,25 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
     )
   );
 
-  // ---------- animação controlada por JS (mais confiável que depender só do CSS) ----------
   const openMenu = () => {
     if (isKingdomMenuMounted) return;
-    console.log('MENU: open start');
     setIsKingdomMenuMounted(true);
-
-    // esperar montar no DOM
     requestAnimationFrame(() => {
-      // dar um tick extra
       setTimeout(() => {
         const overlay = mobileOverlayRef.current;
         const sidebar = sidebarRef.current;
-        if (!overlay || !sidebar) {
-          console.warn('MENU: overlay/sidebar não encontrados no DOM');
-          return;
-        }
-
-        // prepara estado inicial (invisível / fora da tela)
+        if (!overlay || !sidebar) return;
         overlay.style.transition = 'opacity 350ms ease';
         overlay.style.opacity = '0';
         overlay.style.visibility = 'visible';
         overlay.style.pointerEvents = 'auto';
-
         sidebar.style.transition = 'transform 450ms cubic-bezier(0.2,0.9,0.2,1)';
         sidebar.style.transform = 'translateX(-110%)';
         sidebar.style.willChange = 'transform';
-
-        // forçar reflow para garantir que o browser aplique os valores iniciais
-        // eslint-disable-next-line no-unused-expressions
-        overlay.offsetHeight;
-
-        // dispara a animação no próximo frame
+        void overlay.offsetHeight;  // ✅ mais limpo
         requestAnimationFrame(() => {
           overlay.style.opacity = '1';
           sidebar.style.transform = 'translateX(0)';
-          console.log('MENU: opened (animation started)');
         });
       }, 12);
     });
@@ -174,28 +168,21 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
 
   const closeMenu = () => {
     if (!isKingdomMenuMounted) return;
-    console.log('MENU: close start');
     const overlay = mobileOverlayRef.current;
     const sidebar = sidebarRef.current;
     if (overlay) overlay.style.opacity = '0';
     if (sidebar) sidebar.style.transform = 'translateX(-110%)';
-
-    // aguarda o fim da transição do sidebar para desmontar
     const onEnd = (e) => {
       if (e.target !== sidebar) return;
       sidebar.removeEventListener('transitionend', onEnd);
       setIsKingdomMenuMounted(false);
-      // limpar inline styles deixados (opcional)
       if (overlay) {
         overlay.style.visibility = 'hidden';
         overlay.style.pointerEvents = 'none';
       }
-      console.log('MENU: closed (unmounted)');
     };
-
     if (sidebar) {
       sidebar.addEventListener('transitionend', onEnd);
-      // fallback: se não disparar transitionend (por algum motivo), desmonta depois de 700ms
       setTimeout(() => {
         if (isKingdomMenuMounted) {
           sidebar.removeEventListener('transitionend', onEnd);
@@ -204,11 +191,9 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
             overlay.style.visibility = 'hidden';
             overlay.style.pointerEvents = 'none';
           }
-          console.log('MENU: closed (fallback unmounted)');
         }
       }, 800);
     } else {
-      // se não existir sidebar por algum motivo
       setIsKingdomMenuMounted(false);
       if (overlay) {
         overlay.style.visibility = 'hidden';
@@ -217,13 +202,11 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
     }
   };
 
-  // Overlay content (portal)
   const overlayContent = isKingdomMenuMounted ? (
     <div
       ref={mobileOverlayRef}
       className="mobile-nav-overlay"
       onMouseDown={(e) => {
-        // clicar no backdrop fecha
         if (e.target === mobileOverlayRef.current) closeMenu();
       }}
     >
@@ -246,7 +229,8 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
 
   return (
     <>
-      <header className="app-header">
+      {/* adiciona a classe chat-active quando chat estiver aberto */}
+      <header className={`app-header ${isChatActive ? 'chat-active' : ''}`}>
         <div className="header-top">
           <div className="header-left">
             <button
@@ -340,7 +324,7 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
         </nav>
       </header>
 
-      {/* portalize o overlay para o body (evita stacking-contexts) */}
+      {/* portalize o overlay do menu para o body (evita stacking-contexts) */}
       {overlayPortal}
     </>
   );
