@@ -85,6 +85,13 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+  // SÓ registra a visita se o site NÃO estiver rodando em localhost
+  if (window.location.hostname !== 'localhost') {
+    supabase.functions.invoke('registrar-visita');
+  }
+}, []);
+
   // useEffect de segurança para usuários banidos
   useEffect(() => {
     if (userData && userData.cargo === 'banidos') {
@@ -93,7 +100,7 @@ function App() {
       }
     }
   }, [userData, currentPage]); // Depende de userData e currentPage
-
+  
   const handleLogout = () => {
     supabase.auth.signOut().then(() => {
       navigateTo('home');

@@ -6,6 +6,7 @@ function AdminDashboard({ navigateTo, user }) {
   const [analyticsData, setAnalyticsData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [siteStats, setSiteStats] = useState({ visitas_hoje: 0, visitas_totais: 0 });
 
   useEffect(() => {
     // Função para chamar nossa Edge Function
@@ -29,7 +30,38 @@ function AdminDashboard({ navigateTo, user }) {
     };
 
     fetchAnalyticsData();
+
+      const fetchSiteStats = async () => {
+      const { data, error } = await supabase.from('estatisticas_site').select('*');
+      if (data) {
+        const stats = data.reduce((acc, stat) => {
+          acc[stat.nome_stat] = stat.contador;
+          return acc;
+        }, {});
+        setSiteStats(stats);
+      }
+    };
+    fetchSiteStats();
+
+    // Configura um listener em tempo real para o placar!
+    const channel = supabase
+      .channel('estatisticas_site_realtime')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'estatisticas_site' }, 
+        (payload) => {
+          setSiteStats(prevStats => ({
+            ...prevStats,
+            [payload.new.nome_stat]: payload.new.contador
+          }));
+        }
+      )
+      .subscribe();
+      
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []); // O array vazio [] garante que a busca aconteça apenas uma vez
+
+  
 
   const userRole = user?.app_metadata?.roles?.[0];
   let title = 'Painel de Controle';
@@ -61,7 +93,7 @@ function AdminDashboard({ navigateTo, user }) {
 
       <div className="admin-widgets-grid">
         
-        {/* Widget de Gerenciar Usuários (INTACTO) */}
+        {/* Widget de Gerenciar Usuários */}
         {(userRole === 'admin' || userRole === 'oficialreal' || userRole === 'guardareal') && (
           <div className="admin-widget clickable" onClick={() => navigateTo('userManagement')}>
             <h3>Gerenciar Usuários</h3>
@@ -69,6 +101,18 @@ function AdminDashboard({ navigateTo, user }) {
             <p>Veja e administre todos os cidadãos do reino.</p>
           </div>
         )}
+
+        {/* --- WIDGETS COM NOSSOS CONTADORES --- */}
+        <div className="admin-widget">
+          <h3>Visitas Hoje</h3>
+          <p className="widget-data">{siteStats.visitas_hoje}</p>
+          <p>Reset diário às 05:00.</p>
+        </div>
+        <div className="admin-widget">
+          <h3>Visitas Totais</h3>
+          <p className="widget-data">{siteStats.visitas_totais}</p>
+          <p>Desde a fundação do Reino.</p>
+        </div>
 
         {/* --- NOVOS WIDGETS COM DADOS DO ANALYTICS --- */}
         <div className="admin-widget">
