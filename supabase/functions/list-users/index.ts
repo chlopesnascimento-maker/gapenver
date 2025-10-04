@@ -24,7 +24,15 @@ serve(async (req) => {
     if (!user) throw new Error("Usuário não autenticado.");
 
     // 2. VERIFICA O CARGO E A PERMISSÃO DO USUÁRIO QUE CHAMA
-    const callerRole = (user.app_metadata?.roles?.[0] || user.user_metadata?.cargo || "").toLowerCase().trim();
+    const { data: callerProfile, error: callerError } = await userClient
+      .from('profiles')
+      .select('cargo')
+      .eq('id', user.id)
+      .single();
+
+    if (callerError) throw new Error("Não foi possível verificar o perfil do autor da chamada.");
+
+    const callerRole = callerProfile?.cargo?.toLowerCase() || 'default';
     const allowedStaffRoles = ['admin', 'oficialreal', 'guardareal'];
 
     if (!allowedStaffRoles.includes(callerRole)) {
