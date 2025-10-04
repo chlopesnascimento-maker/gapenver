@@ -86,9 +86,17 @@ function App() {
   }, []);
 
   useEffect(() => {
-  // SÓ registra a visita se o site NÃO estiver rodando em localhost
+  // Só registra a visita se o site NÃO estiver rodando em localhost
   if (window.location.hostname !== 'localhost') {
-    supabase.functions.invoke('registrar-visita');
+    // Faz a inserção diretamente na tabela, sem chamar a Edge Function
+    supabase
+      .from('visitas')
+      .insert({})
+      .then(({ error }) => {
+        if (error) {
+          console.error('Erro ao registrar visita:', error);
+        }
+      });
   }
 }, []);
 
