@@ -163,8 +163,7 @@ function UserProfilePage({ user, viewUserId }) {
           <div className={`kingdom-card ${reinoKey.replace(/'/g, "")}`}>
     <h2>Reino Principal</h2>
     <img src={assets.crest} alt={`Brasão de ${reino}`} className="kingdom-crest" />
-    <h4 className="kingdom-name">{reino}</h4>
-    <p className="kingdom-description">{description}</p>
+        <p className="kingdom-description">{description}</p>
 </div>
           <div className="profile-card extra-card"><h2>Conquistas</h2><p>Em breve...</p></div>
         </div>
