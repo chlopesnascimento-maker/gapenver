@@ -57,7 +57,7 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
 
     const { data: respostasData, error: respostasError } = await supabase
       .from('respostas')
-      .select('*, profiles:user_id(nome, sobrenome, cargo, foto_url), editor:editado_por_user_id(nome, sobrenome)')
+      .select('*, profiles:user_id(*), editor:editado_por_user_id(nome, sobrenome)')
       .eq('topico_id', topicId)
       .order('created_at', { ascending: true });
 
