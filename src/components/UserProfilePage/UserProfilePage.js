@@ -21,8 +21,8 @@ const reinoAssets = {
     background: 'https://i.imgur.com/url-fundo-corvusk.png'
   },
   "lo'otrak": {
-    banner: 'https://i.imgur.com/5WmAmH3.png',
-    crest: 'https://i.imgur.com/5WmAmH3.png',
+    banner: 'https://i.imgur.com/aheiS8O.png',
+    crest: 'https://i.imgur.com/aheiS8O.png',
     background: "https://i.imgur.com/url-fundo-lootrak.png"
   },
   'reinos independentes': {
@@ -30,6 +30,15 @@ const reinoAssets = {
     crest: 'https://i.imgur.com/link-brasao-madeira.png',
     background: null
   }
+};
+
+// --- NOVO: Adicionamos as descrições dos Reinos ---
+const reinoDescriptions = {
+  'gapenver': 'O Coração Verdejante. O último bastião da magia ancestral, onde a lealdade é forjada na natureza e nos laços de sangue.',
+  'saraver': 'O Império do Sol. Terras douradas de comércio e conquista, onde a ambição brilha mais forte que o aço.',
+  'corvusk': 'O Ninho do Corvo. Um reino de segredos e astúcia, governado nas sombras das montanhas congeladas por aqueles que valorizam o conhecimento acima de tudo.',
+  "lo'otrak": 'A Bravura dos Mares. Nascidos para a nobreza e classe, como as bonanças martímas. Onde a coragem, força e inteligência são natas em cada um.',
+  'reinos independentes': 'Viajantes sem bandeira, cuja lealdade pertence apenas ao caminho que trilham e às histórias que coletam.'
 };
 
 const roleDisplayNames = {
@@ -94,6 +103,7 @@ function UserProfilePage({ user, viewUserId }) {
   const notaExpirou = nota_expires_at && new Date(nota_expires_at) < new Date();
   const reinoKey = reino?.toLowerCase() || 'reinos independentes';
   const assets = reinoAssets[reinoKey] || reinoAssets['reinos independentes'];
+  const description = reinoDescriptions[reinoKey];
   const isStaff = ['admin', 'oficialreal', 'guardareal'].includes(cargo?.toLowerCase());
   const displayName = roleDisplayNames[cargo?.toLowerCase()] || roleDisplayNames['default'];
   
@@ -104,7 +114,8 @@ function UserProfilePage({ user, viewUserId }) {
   const canEdit = user && profile && ((callerRank < targetRank) || (currentUserRole === 'admin' && profileUserRole === 'admin'));
 
   return (
-    <div className="profile-page-container">
+    
+    <div className={`profile-page-container theme-${reinoKey.replace(/'/g, "")}`}>
       <div className="profile-banner" style={{ backgroundImage: `url(${assets.banner})` }}>
         <div className="banner-overlay"></div>
          {/* 👇 A estrutura que imita 100% a lógica da StaffPage 👇 */}
@@ -147,7 +158,14 @@ function UserProfilePage({ user, viewUserId }) {
         
         <div className="profile-main-grid">
           <div className="profile-card about-card"><h2>Sobre Mim</h2><p>{sobre_mim || 'Nenhuma informação fornecida ainda.'}</p></div>
-          <div className="profile-card main-info-card" style={{ backgroundImage: assets.background ? `url(${assets.background})` : 'none' }}><div className="card-overlay"><h2>Reino Principal</h2><div className="kingdom-badge"><img src={assets.crest} alt={`Brasão de ${reino}`} className="kingdom-crest"/><h3>{reino}</h3></div></div></div>
+                            {/* --- ALTERADO: O card do Reino foi completamente substituído --- */}
+                            
+          <div className={`kingdom-card ${reinoKey.replace(/'/g, "")}`}>
+    <h2>Reino Principal</h2>
+    <img src={assets.crest} alt={`Brasão de ${reino}`} className="kingdom-crest" />
+    <h4 className="kingdom-name">{reino}</h4>
+    <p className="kingdom-description">{description}</p>
+</div>
           <div className="profile-card extra-card"><h2>Conquistas</h2><p>Em breve...</p></div>
         </div>
       </div>

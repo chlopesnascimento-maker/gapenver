@@ -130,19 +130,6 @@
   text-align: justify;
 }
 
-.kingdom-badge {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.kingdom-crest {
-  background-color: transparent;
-  width: 200px;
-  height: 200px;
-}
 
 .kingdom-badge h3 {
   color: #DAA520;
@@ -329,4 +316,150 @@
 @keyframes brilhoPortal {
   0%, 100% { box-shadow: 0 0 12px 5px rgba(218, 165, 32, 0.7); }
   50%      { box-shadow: 0 0 24px 8px rgba(255, 215, 0, 0.9); }
+}
+
+/* ======================================================= */
+/* --- CARD DE REINO (ESTILO LANDING PAGE) --- */
+/* ======================================================= */
+
+.kingdom-card {
+  /* 1. ESTILO BASE DO CARD */
+  background-color: #111827; /* Fundo sólido escuro, como na landing page */
+  padding: 30px;
+  border-radius: 12px;
+  border: 1px solid rgba(75, 85, 99, 0.5); /* Borda sutil, como na landing page */
+  text-align: center;
+  position: relative;
+  overflow: hidden; /* Garante que o brilho não vaze */
+  height: 100%;
+  z-index: 1; /* Garante que o card fique na sua própria camada de empilhamento */
+}
+
+/* O conteúdo do card fica na camada da frente */
+.kingdom-card h2,
+.kingdom-card .kingdom-crest,
+.kingdom-card .kingdom-name,
+.kingdom-card  {
+  position: relative;
+  z-index: 2;
+  
+}
+
+.kingdom-description {
+  background-color: rgba(0, 0, 0, 0.4);
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    margin: 0.75rem -0.5rem -0.5rem;
+    position: relative;
+  z-index: 2;
+}
+
+/* 2. O BRILHO PULSANTE (::before) */
+.kingdom-card::before {
+  content: '';
+  position: absolute;
+  /* Criamos um "clone" um pouco maior que o card */
+  top: -6px; left: -6px; right: -6px; bottom: -6px;
+  border-radius: 12px;
+  z-index: 0; /* O brilho fica ATRÁS do card */
+  
+  /* O efeito de desfoque que cria o "glow" */
+  filter: blur(12px);
+
+  /* A ANIMAÇÃO "ALWAYS ON" */
+  opacity: 0.6; /* Opacidade inicial */
+  animation: pulseGlow 3.5s infinite ease-in-out; /* Duração de 4s para um pulso mais suave */
+}
+
+/* 3. OS GRADIENTES PARA O BRILHO DE CADA REINO */
+.kingdom-card.gapenver::before { 
+  background: linear-gradient(45deg, #16a34a, #15803d, #22c55e, #14532d); 
+}
+.kingdom-card.saraver::before { 
+  background: linear-gradient(45deg, #fde047, #f59e0b, #fbbf24, #d97706); 
+}
+.kingdom-card.corvusk::before { 
+  background: linear-gradient(45deg, #1d33ff, #2a79f8, #151faa, #007df1); 
+}
+.kingdom-card.lootrak::before { 
+  background: linear-gradient(45deg, #029991, #059b69, #f9fafb, #016d52); 
+}
+
+/* 4. A ANIMAÇÃO @keyframes (copiada da sua landing page) */
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.03);
+  }
+}
+
+
+/* (O resto dos seus estilos para h2, crest, etc. continuam os mesmos) */
+.kingdom-card h2 {
+  color: #ffffff;
+  font-size: 1.8rem;
+  text-shadow: 2px 2px 0px rgb(0 0 0);
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(218, 165, 32, 0.2);
+  padding-bottom: 10px;
+}
+.kingdom-crest {
+  width: 200px;
+  height: 200px;
+  margin: 0 auto 15px auto;
+  object-fit: contain;
+}
+.kingdom-name {
+  color: #fff;
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin: 0 0 10px 0;
+  text-shadow: 2px 2px 5px rgb(0, 0, 0);
+}
+.kingdom-description {
+  color: #e0e0e0;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* ======================================================= */
+/* --- TEMA DOS CARDS BASEADO NO REINO --- */
+/* ======================================================= */
+
+/* Para Lo'otrak, usamos a cor exata que você pediu */
+.theme-lootrak .profile-card {
+  background-color: rgb(20 38 39 / 85%);
+  border-color: rgba(2, 153, 145, 0.4); /* Borda com a cor do brilho */
+}
+
+/* Para os outros reinos, usei as cores base dos seus gradientes */
+.theme-gapenver .profile-card {
+  background-color: rgb(0 20 8 / 85%); /* Verde escuro de Gapenver */
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+.theme-saraver .profile-card {
+  background-color: rgb(16 9 1 / 85%); /* Laranja escuro de Saraver */
+  border-color: rgba(251, 191, 36, 0.4);
+}
+
+.theme-corvusk .profile-card {
+  background-color: rgb(27 45 70); /* Azul escuro de Corvusk */
+  border-color: rgba(42, 121, 248, 0.6);
+}
+
+/* Também podemos tematizar o título dos cards */
+.theme-lootrak .profile-card h2 { color: #ffffff; text-shadow: 2px 2px 0px rgb(255 255 255 / 28%); }
+.theme-gapenver .profile-card h2 { color: #ffffff; text-shadow: 2px 2px 0px rgb(255 255 255 / 28%); }
+.theme-saraver .profile-card h2 { color: #ffffff; text-shadow: 2px 2px 0px rgb(255 255 255 / 28%); }
+.theme-corvusk .profile-card h2 { color: #ffffff; text-shadow: 2px 2px 0px rgb(255 255 255 / 28%); }
+
+@media (max-width: 768px) {
+  .kingdom-card {
+    height: auto;
+  }
 }

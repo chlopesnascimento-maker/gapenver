@@ -4,7 +4,7 @@ import './Footer.css'; // Importando o CSS do Footer
 function Footer() {
   return (
     <footer className="app-footer">
-      <p>© 2024 Reino de Gápenver - Todos os direitos reservados.</p>
+      <p>© 2025 Gápenver - Todos os direitos reservados.</p>
     </footer>
   );
 }

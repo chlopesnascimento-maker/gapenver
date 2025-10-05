@@ -109,3 +109,31 @@
   font-weight: bold;
   color: #DAA520;
 }
+
+.welcome-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  background-color: rgba(13, 13, 26, 0.5); /* Fundo um pouco mais escuro e destacado */
+  border-top: 1px solid rgba(218, 165, 32, 0.4);
+  border-bottom: 1px solid rgba(218, 165, 32, 0.4);
+  padding: 15px 20px;
+  margin: -20px 0 40px 0; /* Margem para se destacar */
+  text-align: center;
+}
+
+.welcome-banner .welcome-icon {
+  width: 28px;
+  height: 28px;
+  fill: #DAA520; /* Dourado */
+  flex-shrink: 0;
+}
+
+.welcome-banner p {
+  margin: 0;
+  font-size: 1rem;
+  font-style: italic;
+  color: #e0e0e0;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+}

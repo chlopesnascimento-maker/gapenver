@@ -68,7 +68,7 @@ function AdminDashboard({ navigateTo, user }) {
     title = 'Painel de Controle do Administrador';
     welcomeMessage = 'Bem-vindo, Majestade. O Reino aguarda suas ordens.';
   } else if (userRole === 'oficialreal') {
-    title = 'Painel do Gestor';
+    title = 'Painel do Oficial';
     welcomeMessage = 'Bem-vindo, Oficial da Guarda Real.';
   } else if (userRole === 'guardareal') {
     title = 'Painel do Guarda';
@@ -85,7 +85,12 @@ function AdminDashboard({ navigateTo, user }) {
   return (
     <div className="admin-dashboard-container">
       <h1 className="admin-title">{title}</h1>
-      <p>{welcomeMessage}</p>
+      <div className="welcome-banner">
+  <svg className="welcome-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3H5a1 1 0 0 0-1 1v2h16v-2a1 1 0 0 0-1-1z"/>
+  </svg>
+  <p>{welcomeMessage}</p>
+</div>
             
       {isAdmin && error && <p className="error-message">{error}</p>}
 
