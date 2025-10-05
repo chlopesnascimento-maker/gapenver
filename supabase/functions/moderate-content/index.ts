@@ -85,22 +85,39 @@ serve(async (req) => {
         break;
 
       case "delete_reply":
-        const { data: replyData, error: replyError } = await supabaseAdmin
-          .from('respostas')
-          .select('profiles(cargo)')
-          .eq('id', targetId)
-          .single();
+    // 1. Buscamos a resposta e o cargo do seu autor de forma explícita
+    const { data: replyData, error: replyError } = await supabaseAdmin
+        .from('respostas')
+        .select('*, profiles:user_id(cargo)') // <-- CORREÇÃO APLICADA AQUI
+        .eq('id', targetId)
+        .single();
+
+    if (replyError) {
+        console.error("Erro ao buscar a resposta para deletar:", replyError);
+        throw new Error("Não foi possível encontrar a resposta especificada.");
+    }
+
+    if (!replyData || !replyData.profiles) {
+        throw new Error("Não foi possível verificar as permissões do autor da resposta.");
+    }
+
+    // 2. Com os dados corretos, agora a verificação de permissão funciona
+    const authorRole = replyData.profiles.cargo.toLowerCase();
+    if (authorRole === 'admin' && callerRole !== 'admin') {
+        throw new Error("Permissão negada: Você não pode excluir um comentário de um Administrador.");
+    }
+
+    // 3. Se todas as verificações passarem, a exclusão é executada
+    const { error: deleteReplyError } = await supabaseAdmin
+        .from("respostas")
+        .delete()
+        .eq("id", targetId);
         
-        if (replyError) throw replyError;
-
-        const authorRole = replyData.profiles.cargo.toLowerCase();
-        if (authorRole === 'admin' && callerRole !== 'admin') {
-            throw new Error("Permissão negada: Você não pode excluir um comentário de um Administrador.");
-        }
-
-        const { error: deleteReplyError } = await supabaseAdmin.from("respostas").delete().eq("id", targetId);
-        if (deleteReplyError) throw deleteReplyError;
-        break;
+    if (deleteReplyError) {
+        console.error("Erro ao deletar a resposta:", deleteReplyError);
+        throw deleteReplyError;
+    }
+    break;
         
       default:
         throw new Error("Ação de moderação inválida.");
