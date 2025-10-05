@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { supabase } from '../../supabaseClient';
 import './Header.css';
 import { FaTiktok, FaYoutube, FaInstagram, FaFacebook } from "react-icons/fa";
+import NotificationDropdown from '../NotificationDropdown/NotificationDropdown';
 
 function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -13,15 +14,18 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
   const mobileOverlayRef = useRef(null);
   const sidebarRef = useRef(null);
   const hamburgerRef = useRef(null);
+  
+  // ESTADOS DE MENSAGENS E NOTIFICAÇÕES
   const [unreadMessages, setUnreadMessages] = useState(0);
+  const [notifications, setNotifications] = useState([]);
+  const [unseenCount, setUnseenCount] = useState(0);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const notificationRef = useRef(null); // Ref para o container do sino
 
-  // === NOVO: estado que indica se há chat aberto/ativo ===
   const [isChatActive, setIsChatActive] = useState(false);
 
-  // Escuta o evento customizado enviado pelo ChatWindow
-  useEffect(() => {
+ useEffect(() => {
     const handler = (e) => {
-      // aceita tanto { detail: { active: true } } quanto detail:true
       const detail = e?.detail;
       const active = typeof detail === 'object' ? !!detail.active : !!detail;
       setIsChatActive(active);
@@ -32,9 +36,15 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
 
   useEffect(() => {
     function handleClickOutside(event) {
+      // Fecha menu do usuário
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
         setIsUserMenuOpen(false);
       }
+      // Fecha dropdown de notificações
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setIsNotificationOpen(false);
+      }
+      // Fecha menu mobile
       if (isKingdomMenuMounted) {
         const clickedInsideOverlay = mobileOverlayRef.current?.contains(event.target);
         const clickedOnHamburger = hamburgerRef.current?.contains(event.target);
@@ -112,6 +122,106 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
     };
   }, [user]);
 
+  useEffect(() => {
+    if (!user) {
+      setNotifications([]);
+      setUnseenCount(0);
+      return;
+    }
+
+    // Função para buscar dados iniciais
+    const fetchInitialNotifications = async () => {
+      const { data, error } = await supabase
+        .from('notificacoes')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(20); // Limita a busca inicial
+
+      if (error) {
+        console.error("Erro ao buscar notificações:", error);
+        return;
+      }
+      
+      setNotifications(data || []);
+      const unseen = data ? data.filter(n => !n.is_seen).length : 0;
+      setUnseenCount(unseen);
+    };
+
+    fetchInitialNotifications();
+
+    // Inscrição no Realtime
+    const channel = supabase
+      .channel(`notifications:${user.id}`)
+      .on('postgres_changes', 
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'notificacoes',
+          filter: `user_id=eq.${user.id}`
+        }, 
+        (payload) => {
+          // Adiciona a nova notificação no topo da lista
+          setNotifications(current => [payload.new, ...current]);
+          // Incrementa o contador de "não vistas"
+          setUnseenCount(current => current + 1);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+
+  // Função chamada ao clicar no sino
+  const handleBellClick = async () => {
+    setIsNotificationOpen(prev => !prev); // Abre ou fecha o dropdown
+
+    // Se houver notificações não vistas, marca como vistas
+    if (unseenCount > 0) {
+      // Atualiza a UI imediatamente para uma melhor experiência
+      setUnseenCount(0);
+      setNotifications(current => 
+        current.map(n => ({ ...n, is_seen: true }))
+      );
+      
+      // Chama a Edge Function em segundo plano
+      await supabase.functions.invoke('mark-notifications-seen');
+    }
+  };
+
+  // Função chamada ao clicar em uma notificação específica
+  const handleNotificationClick = async (notification) => {
+    // Marca a notificação como lida se ainda não estiver
+    if (!notification.is_read) {
+      // Atualiza a UI imediatamente
+      setNotifications(current =>
+        current.map(n => n.id === notification.id ? { ...n, is_read: true } : n)
+      );
+      
+      // Chama a Edge Function em segundo plano
+      await supabase.functions.invoke('mark-notification-read', {
+        body: { notification_id: notification.id },
+      });
+    }
+
+    // Fecha o dropdown e navega
+    setIsNotificationOpen(false);
+    if (notification.link_to) {
+      // Lógica de navegação: precisa ser ajustada para o seu roteador
+      // Exemplo simples:
+      const parts = notification.link_to.split('/');
+      if (parts[0] === 'topico' && parts[1]) {
+        navigateTo('topicoDetalhe', { topicId: parts[1] });
+      } else {
+        // Fallback ou outra lógica de navegação
+        navigateTo('home');
+      }
+    }
+  };
+
   const handleMenuClick = (page, params = null) => {
     navigateTo(page, params);
     setIsUserMenuOpen(false);
@@ -121,7 +231,7 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
   const defaultAvatarSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23e0e0e0"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`;
   const defaultAvatarDataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(defaultAvatarSvg)}`;
   const avatarSrc = userData?.foto_url || defaultAvatarDataUrl;
-  const userRole = user?.app_metadata?.roles?.[0]?.toLowerCase();
+  const userRole = user?.app_metadata?.roles?.[0]?.toLowerCase();                                                                                                                                                   
 
   const NavLinks = () => (
     userRole === 'banidos' ? (
@@ -263,9 +373,19 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
                   <img src="https://i.imgur.com/wlXOcI3.png" alt="Mensagens" />
                   {unreadMessages > 0 && <span className="notification-badge">{unreadMessages}</span>}
               </button>
-              <button className="header-icon-btn" title="Notificações">
-                  <img src="https://i.imgur.com/RJhyoOD.png" alt="Notificações" />
-              </button>
+              
+              {/* ===== CONTAINER DA NOVA FUNCIONALIDADE ===== */}
+              <div className="header-icon-container" ref={notificationRef}>
+                <button className="header-icon-btn" title="Notificações" onClick={handleBellClick}>
+                    <img src="https://i.imgur.com/RJhyoOD.png" alt="Notificações" />
+                    {unseenCount > 0 && <span className="notification-badge">{unseenCount}</span>}
+                </button>
+                <NotificationDropdown 
+                  isOpen={isNotificationOpen}
+                  notifications={notifications}
+                  onNotificationClick={handleNotificationClick}
+                />
+              </div>
               <div className="avatar-container" ref={userMenuRef}>
                   <div className="avatar-circle" onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}>
                       <img id="top-right-avatar" src={avatarSrc} alt="Avatar" className="header-avatar-img" draggable={false}/>

@@ -500,3 +500,8 @@
   }
 
 }
+
+/* Adicione isso ao final de Header.css */
+.header-icon-container {
+  position: relative;
+}

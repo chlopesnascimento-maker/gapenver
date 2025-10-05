@@ -1,0 +1,102 @@
+.notification-dropdown {
+  position: absolute;
+  top: 56px;
+  right: 0;
+  width: 360px;
+  max-width: 90vw;
+  background-color: #1a1a3d;
+  border: 1px solid #444;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+  z-index: 1100;
+  overflow: hidden;
+  color: #e0e0e0;
+}
+
+.notification-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid #444;
+}
+
+.notification-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #f0e68c;
+}
+
+.notification-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Scrollbar customizada */
+.notification-list::-webkit-scrollbar {
+  width: 6px;
+}
+.notification-list::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.2);
+}
+.notification-list::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 3px;
+}
+.notification-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.notification-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #2c2c54;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  position: relative;
+}
+
+.notification-item:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-item.unread {
+  background-color: rgba(218, 165, 32, 0.1);
+}
+
+.unread-indicator {
+  width: 8px;
+  height: 8px;
+  background-color: #e74c3c;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.notification-content {
+  flex-grow: 1;
+}
+
+.notification-text {
+  margin: 0 0 4px 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.notification-text strong {
+  color: #f0e68c;
+  font-weight: 600;
+}
+
+.notification-time {
+  font-size: 0.75rem;
+  color: #aaa;
+}
+
+.no-notifications {
+  padding: 20px;
+  text-align: center;
+  color: #aaa;
+}

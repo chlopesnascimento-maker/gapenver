@@ -189,23 +189,35 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
     }
   };
 
-  const handleEnviarResposta = async (e) => {
-    e.preventDefault();
-    if (!novaResposta.trim()) return;
-    setEnviando(true);
-    const { error: insertError } = await supabase.from('respostas').insert({ conteudo: novaResposta, topico_id: topicId, user_id: user.id });
-    if (isStaff) {
-      await supabase.from('topicos').update({ ultima_resposta_staff_at: new Date() }).eq('id', topicId);
-    }
-    setEnviando(false);
-    if (insertError) {
-        alert('Erro ao enviar resposta: ' + insertError.message);
-    } else {
-        setNovaResposta('');
-        setMostrarFormulario(false);
-        fetchDados();
-    }
-  };
+ const handleEnviarResposta = async (e) => {
+  e.preventDefault();
+  if (!novaResposta.trim() || !user) return;
+  
+  setEnviando(true);
+  
+  // ANTES: A lógica era direto no banco:
+  // const { error: insertError } = await supabase.from('respostas').insert(...);
+  
+  // DEPOIS: Chamamos nossa nova Edge Function que faz tudo
+  const { error } = await supabase.functions.invoke('post-reply-and-notify', {
+    body: {
+      conteudo: novaResposta,
+      topico_id: topicId
+    },
+  });
+  
+  setEnviando(false);
+  
+  if (error) {
+    alert('Erro ao enviar resposta: ' + error.message);
+  } else {
+    // A resposta foi enviada e a notificação (se aplicável) foi criada!
+    // Agora só precisamos limpar o formulário e recarregar os dados.
+    setNovaResposta('');
+    setMostrarFormulario(false);
+    fetchDados(); // O fetchDados continua o mesmo para atualizar a lista de respostas na tela
+  }
+};
 
   const handleStartEditReply = (resposta) => {
     setEditingReplyId(resposta.id);
