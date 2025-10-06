@@ -127,6 +127,7 @@
   border-radius: 50%;
   opacity: 0; /* Começa invisível */
   transition: opacity 0.2s ease, background-color 0.2s ease;
+  z-index: 2;
 }
 
 .conversa-item:hover .conversa-delete-btn {
@@ -210,20 +211,7 @@
   height: 100%;
 }
 
-/* 5. O ícone "G" brilhante (continua igual) */
-.conversa-item.staff-conversa::after {
-  content: '';
-  position: absolute;
-  right: 25px;
-  top: 50%;
-  width: 60px;
-  height: 60px;
-  transform: translateY(-50%);
-  background-image: url('https://i.imgur.com/m1hVBrn.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  opacity: 1;
-}
+
 
 /* 6. CORREÇÃO IMPORTANTE: Removemos a regra que escondia o badge */
 /* A regra antiga '.conversa-item.staff-conversa .unread-badge { display: none; }' foi APAGADA. */
@@ -260,4 +248,47 @@
   .mensagens-container.chat-ativo .chat-area {
     display: flex; /* ...e mostramos a área de chat em tela cheia. */
   }
+}
+
+/* REGRA PARA O NOVO ÍCONE "G" (substitui o ::after) */
+.staff-g-icon {
+  content: '';
+  position: absolute;
+  right: 25px;
+  top: 50%;
+  width: 60px;
+  height: 60px;
+  transform: translateY(-50%);
+  background-image: url('https://i.imgur.com/m1hVBrn.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 1;
+  z-index: 1; /* Camada 1 */
+  pointer-events: none; /* Ignora o mouse */
+}
+
+/* REGRA FINAL E CORRETA PARA O BOTÃO DELETAR */
+.conversa-delete-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 5px;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+  z-index: 2; /* Camada 2 (sempre por cima) */
+}
+
+.pin-icon {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  font-size: 14px;
+  opacity: 0.7;
 }

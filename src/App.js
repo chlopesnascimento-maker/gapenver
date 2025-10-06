@@ -28,6 +28,7 @@ import CriarTopicoPage from './components/CriarTopicoPage/CriarTopicoPage';
 import TopicoDetalhePage from './components/TopicoDetalhePage/TopicoDetalhePage';
 import BannedPage from './components/BannedPage/BannedPage';
 import MensagensPage from './components/MensagensPage/MensagensPage';
+import { ModalProvider } from './contexts/ModalContext';
 
 //INICIALIZAÇÃO DO GOOGLE ANALYTICS
 const MEASUREMENT_ID = "G-N6Q8RTN5PL"; 
@@ -217,6 +218,7 @@ function App() {
   const isAdmin = ['admin', 'autor'].includes(userRole);
 
   return (
+     <ModalProvider>
     <div className="App">
       <div className="stars"></div>
       <LoadingOverlay show={loading} />
@@ -264,7 +266,7 @@ function App() {
           />
         )}
 
-        {currentPage === 'mensagens' && <MensagensPage user={user} />}
+        {currentPage === 'mensagens' && <MensagensPage user={user} navigateTo={navigateTo} />}
         {currentPage === 'myProfile' && (
           <UserProfilePage
             user={user}
@@ -286,7 +288,7 @@ function App() {
         </svg>
       </button>
     </div>
-  );
+  </ModalProvider>);
 }
 
 export default App;
