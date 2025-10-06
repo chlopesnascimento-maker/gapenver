@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+// CÓDIGO COMPLETO E FINAL PARA O ARQUIVO Header.js - SEM OMISSÕES
+
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../../supabaseClient';
 import './Header.css';
@@ -6,25 +8,28 @@ import { FaTiktok, FaYoutube, FaInstagram, FaFacebook } from "react-icons/fa";
 import NotificationDropdown from '../NotificationDropdown/NotificationDropdown';
 
 function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
+  // --- Estados do Componente ---
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isKingdomMenuMounted, setIsKingdomMenuMounted] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [isChatActive, setIsChatActive] = useState(false);
 
+  // --- Estados do Sistema de Notificações ---
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+
+  // --- Refs ---
   const userMenuRef = useRef(null);
   const kingdomMenuRef = useRef(null);
   const mobileOverlayRef = useRef(null);
   const sidebarRef = useRef(null);
   const hamburgerRef = useRef(null);
-  
-  // ESTADOS DE MENSAGENS E NOTIFICAÇÕES
-  const [unreadMessages, setUnreadMessages] = useState(0);
-  const [notifications, setNotifications] = useState([]);
-  const [unseenCount, setUnseenCount] = useState(0);
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const notificationRef = useRef(null); // Ref para o container do sino
+  const notificationRef = useRef(null);
 
-  const [isChatActive, setIsChatActive] = useState(false);
+  // --- Hooks de Efeito ---
 
- useEffect(() => {
+  useEffect(() => {
     const handler = (e) => {
       const detail = e?.detail;
       const active = typeof detail === 'object' ? !!detail.active : !!detail;
@@ -34,17 +39,50 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
     return () => window.removeEventListener('chatActive', handler);
   }, []);
 
+  const closeMenu = useCallback(() => {
+    if (!isKingdomMenuMounted) return;
+    const overlay = mobileOverlayRef.current;
+    const sidebar = sidebarRef.current;
+    if (overlay) overlay.style.opacity = '0';
+    if (sidebar) sidebar.style.transform = 'translateX(-110%)';
+    const onEnd = (e) => {
+      if (e.target !== sidebar) return;
+      sidebar.removeEventListener('transitionend', onEnd);
+      setIsKingdomMenuMounted(false);
+      if (overlay) {
+        overlay.style.visibility = 'hidden';
+        overlay.style.pointerEvents = 'none';
+      }
+    };
+    if (sidebar) {
+      sidebar.addEventListener('transitionend', onEnd);
+      setTimeout(() => {
+        if (isKingdomMenuMounted) {
+          sidebar.removeEventListener('transitionend', onEnd);
+          setIsKingdomMenuMounted(false);
+          if (overlay) {
+            overlay.style.visibility = 'hidden';
+            overlay.style.pointerEvents = 'none';
+          }
+        }
+      }, 800);
+    } else {
+      setIsKingdomMenuMounted(false);
+      if (overlay) {
+        overlay.style.visibility = 'hidden';
+        overlay.style.pointerEvents = 'none';
+      }
+    }
+  }, [isKingdomMenuMounted]);
+
   useEffect(() => {
     function handleClickOutside(event) {
-      // Fecha menu do usuário
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
         setIsUserMenuOpen(false);
       }
-      // Fecha dropdown de notificações
       if (notificationRef.current && !notificationRef.current.contains(event.target)) {
         setIsNotificationOpen(false);
       }
-      // Fecha menu mobile
       if (isKingdomMenuMounted) {
         const clickedInsideOverlay = mobileOverlayRef.current?.contains(event.target);
         const clickedOnHamburger = hamburgerRef.current?.contains(event.target);
@@ -55,7 +93,7 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isKingdomMenuMounted]);
+  }, [isKingdomMenuMounted, closeMenu]);
 
   useEffect(() => {
     if (!user) {
@@ -125,102 +163,44 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
   useEffect(() => {
     if (!user) {
       setNotifications([]);
-      setUnseenCount(0);
+      setUnreadCount(0);
       return;
     }
 
-    // Função para buscar dados iniciais
     const fetchInitialNotifications = async () => {
       const { data, error } = await supabase
         .from('notificacoes')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
-        .limit(20); // Limita a busca inicial
+        .limit(20);
 
-      if (error) {
-        console.error("Erro ao buscar notificações:", error);
-        return;
-      }
+      if (error) { console.error("Erro ao buscar notificações:", error); return; }
       
       setNotifications(data || []);
-      const unseen = data ? data.filter(n => !n.is_seen).length : 0;
-      setUnseenCount(unseen);
+      const unread = data ? data.filter(n => !n.is_read).length : 0;
+      setUnreadCount(unread);
     };
 
     fetchInitialNotifications();
 
-    // Inscrição no Realtime
     const channel = supabase
-      .channel(`notifications:${user.id}`)
+      .channel(`notifications_final:${user.id}`)
       .on('postgres_changes', 
         { 
-          event: 'INSERT', 
+          event: '*',
           schema: 'public', 
           table: 'notificacoes',
           filter: `user_id=eq.${user.id}`
         }, 
-        (payload) => {
-          // Adiciona a nova notificação no topo da lista
-          setNotifications(current => [payload.new, ...current]);
-          // Incrementa o contador de "não vistas"
-          setUnseenCount(current => current + 1);
+        () => {
+          fetchInitialNotifications();
         }
       )
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [user]);
-
-
-  // Função chamada ao clicar no sino
-  const handleBellClick = async () => {
-    setIsNotificationOpen(prev => !prev); // Abre ou fecha o dropdown
-
-    // Se houver notificações não vistas, marca como vistas
-    if (unseenCount > 0) {
-      // Atualiza a UI imediatamente para uma melhor experiência
-      setUnseenCount(0);
-      setNotifications(current => 
-        current.map(n => ({ ...n, is_seen: true }))
-      );
-      
-      // Chama a Edge Function em segundo plano
-      await supabase.functions.invoke('mark-notifications-seen');
-    }
-  };
-
-  // Função chamada ao clicar em uma notificação específica
-  const handleNotificationClick = async (notification) => {
-    // Marca a notificação como lida se ainda não estiver
-    if (!notification.is_read) {
-      // Atualiza a UI imediatamente
-      setNotifications(current =>
-        current.map(n => n.id === notification.id ? { ...n, is_read: true } : n)
-      );
-      
-      // Chama a Edge Function em segundo plano
-      await supabase.functions.invoke('mark-notification-read', {
-        body: { notification_id: notification.id },
-      });
-    }
-
-    // Fecha o dropdown e navega
-    setIsNotificationOpen(false);
-    if (notification.link_to) {
-      // Lógica de navegação: precisa ser ajustada para o seu roteador
-      // Exemplo simples:
-      const parts = notification.link_to.split('/');
-      if (parts[0] === 'topico' && parts[1]) {
-        navigateTo('topicoDetalhe', { topicId: parts[1] });
-      } else {
-        // Fallback ou outra lógica de navegação
-        navigateTo('home');
-      }
-    }
-  };
 
   const handleMenuClick = (page, params = null) => {
     navigateTo(page, params);
@@ -228,10 +208,37 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
     if (isKingdomMenuMounted) closeMenu();
   };
 
+  const handleBellClick = () => {
+    setIsNotificationOpen(prev => !prev);
+  };
+
+  const handleNotificationClick = (notification) => {
+    setIsNotificationOpen(false);
+    if (notification.link_to) {
+      const parts = notification.link_to.split('/');
+      if (parts[0] === 'topico' && parts[1]) {
+        navigateTo('topicoDetalhe', { topicId: parts[1] });
+      } else {
+        navigateTo('home');
+      }
+    }
+
+    if (!notification.is_read) {
+      setUnreadCount(current => Math.max(0, current - 1));
+      setNotifications(current =>
+        current.map(n => n.id === notification.id ? { ...n, is_read: true } : n)
+      );
+      
+      supabase.functions.invoke('mark-notification-read', {
+        body: { notification_id: notification.id },
+      }).catch(err => console.error("Falha ao marcar como lida:", err));
+    }
+  };
+
   const defaultAvatarSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23e0e0e0"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`;
   const defaultAvatarDataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(defaultAvatarSvg)}`;
   const avatarSrc = userData?.foto_url || defaultAvatarDataUrl;
-  const userRole = user?.app_metadata?.roles?.[0]?.toLowerCase();                                                                                                                                                   
+  const userRole = user?.app_metadata?.roles?.[0]?.toLowerCase();
 
   const NavLinks = () => (
     userRole === 'banidos' ? (
@@ -267,49 +274,13 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
         sidebar.style.transition = 'transform 450ms cubic-bezier(0.2,0.9,0.2,1)';
         sidebar.style.transform = 'translateX(-110%)';
         sidebar.style.willChange = 'transform';
-        void overlay.offsetHeight;  // ✅ mais limpo
+        void overlay.offsetHeight;
         requestAnimationFrame(() => {
           overlay.style.opacity = '1';
           sidebar.style.transform = 'translateX(0)';
         });
       }, 12);
     });
-  };
-
-  const closeMenu = () => {
-    if (!isKingdomMenuMounted) return;
-    const overlay = mobileOverlayRef.current;
-    const sidebar = sidebarRef.current;
-    if (overlay) overlay.style.opacity = '0';
-    if (sidebar) sidebar.style.transform = 'translateX(-110%)';
-    const onEnd = (e) => {
-      if (e.target !== sidebar) return;
-      sidebar.removeEventListener('transitionend', onEnd);
-      setIsKingdomMenuMounted(false);
-      if (overlay) {
-        overlay.style.visibility = 'hidden';
-        overlay.style.pointerEvents = 'none';
-      }
-    };
-    if (sidebar) {
-      sidebar.addEventListener('transitionend', onEnd);
-      setTimeout(() => {
-        if (isKingdomMenuMounted) {
-          sidebar.removeEventListener('transitionend', onEnd);
-          setIsKingdomMenuMounted(false);
-          if (overlay) {
-            overlay.style.visibility = 'hidden';
-            overlay.style.pointerEvents = 'none';
-          }
-        }
-      }, 800);
-    } else {
-      setIsKingdomMenuMounted(false);
-      if (overlay) {
-        overlay.style.visibility = 'hidden';
-        overlay.style.pointerEvents = 'none';
-      }
-    }
   };
 
   const overlayContent = isKingdomMenuMounted ? (
@@ -339,7 +310,6 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
 
   return (
     <>
-      {/* adiciona a classe chat-active quando chat estiver aberto */}
       <header className={`app-header ${isChatActive ? 'chat-active' : ''}`}>
         <div className="header-top">
           <div className="header-left">
@@ -373,12 +343,10 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
                   <img src="https://i.imgur.com/wlXOcI3.png" alt="Mensagens" />
                   {unreadMessages > 0 && <span className="notification-badge">{unreadMessages}</span>}
               </button>
-              
-              {/* ===== CONTAINER DA NOVA FUNCIONALIDADE ===== */}
               <div className="header-icon-container" ref={notificationRef}>
                 <button className="header-icon-btn" title="Notificações" onClick={handleBellClick}>
                     <img src="https://i.imgur.com/RJhyoOD.png" alt="Notificações" />
-                    {unseenCount > 0 && <span className="notification-badge">{unseenCount}</span>}
+                    {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
                 </button>
                 <NotificationDropdown 
                   isOpen={isNotificationOpen}
@@ -444,7 +412,6 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
         </nav>
       </header>
 
-      {/* portalize o overlay do menu para o body (evita stacking-contexts) */}
       {overlayPortal}
     </>
   );

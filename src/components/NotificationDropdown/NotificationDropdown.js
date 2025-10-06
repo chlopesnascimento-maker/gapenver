@@ -26,9 +26,17 @@ const NotificationItem = ({ notification, onNotificationClick }) => {
   // **IMPORTANTE**: Você precisará customizar isso com base nos seus 'types'
   const getNotificationMessage = (notif) => {
     const actorName = notif.data?.actor_name || 'Alguém';
+    const topicTitle = notif.data?.topic_title || '';
+    const othersCount = notif.data?.other_actors_count || 0;
+
     switch (notif.type) {
       case 'nova_resposta':
-        return `<strong>${actorName}</strong> respondeu ao seu tópico: "${notif.data?.topic_title || ''}"`;
+        if (othersCount > 0) {
+          // Mensagem agrupada
+          return `<strong>${actorName}</strong> e mais <strong>${othersCount} ${othersCount > 1 ? 'pessoas' : 'pessoa'}</strong> responderam ao seu tópico: "${topicTitle}"`;
+        }
+        // Mensagem para a primeira resposta
+        return `<strong>${actorName}</strong> respondeu ao seu tópico: "${topicTitle}"`;
       case 'curtida_topico':
         return `<strong>${actorName}</strong> curtiu seu tópico.`;
       case 'curtida_resposta':
