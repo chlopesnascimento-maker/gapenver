@@ -186,7 +186,9 @@ function ChatWindow({ user, conversaId, deletedTimestamp, isStaffChat, participa
             const remetenteProfile = msg.remetente;
             const nomeCompleto = remetenteProfile ? `${remetenteProfile.nome} ${remetenteProfile.sobrenome || ''}`.trim() : '';
 
-            const isRemetenteStaff = ['admin', 'oficialreal', 'guardareal'].includes(remetenteProfile?.cargo?.toLowerCase());
+             const cargoRemetente = remetenteProfile?.cargo?.toLowerCase();
+            const isRemetenteAutor = cargoRemetente === 'autor';
+            const isRemetenteStaff = ['admin', 'oficialreal', 'guardareal'].includes(cargoRemetente);
 
             const isActive = mensagemAtiva === msg.id;
 
@@ -194,7 +196,7 @@ function ChatWindow({ user, conversaId, deletedTimestamp, isStaffChat, participa
               <div
                 key={msg.id}
                 onClick={() => setMensagemAtiva(prev => (prev === msg.id ? null : msg.id))}
-                className={`mensagem-balao ${msg.remetente_id === user.id ? 'minha' : 'outrem'} ${isRemetenteStaff ? 'staff-bubble' : ''} ${isActive ? 'active' : ''}`}
+                 className={`mensagem-balao ${msg.remetente_id === user.id ? 'minha' : 'outrem'} ${isRemetenteAutor ? 'autor-bubble' : (isRemetenteStaff ? 'staff-bubble' : '')} ${isActive ? 'active' : ''}`}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setMensagemAtiva(prev => (prev === msg.id ? null : msg.id)); }}

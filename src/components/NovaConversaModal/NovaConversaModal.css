@@ -36,3 +36,33 @@
 .result-item:last-child { border-bottom: none; }
 .result-item:hover { background-color: rgba(218, 165, 32, 0.1); }
 .result-item img { width: 30px; height: 30px; border-radius: 50%; }
+
+.nc-modal .rich-text-editor {
+  border: 1px solid rgba(218, 165, 32, 0.5);
+  border-radius: 6px;
+  background-color: rgba(0, 0, 0, 0.3);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 150px; /* Altura mínima para o editor */
+}
+
+.nc-modal .editor-toolbar {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(218, 165, 32, 0.2);
+}
+
+.nc-modal .rich-text-editor .prose {
+  background-color: transparent;
+  border: none;
+  padding: 10px 15px;
+  color: #fff;
+  flex-grow: 1; /* Ocupa o espaço restante */
+  overflow-y: auto;
+  text-align: left;
+}
+
+.nc-modal .rich-text-editor .prose p {
+  text-align: left;
+}

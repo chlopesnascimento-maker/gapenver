@@ -67,6 +67,7 @@
   background-color: #2c2c54;
   padding: 10px 15px;
   border-radius: 18px;
+  text-align: left;
 }
 .mensagem-balao.minha .mensagem-conteudo {
   background-color: #3e3e6b;
@@ -294,4 +295,29 @@
   .mensagens-feed {
     -webkit-overflow-scrolling: touch;
   }
+}
+
+/* ======================================================= */
+/* --- ESTILO EXCLUSIVO PARA O BALÃO DE MENSAGEM DO AUTOR --- */
+/* ======================================================= */
+
+/* Regra para quando o Autor for a outra pessoa na conversa */
+.mensagem-balao.autor-bubble .mensagem-conteudo {
+  border: 2px solid #0000003d;
+  background-image:
+    /* Camada de CIMA: Um fundo escuro, mas ligeiramente diferente do seu */
+    linear-gradient(#4d3c0b, #1a1a1a),
+    /* Camada de BAIXO: A borda dourada/metálica */
+    linear-gradient(90deg, #ffbc00, #efefef, #837c5a);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
+/* Regra para quando o Autor for VOCÊ (sua mensagem), usando o código exato que você criou */
+.mensagem-balao.minha.autor-bubble .mensagem-conteudo {
+  background-image:
+    /* Camada de CIMA: O fundo que você escolheu */
+    linear-gradient(#8b6a06, #000000),
+    /* Camada de BAIXO: A borda que você escolheu */
+    linear-gradient(90deg, #ffbc00, #efefef, #837c5a);
 }
