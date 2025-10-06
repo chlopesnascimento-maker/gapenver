@@ -366,6 +366,7 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
                         let panelName = null;
                         if (userRole === 'admin') panelName = 'Painel Admin';
                         else if (userRole === 'oficialreal' || userRole === 'guardareal') panelName = 'Painel do Gestor';
+                        else if (userRole === 'autor') panelName = 'Painel Autor'
                         return (
                           <>
                             {panelName && <a href="#" onClick={(e) => { e.preventDefault(); handleMenuClick('adminDashboard'); }}>{panelName}</a>}

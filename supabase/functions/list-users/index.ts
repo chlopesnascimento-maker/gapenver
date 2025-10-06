@@ -7,13 +7,11 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Lida com a requisição pre-flight do CORS
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    // 1. CRIA O CLIENTE PARA IDENTIFICAR QUEM ESTÁ CHAMANDO A FUNÇÃO
     const userClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -23,7 +21,6 @@ serve(async (req) => {
     const { data: { user } } = await userClient.auth.getUser()
     if (!user) throw new Error("Usuário não autenticado.");
 
-    // 2. VERIFICA O CARGO E A PERMISSÃO DO USUÁRIO QUE CHAMA
     const { data: callerProfile, error: callerError } = await userClient
       .from('profiles')
       .select('cargo')
@@ -33,36 +30,44 @@ serve(async (req) => {
     if (callerError) throw new Error("Não foi possível verificar o perfil do autor da chamada.");
 
     const callerRole = callerProfile?.cargo?.toLowerCase() || 'default';
-    const allowedStaffRoles = ['admin', 'oficialreal', 'guardareal'];
+    const allowedStaffRoles = ['admin', 'oficialreal', 'guardareal', 'autor'];
 
     if (!allowedStaffRoles.includes(callerRole)) {
       throw new Error("Acesso negado: Você não tem permissão para esta ação.");
     }
 
-    // 3. CRIA O CLIENTE ADMIN COM SUPERPODERES PARA EXECUTAR AS AÇÕES
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // =============================================================
-    // --- ROTA DE LISTAGEM DE USUÁRIOS (O QUE VOCÊ JÁ TINHA) ---
-    // =============================================================
     if (req.method === 'GET') {
       const { data: { users }, error: usersError } = await supabaseAdmin.auth.admin.listUsers();
       if (usersError) throw usersError;
 
-      // Sua lógica de hierarquia para LISTAR (perfeita, mantida 100%)
-      const roleRanks = { admin: 1, oficialreal: 2, guardareal: 3, viajante: 4, default: 99 };
+      const roleRanks = { autor: 0, admin: 1, oficialreal: 2, guardareal: 3, viajante: 4, banidos: 5, default: 99 };
       const callerRank = roleRanks[callerRole] || roleRanks.default;
 
+      // <-- ===== LÓGICA DE FILTRAGEM FINAL E CORRIGIDA ===== -->
       const filteredUsers = users.filter(targetUser => {
         const targetRole = (targetUser.app_metadata?.roles?.[0] || 'default').toLowerCase();
+        
+        // REGRA 1: Se quem chama é o 'autor', ele pode ver todo mundo.
+        if (callerRole === 'autor') {
+          return true;
+        }
+
+        // REGRA 2: Se o alvo é o 'autor' (e quem chama não é, por causa da Regra 1),
+        // ninguém mais pode vê-lo.
+        if (targetRole === 'autor') {
+          return false;
+        }
+
+        // REGRA 3: Sua lógica de hierarquia original para todos os outros casos.
         const targetRank = roleRanks[targetRole] || roleRanks.default;
         return callerRank <= targetRank;
       });
-
-      // Lógica para mesclar com dados do profiles (perfeita, mantida 100%)
+      
       const { data: profiles, error: profilesError } = await supabaseAdmin.from("profiles").select("*");
       if (profilesError) throw profilesError;
       
@@ -77,61 +82,13 @@ serve(async (req) => {
       });
     }
 
-    // =============================================================
-    // --- ROTA DE EDIÇÃO DE USUÁRIO (A PARTE QUE FALTAVA) ---
-    // =============================================================
-    if (req.method === 'PATCH' || req.method === 'POST') {
-      const { userIdToUpdate, newUserData } = await req.json();
-      if (!userIdToUpdate || !newUserData) {
-        throw new Error("Dados insuficientes para atualização.");
-      }
-      
-      // LÓGICA DE SEGURANÇA PARA EDIÇÃO
-      // Um oficial/guarda não pode editar um admin
-      const { data: targetUser, error: targetUserError } = await supabaseAdmin.auth.admin.getUserById(userIdToUpdate);
-      if(targetUserError) throw targetUserError;
-
-      const targetRole = (targetUser.user.app_metadata?.roles?.[0] || "").toLowerCase();
-      if (targetRole === 'admin' && callerRole !== 'admin') {
-         throw new Error("Permissão negada: Você не pode editar um administrador.");
-      }
-
-      // ATUALIZA O USUÁRIO NO AUTH
-      const { data: updatedAuthUser, error: updateAuthError } = await supabaseAdmin.auth.admin.updateUserById(
-        userIdToUpdate,
-        { app_metadata: { roles: [newUserData.cargo] } } // Atualiza o cargo no Auth
-      );
-      if (updateAuthError) throw updateAuthError;
-
-      // ATUALIZA O USUÁRIO NA TABELA PROFILES
-      const { error: updateProfileError } = await supabaseAdmin
-        .from('profiles')
-        .update({
-          nome: newUserData.nome,
-          sobrenome: newUserData.sobrenome,
-          foto_url: newUserData.foto_url,
-          cargo: newUserData.cargo,
-        })
-        .eq('id', userIdToUpdate);
-      if (updateProfileError) throw updateProfileError;
-
-      return new Response(JSON.stringify({ message: "Usuário atualizado com sucesso!" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
-    }
-
-    // Se chegar aqui, é um método não suportado (ex: DELETE)
     throw new Error("Método não suportado.");
 
-  // Bloco NOVO com log detalhado
-} catch (error) {
-  // A LINHA MAIS IMPORTANTE: Imprime o erro completo no servidor
-  console.error('ERRO DETALHADO NA EDGE FUNCTION:', error); 
-
-  return new Response(JSON.stringify({ error: error.message }), {
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-    status: 403,
-  });
-}
+  } catch (error) {
+    console.error('ERRO DETALHADO NA EDGE FUNCTION list-users:', error); 
+    return new Response(JSON.stringify({ error: error.message }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 403,
+    });
+  }
 })

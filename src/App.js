@@ -207,10 +207,14 @@ function App() {
   }, []);
 
   // Lógica de permissão
-  const userRole = user?.app_metadata?.roles?.[0];
-  const canAccessPanel = ['admin', 'oficialreal', 'guardareal'].includes(userRole);
-  const canManageUsers = ['admin', 'oficialreal', 'guardareal'].includes(userRole);
-  const isAdmin = userRole === 'admin';
+   const userRole = userData?.cargo; // Lendo do 'userData' para maior consistência
+  
+  // O 'autor' agora tem acesso a tudo que os outros staff têm
+  const canAccessPanel = ['admin', 'oficialreal', 'guardareal', 'autor'].includes(userRole);
+  const canManageUsers = ['admin', 'oficialreal', 'guardareal', 'autor'].includes(userRole);
+
+  // O 'autor' também é considerado um administrador de nível mais alto
+  const isAdmin = ['admin', 'autor'].includes(userRole);
 
   return (
     <div className="App">

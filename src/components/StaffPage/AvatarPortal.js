@@ -39,7 +39,7 @@ function AvatarPortal({ imageUrl, altText }) {
         },
         // MUDANÇA DRASTICA AQUI: Partículas maiores e mais visíveis 👇
         size: {
-          value: { min: 2, max: 5 },
+          value: { min: 2, max: 2 },
         },
         move: {
           enable: true,
@@ -51,7 +51,7 @@ function AvatarPortal({ imageUrl, altText }) {
           trail: {
             enable: true,
             length: 8, // Rastro longo e visível
-            fill: { color: "#111111" } // Um fundo escuro para o rastro dar contraste
+            fill: { color: "#020101ff" } // Um fundo escuro para o rastro dar contraste
           }
         },
       },

@@ -146,20 +146,6 @@ function MyAccountPage({ navigateTo }) {
 
         <hr />
 
-        {userData?.aboutMe && (
-  <>
-    <strong style={{ display: 'block', marginTop: '15px', marginBottom: '6px', fontSize: '15px', color: '#fff' }}>
-      Sobre Mim:
-    </strong>
-    <div className={`about-me-block ${roleDisplay?.name?.toLowerCase().replace(/\s+/g, '-')}`}>
-      <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>
-        {userData.aboutMe}
-      </p>
-    </div>
-  </>
-)}
-
-<hr />
 
         <section className="security-section">
           <h3>Segurança</h3>

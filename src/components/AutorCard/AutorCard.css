@@ -81,11 +81,11 @@
   }
 
   .autor-card-container .autor-info-stack h3 {
-    font-size: 1rem;
+    font-size: 20px;
   }
   
   .autor-card-container .autor-cargo-text {
-    font-size: 0.8rem;
+    font-size: 20px;
     text-transform: none;
   }
 }
@@ -107,4 +107,16 @@
   color: #ccc;
   font-size: 0.9rem;
   font-weight: bold;
+}
+
+/* Estilo para a nova insígnia do Autor */
+.autor-card-container .autor-autor-badge {
+  height: 25px; /* Um pouco maior para dar mais destaque */
+  width: auto;
+  margin-top: 2px; /* Pequeno ajuste de alinhamento */
+}
+
+/* Cor dourada para o TEXTO do cargo "Autor" */
+.autor-card-container .cargo-autor {
+  color: #DAA520; 
 }

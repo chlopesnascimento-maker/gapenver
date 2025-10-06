@@ -14,7 +14,7 @@ function ComunidadePage({ user, navigateTo }) {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState('Todos');
 
   const currentUserRole = user?.app_metadata?.roles?.[0]?.toLowerCase() || 'default';
-  const isStaff = ['admin', 'oficialreal', 'guardareal'].includes(currentUserRole);
+  const isStaff = ['admin', 'oficialreal', 'guardareal', 'autor'].includes(currentUserRole);
 
   useEffect(() => {
     console.log('-> useEffect disparado!', { activeTab, user, categoriaSelecionada });

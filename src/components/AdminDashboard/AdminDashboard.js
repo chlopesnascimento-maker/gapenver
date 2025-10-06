@@ -66,13 +66,16 @@ function AdminDashboard({ navigateTo, user }) {
   let welcomeMessage = 'Bem-vindo(a).';
   if (userRole === 'admin') {
     title = 'Painel de Controle do Administrador';
-    welcomeMessage = 'Bem-vindo, Majestade. O Reino aguarda suas ordens.';
+    welcomeMessage = 'Bem-vindo(a), Majestade. O Reino aguarda suas ordens.';
   } else if (userRole === 'oficialreal') {
     title = 'Painel do Oficial';
-    welcomeMessage = 'Bem-vindo, Oficial da Guarda Real.';
+    welcomeMessage = 'Bem-vindo(a), Oficial da Guarda Real.';
   } else if (userRole === 'guardareal') {
     title = 'Painel do Guarda';
-    welcomeMessage = 'Bem-vindo, Sargento da Guarda Real.';
+    welcomeMessage = 'Bem-vindo(a), Sargento da Guarda Real.';
+  } else if (userRole === 'autor') {
+    title = 'Painel do Autor';
+    welcomeMessage = 'Bem-vindo, Autor da Obra GÁPENVER'
   }
 
   // Lógica para calcular totais e porcentagens para os widgets
@@ -97,7 +100,7 @@ function AdminDashboard({ navigateTo, user }) {
       <div className="admin-widgets-grid">
         
         {/* Widget de Gerenciar Usuários (Visível para toda a Staff) */}
-        {(userRole === 'admin' || userRole === 'oficialreal' || userRole === 'guardareal') && (
+        {(userRole === 'admin' || userRole === 'autor' || userRole === 'oficialreal' || userRole === 'guardareal') && (
           <div className="admin-widget clickable" onClick={() => navigateTo('userManagement')}>
             <h3>Gerenciar Usuários</h3>
             <p className="widget-data">Ver Lista</p>
@@ -106,7 +109,7 @@ function AdminDashboard({ navigateTo, user }) {
         )}
 
         {/* Widget de Visitas Totais (Visível para toda a Staff) */}
-        {(userRole === 'admin' || userRole === 'oficialreal' || userRole === 'guardareal') && (
+        {(userRole === 'admin' || userRole === 'autor' || userRole === 'oficialreal' || userRole === 'guardareal') && (
           <div className="admin-widget">
             <h3>Visitas Totais</h3>
             <p className="widget-data">{siteStats.visitas_totais}</p>
@@ -115,7 +118,7 @@ function AdminDashboard({ navigateTo, user }) {
         )}
 
         {/* --- WIDGETS EXCLUSIVOS DO ADMIN --- */}
-        {isAdmin && (
+        {(userRole === 'admin' || userRole === 'autor') && (
           <>
             <div className="admin-widget">
               <h3>Visitas Hoje</h3>

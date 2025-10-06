@@ -32,7 +32,7 @@ serve(async (req) => {
 
     const { data: { user: callerUser } } = await supabaseClient.auth.getUser();
     const callerRole = (callerUser?.app_metadata?.roles?.[0] || "default").toLowerCase();
-    const STAFF_ROLES = ["admin", "oficialreal", "guardareal"];
+    const STAFF_ROLES = ["admin", "oficialreal", "guardareal", "autor"];
 
     if (!STAFF_ROLES.includes(callerRole)) {
       throw new Error("Acesso negado: Requer privilégios de Staff.");
@@ -103,9 +103,12 @@ serve(async (req) => {
 
     // 2. Com os dados corretos, agora a verificação de permissão funciona
     const authorRole = replyData.profiles.cargo.toLowerCase();
-    if (authorRole === 'admin' && callerRole !== 'admin') {
-        throw new Error("Permissão negada: Você não pode excluir um comentário de um Administrador.");
-    }
+    if (authorRole === 'autor') {
+            throw new Error("Permissão negada: Respostas do Autor não podem ser excluídas.");
+        }
+    if (authorRole === 'admin' && callerRole !== 'autor') {
+            throw new Error("Permissão negada: Apenas o Autor pode excluir um comentário de um Administrador.");
+        }
 
     // 3. Se todas as verificações passarem, a exclusão é executada
     const { error: deleteReplyError } = await supabaseAdmin

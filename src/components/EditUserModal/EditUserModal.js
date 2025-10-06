@@ -8,21 +8,15 @@ function EditUserModal({ userToEdit, currentUserRole, isOpen, onClose, onUpdateS
   const [editedPassword, setEditedPassword] = useState('');
   const [editedRole, setEditedRole] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
-  
-  // NOVO: Criamos um estado para o novo campo de título
   const [editedTitulo, setEditedTitulo] = useState('');
 
   useEffect(() => {
     if (userToEdit) {
       const data = userToEdit.user_metadata ? userToEdit.user_metadata : userToEdit;
-
       setEditedNome(data.nome || '');
       setEditedSobrenome(data.sobrenome || '');
       setEditedRole(data.cargo || 'default');
-      
-      // NOVO: Populamos o estado do título com o valor do perfil
       setEditedTitulo(data.titulo || ''); 
-      
       setEditedPassword('');
     }
   }, [userToEdit]);
@@ -31,11 +25,10 @@ function EditUserModal({ userToEdit, currentUserRole, isOpen, onClose, onUpdateS
     if (!userToEdit) return;
     setIsUpdating(true);
     try {
-      // ALTERADO: Adicionamos o 'titulo' ao objeto de atualizações
       const updates = { 
         nome: editedNome, 
         sobrenome: editedSobrenome,
-        titulo: editedTitulo // O título será enviado para a sua função Supabase
+        titulo: editedTitulo
       };
 
       const { error } = await supabase.functions.invoke('update-user-by-admin', {
@@ -57,7 +50,8 @@ function EditUserModal({ userToEdit, currentUserRole, isOpen, onClose, onUpdateS
   };
 
   let roleOptions = null;
-  if (currentUserRole === 'admin') {
+  // <-- ALTERAÇÃO 1: Permite que 'autor' veja a mesma lista de cargos que o 'admin'
+  if (['admin', 'autor'].includes(currentUserRole)) {
     roleOptions = (
       <>
         <option value="admin">Admin</option>
@@ -66,6 +60,7 @@ function EditUserModal({ userToEdit, currentUserRole, isOpen, onClose, onUpdateS
         <option value="viajante">Viajante</option>
         <option value="banidos">Banido</option>
         <option value="default">Default</option>
+        {/* Note que a opção "autor" não está aqui de propósito */}
       </>
     );
   } else if (currentUserRole === 'oficialreal' || currentUserRole === 'guardareal') {
@@ -94,8 +89,8 @@ function EditUserModal({ userToEdit, currentUserRole, isOpen, onClose, onUpdateS
           <input type="text" value={editedSobrenome} onChange={(e) => setEditedSobrenome(e.target.value)} />
         </div>
 
-        {/* NOVO: Campo de Título, visível apenas para admins */}
-        {currentUserRole === 'admin' && (
+        {/* <-- ALTERAÇÃO 2: Permite que 'autor' veja e edite o campo de Título */}
+        {['admin', 'autor'].includes(currentUserRole) && (
           <div className="form-group">
             <label>Título (visível apenas para Staff):</label>
             <input 
@@ -107,13 +102,16 @@ function EditUserModal({ userToEdit, currentUserRole, isOpen, onClose, onUpdateS
           </div>
         )}
 
-        {currentUserRole === 'admin' && (
+        {/* <-- ALTERAÇÃO 3: Permite que 'autor' veja e edite o campo de Senha */}
+        {['admin', 'autor'].includes(currentUserRole) && (
           <div className="form-group">
             <label>Nova Senha (deixe em branco para não alterar):</label>
             <input type="password" value={editedPassword} onChange={(e) => setEditedPassword(e.target.value)} placeholder="••••••••" />
           </div>
         )}
-        {(currentUserRole === 'admin' || currentUserRole === 'oficialreal' || currentUserRole === 'guardareal') && (
+        
+        {/* A lógica aqui já funciona corretamente com a mudança em 'roleOptions' */}
+        {(currentUserRole === 'admin' || currentUserRole === 'oficialreal' || currentUserRole === 'guardareal' || currentUserRole === 'autor') && (
           <div className="form-group">
             <label>Cargo:</label>
             <select value={editedRole} onChange={(e) => setEditedRole(e.target.value)}>

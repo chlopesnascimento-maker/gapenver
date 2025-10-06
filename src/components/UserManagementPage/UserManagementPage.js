@@ -13,6 +13,7 @@ function UserManagementPage({ navigateTo, user }) {
   const [currentUserRole, setCurrentUserRole] = useState("default");
     
   const roleHierarchy = {
+    autor: 0,
     admin: 1,
     oficialreal: 2,
     guardareal: 3,
@@ -77,7 +78,7 @@ function UserManagementPage({ navigateTo, user }) {
         }
 
         const role = (session.user.app_metadata?.roles?.[0] || '').toLowerCase();
-        const ALLOWED_ROLES = ['admin', 'oficialreal', 'guardareal'];
+        const ALLOWED_ROLES = ['admin', 'oficialreal', 'guardareal', 'autor'];
         
         if (ALLOWED_ROLES.includes(role)) {
             fetchUsers();
@@ -135,7 +136,32 @@ function UserManagementPage({ navigateTo, user }) {
           <tbody>
             {users.length > 0 ? (
               users.map((u) => {
+                // ===== NOVA LÓGICA DE PERMISSÃO =====
                 const targetRole = u.user_metadata?.cargo?.toLowerCase() || 'default';
+                let canEdit = false;
+                let canDelete = false;
+
+                // Regra 1: Ninguém pode editar ou deletar o 'autor'.
+                if (targetRole !== 'autor') {
+                  const callerRank = roleHierarchy[currentUserRole];
+                  const targetRank = roleHierarchy[targetRole];
+
+                  // Regra 2: A permissão para editar é baseada na hierarquia. Você só pode editar quem está abaixo de você.
+                  if (callerRank < targetRank) {
+                    canEdit = true;
+                  }
+
+                  // Regra 3: A permissão para deletar é mais restrita.
+                  // Apenas 'autor' e 'admin' podem deletar...
+                  if (['admin', 'autor'].includes(currentUserRole)) {
+                    // ...e apenas quem está abaixo deles na hierarquia.
+                    if (callerRank < targetRank) {
+                      canDelete = true;
+                    }
+                  }
+                }
+                // =====================================
+
                 return (
                   <tr key={u.id}>
                     <td>{u.email || 'N/A'}</td>
@@ -152,20 +178,12 @@ function UserManagementPage({ navigateTo, user }) {
                       ) : ( 'Sem foto' )}
                     </td>
                     <td className="actions-cell">
-                      {(() => {
-                        const callerRank = roleHierarchy[currentUserRole] || roleHierarchy.default;
-                        const targetRank = roleHierarchy[targetRole];
-                        const canEdit = (callerRank < targetRank) || (currentUserRole === 'admin' && targetRole === 'admin');
-                        if (canEdit) {
-                          return (
-                            <button className="action-button edit-button" title="Editar usuário" onClick={() => handleOpenEditModal(u)}>
-                              ✏️
-                            </button>
-                          );
-                        }
-                        return null;
-                      })()}
-                      {currentUserRole === 'admin' && (
+                      {canEdit && (
+                        <button className="action-button edit-button" title="Editar usuário" onClick={() => handleOpenEditModal(u)}>
+                          ✏️
+                        </button>
+                      )}
+                      {canDelete && (
                         <button className="action-button delete-button" title="Deletar usuário" onClick={() => handleDeleteUser(u.id, u.email)}>
                           🗑️
                         </button>

@@ -32,7 +32,7 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
   const [curtidasUsuario, setCurtidasUsuario] = useState(new Set());
 
   const currentUserRole = user?.app_metadata?.roles?.[0]?.toLowerCase() || 'default';
-  const isStaff = ['admin', 'oficialreal', 'guardareal'].includes(currentUserRole);
+  const isStaff = ['admin', 'oficialreal', 'guardareal', 'autor'].includes(currentUserRole);
 
   const fetchDados = useCallback(async () => {
     if (!topicId) {
@@ -300,6 +300,7 @@ const handleCurtir = async (post, tipo) => {
   const isOwnTopic = user && user.id === topico.user_id;
   const isTopicClosed = topico.status === 'fechado';
   const canEditTopic = isStaff || (isOwnTopic && !isTopicClosed);
+  const cargoTopico = topico.profiles.cargo?.toLowerCase();
 
   return (
     <div className="detalhe-container">
@@ -317,11 +318,11 @@ const handleCurtir = async (post, tipo) => {
             <button className="btn-delete" onClick={() => handleModerateAction('delete_topic', topico.id)}>Excluir Tópico</button>
           </div>
         )}
+
         
-        <div className="post-card post-principal">
+         <div className={`post-card post-principal ${cargoTopico === 'autor' ? 'post-do-autor' : ''}`}>
             <AutorCard profile={topico.profiles} />
             <div className="conteudo-card">
-              {/* --- NOVO: Formulário de edição inline para o tópico --- */}
               {isEditingTopic ? (
                 <>
                   <RichTextEditor
@@ -386,9 +387,12 @@ const handleCurtir = async (post, tipo) => {
                     const canDelete = isOwnReply || (isStaff && resposta.profiles.cargo !== 'admin');
                     const canEdit = isOwnReply || isStaff;
 
+                    const cargoResposta = resposta.profiles.cargo?.toLowerCase();
+
                     if (editingReplyId === resposta.id) {
                         return (
-                            <div key={resposta.id} className="post-card edit-mode">
+                            // <-- MUDANÇA 5: Adiciona a classe aqui também para o modo de edição -->
+                            <div key={resposta.id} className={`post-card edit-mode ${cargoResposta === 'autor' ? 'post-do-autor' : ''}`}>
                                 <AutorCard profile={resposta.profiles} />
                                 <div className="conteudo-card">
                                    <RichTextEditor
@@ -418,7 +422,8 @@ const handleCurtir = async (post, tipo) => {
                     }
 
                     return (
-                        <div key={resposta.id} className="post-card">
+                        // <-- MUDANÇA 6: Adiciona a classe 'post-do-autor' condicionalmente às respostas -->
+                        <div key={resposta.id} className={`post-card ${cargoResposta === 'autor' ? 'post-do-autor' : ''}`}>
                             <AutorCard profile={resposta.profiles} />
                             <div className="conteudo-card">
                                 <div className="conteudo-header"><span>{new Date(resposta.created_at).toLocaleString('pt-BR')}</span></div>

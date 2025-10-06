@@ -42,6 +42,7 @@ const reinoDescriptions = {
 };
 
 const roleDisplayNames = {
+  'autor': "Saudações",
   'admin': 'Administrador',
   'oficialreal': 'Oficial Real',
   'guardareal': 'Guarda Real',
@@ -51,6 +52,7 @@ const roleDisplayNames = {
 };
 
 const roleHierarchy = {
+  autor: 0,
   admin: 1,
   oficialreal: 2,
   guardareal: 3,
@@ -104,31 +106,28 @@ function UserProfilePage({ user, viewUserId }) {
   const reinoKey = reino?.toLowerCase() || 'reinos independentes';
   const assets = reinoAssets[reinoKey] || reinoAssets['reinos independentes'];
   const description = reinoDescriptions[reinoKey];
-  const isStaff = ['admin', 'oficialreal', 'guardareal'].includes(cargo?.toLowerCase());
+  const cargoKeyLower = cargo?.toLowerCase();
+  const isAutor = cargoKeyLower === 'autor';
+  const isRegularStaff = ['admin', 'oficialreal', 'guardareal'].includes(cargoKeyLower);
   const displayName = roleDisplayNames[cargo?.toLowerCase()] || roleDisplayNames['default'];
   
   const currentUserRole = user?.app_metadata?.roles?.[0]?.toLowerCase() || 'default';
   const profileUserRole = cargo?.toLowerCase() || 'default';
   const callerRank = roleHierarchy[currentUserRole];
   const targetRank = roleHierarchy[profileUserRole];
-  const canEdit = user && profile && ((callerRank < targetRank) || (currentUserRole === 'admin' && profileUserRole === 'admin'));
+  const canEdit = user && profile && (callerRank < targetRank);
 
   return (
-    
     <div className={`profile-page-container theme-${reinoKey.replace(/'/g, "")}`}>
       <div className="profile-banner" style={{ backgroundImage: `url(${assets.banner})` }}>
         <div className="banner-overlay"></div>
-         {/* 👇 A estrutura que imita 100% a lógica da StaffPage 👇 */}
-        {isStaff ? (
-          // Container que apenas posiciona o portal no lugar certo
+        {(isAutor || isRegularStaff) ? ( // Efeito de portal para Autor e Staff
           <div className="profile-avatar-positioner"> 
-            {/* Container que gera a animação (copia o .avatar-portal-container) */}
             <div className="portal-fx-container"> 
               <img src={foto_url || '/default-avatar.png'} alt="Avatar do Usuário" className="portal-avatar-img"/>
             </div>
           </div>
         ) : (
-          // O avatar original para não-staffs
           <img src={foto_url || '/default-avatar.png'} alt="Avatar do Usuário" className="profile-avatar"/>
         )}
       </div>
@@ -136,13 +135,19 @@ function UserProfilePage({ user, viewUserId }) {
       <div className="profile-content-area">
         <div className="profile-header">
           <h1 className="profile-name">{nome} {sobrenome}</h1>
-          {isStaff && titulo && (
+          {(isAutor || isRegularStaff) && titulo && (
             <h3 className="profile-title">{titulo}</h3>
           )}
-          <h2 className={`profile-cargo cargo-${cargo?.toLowerCase()}`}>{displayName}</h2>
-          {isStaff && (
+          <h2 className={`profile-cargo cargo-${cargoKeyLower}`}>{displayName}</h2>
+          
+          {/* <-- MUDANÇA 3: Lógica para exibir a insígnia correta --> */}
+          {isAutor && (
+            <img src="https://i.imgur.com/7i0uvVC.png" alt="Insígnia do Autor" className="autor-badge-profile" />
+          )}
+          {isRegularStaff && (
             <img src="https://i.imgur.com/J6hJQ7i.png" alt="Insígnia da Staff" className="staff-badge" />
           )}
+
           {canEdit && (
             <button 
               className="profile-edit-button" 
