@@ -89,79 +89,64 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
     fetchDados();
   }, [fetchDados]);
 
- const handleCurtir = async (post, tipo) => {
+const handleCurtir = async (post, tipo) => {
     if (!user) {
-      alert("Você precisa estar logado para curtir.");
+      alert("Você precisa estar logado para interagir.");
       return;
     }
 
     const postId = post.id;
-    const autorPostId = post.user_id;
     const jaCurtiu = curtidasUsuario.has(postId);
     const incremento = jaCurtiu ? -1 : 1;
 
     // --- 1. ATUALIZAÇÃO OTIMISTA DA UI ---
-
-    // Atualiza o estado das curtidas do usuário (para mudar a cor do coração)
+    // Atualiza o estado para a UI responder instantaneamente
     setCurtidasUsuario(prev => {
       const novoSet = new Set(prev);
       if (jaCurtiu) {
-        novoSet.delete(postId);
+        novoSet.delete(postId); // Remove a curtida do set
       } else {
-        novoSet.add(postId);
+        novoSet.add(postId);    // Adiciona a curtida ao set
       }
       return novoSet;
     });
 
-    // Atualiza a contagem de curtidas no perfil do autor (seja no tópico ou na resposta)
+    // Atualiza a contagem de curtidas no perfil do autor
     if (tipo === 'topico') {
-      setTopico(prevTopico => ({
-        ...prevTopico,
-        profiles: {
-          ...prevTopico.profiles,
-          total_curtidas: (prevTopico.profiles.total_curtidas || 0) + incremento
-        }
-      }));
-    } else { // tipo === 'resposta'
-      setRespostas(prevRespostas => prevRespostas.map(r => 
-        r.id === postId ? {
-          ...r,
-          profiles: {
-            ...r.profiles,
-            total_curtidas: (r.profiles.total_curtidas || 0) + incremento
-          }
-        } : r
-      ));
+      setTopico(prevTopico => ({ ...prevTopico, profiles: { ...prevTopico.profiles, total_curtidas: (prevTopico.profiles.total_curtidas || 0) + incremento } }));
+    } else {
+      setRespostas(prevRespostas => prevRespostas.map(r => r.id === postId ? { ...r, profiles: { ...r.profiles, total_curtidas: (r.profiles.total_curtidas || 0) + incremento } } : r));
     }
 
-    // --- 2. OPERAÇÃO NO BANCO DE DADOS EM SEGUNDO PLANO ---
-
+    // --- 2. OPERAÇÃO NO BANCO DE DADOS ---
+    
     if (jaCurtiu) {
-      // DESCURTIR
-      const { error } = await supabase.from('curtidas').delete()
+      // LÓGICA PARA DESCURTIR
+      const { error } = await supabase
+        .from('curtidas')
+        .delete()
         .eq('user_id', user.id)
         .eq(tipo === 'topico' ? 'topico_id' : 'resposta_id', postId);
 
-      // 3. Rollback em caso de erro
       if (error) {
         alert("Erro ao descurtir. A página será atualizada.");
-        fetchDados(); // Força a recarga para sincronizar o estado em caso de falha
+        fetchDados(); // Desfaz a mudança visual em caso de erro
       }
     } else {
-      // CURTIR
-      const { error } = await supabase.from('curtidas').insert({
-        user_id: user.id,
-        [tipo === 'topico' ? 'topico_id' : 'resposta_id']: postId,
-        autor_post_id: autorPostId
+      // LÓGICA PARA CURTIR (chama a Edge Function)
+      const { error } = await supabase.functions.invoke('handle-like-and-notify', {
+        body: {
+          post_id: postId,
+          post_type: tipo
+        },
       });
 
-      // 3. Rollback em caso de erro
       if (error) {
-        alert("Erro ao curtir. A página será atualizada.");
-        fetchDados(); // Força a recarga para sincronizar o estado
+        alert("Erro ao processar a curtida. A página será atualizada.");
+        fetchDados(); // Desfaz a mudança visual em caso de erro
       }
     }
-  };
+};
 
 
   const handleModerateAction = async (action, targetId, payload = {}) => {

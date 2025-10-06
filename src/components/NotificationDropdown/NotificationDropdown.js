@@ -26,25 +26,35 @@ const NotificationItem = ({ notification, onNotificationClick }) => {
   // **IMPORTANTE**: Você precisará customizar isso com base nos seus 'types'
   const getNotificationMessage = (notif) => {
     const actorName = notif.data?.actor_name || 'Alguém';
-    const topicTitle = notif.data?.topic_title || '';
+    const topicTitle = notif.data?.topic_title || notif.data?.post_title || '';
     const othersCount = notif.data?.other_actors_count || 0;
+    const plural = othersCount > 1 ? 'pessoas' : 'pessoa';
 
     switch (notif.type) {
       case 'nova_resposta':
         if (othersCount > 0) {
-          // Mensagem agrupada
-          return `<strong>${actorName}</strong> e mais <strong>${othersCount} ${othersCount > 1 ? 'pessoas' : 'pessoa'}</strong> responderam ao seu tópico: "${topicTitle}"`;
+          return `<strong>${actorName}</strong> e mais <strong>${othersCount} ${plural}</strong> responderam ao seu tópico: "${topicTitle}"`;
         }
-        // Mensagem para a primeira resposta
         return `<strong>${actorName}</strong> respondeu ao seu tópico: "${topicTitle}"`;
+        
+      // ===== NOVAS MENSAGENS DE CURTIDA =====
       case 'curtida_topico':
-        return `<strong>${actorName}</strong> curtiu seu tópico.`;
+        if (othersCount > 0) {
+          return `<strong>${actorName}</strong> e mais <strong>${othersCount} ${plural}</strong> curtiram seu tópico: "${topicTitle}"`;
+        }
+        return `<strong>${actorName}</strong> curtiu seu tópico: "${topicTitle}"`;
+
       case 'curtida_resposta':
+        if (othersCount > 0) {
+          return `<strong>${actorName}</strong> e mais <strong>${othersCount} ${plural}</strong> curtiram sua resposta.`;
+        }
         return `<strong>${actorName}</strong> curtiu sua resposta.`;
+      // =======================================
+        
       default:
         return 'Você tem uma nova notificação.';
     }
-  };
+};
 
   const message = getNotificationMessage(notification);
 
