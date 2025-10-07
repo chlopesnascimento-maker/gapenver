@@ -8,6 +8,7 @@ import DOMPurify from 'dompurify';
 import '../RichTextEditor/RichTextEditor.css';
 
 function TopicoDetalhePage({ user, pageState, navigateTo }) {
+  console.log('pageState recebido:', pageState);
   // --- ESTADOS ---
   const { topicId } = pageState;
   const [topico, setTopico] = useState(null);
@@ -86,8 +87,19 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
   }, [topicId]);
 
   useEffect(() => {
-    fetchDados();
-  }, [fetchDados]);
+    if (!topicId || !user) return;
+
+  // Marcar como lido
+  const marcarComoLido = async () => {
+    await supabase
+      .from('topicos_lidos')
+      .upsert({ topico_id: topicId, user_id: user.id }, { onConflict: ['topico_id', 'user_id'] });
+  };
+  marcarComoLido();
+
+  fetchDados();
+}, [topicId, user, fetchDados]);
+
 
 const handleCurtir = async (post, tipo) => {
     if (!user) {

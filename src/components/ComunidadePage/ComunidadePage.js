@@ -1,11 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../supabaseClient';
+import ContextMenu from '../Shared/ContextMenu/ContextMenu';
+import MoverTopicoModal from '../MoverTopicoModal/MoverTopicoModal';
 import './ComunidadePage.css';
 
 const categorias = ['Todos', 'Personagens', 'Mundo', 'Geral', 'Regras'];
 
 function ComunidadePage({ user, navigateTo }) {
   console.log('--- COMPONENTE RENDERIZOU ---', { user });
+  const handleRowClick = (topicId) => {
+    // Exemplo: navega para a página do tópico
+    navigateTo('topicoDetalhe', { topicId });
+  };
 
   const [topicos, setTopicos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,6 +21,73 @@ function ComunidadePage({ user, navigateTo }) {
 
   const currentUserRole = user?.app_metadata?.roles?.[0]?.toLowerCase() || 'default';
   const isStaff = ['admin', 'oficialreal', 'guardareal', 'autor'].includes(currentUserRole);
+  const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
+  const [topicoParaMover, setTopicoParaMover] = useState(null);
+
+  const [contextMenu, setContextMenu] = useState({
+    isOpen: false,
+    position: null,
+    topico: null,
+  });
+  const longPressTimer = useRef();
+
+  // Função para abrir modal de mover tópico
+  const handleOpenMoveModal = (topico) => {
+    setTopicoParaMover(topico);
+    setIsMoveModalOpen(true);
+  };
+
+  // Função para mover para área staff/pública
+  const handleToggleStaffArea = async (topico) => {
+    const novoStatus = !topico.apenas_staff;
+    const { error } = await supabase
+      .from('topicos')
+      .update({ apenas_staff: novoStatus })
+      .eq('id', topico.id);
+    if (error) {
+      alert("Erro ao mover tópico: " + error.message);
+    } else {
+      fetchTopicos();
+    }
+  };
+
+  // Função para fechar tópico
+  const handleCloseTopic = async (topicoId) => {
+    if (!window.confirm("Tem certeza que deseja fechar este tópico?")) return;
+    const { error } = await supabase
+      .from('topicos')
+      .update({ status: 'fechado' })
+      .eq('id', topicoId);
+    if (error) {
+      alert("Erro ao fechar tópico: " + error.message);
+    } else {
+      fetchTopicos();
+    }
+  };
+
+       const fetchTopicos = async () => {
+    setLoading(true);
+    setError(null);
+
+    const { data, error: fetchError } = await supabase.rpc('get_topicos_com_status_leitura', {
+      categoria_filtro: categoriaSelecionada
+    });
+
+    if (fetchError) {
+      setError('Não foi possível carregar os tópicos.');
+    } else {
+      const filteredData = data.filter(topico =>
+        activeTab === 'staff' ? topico.apenas_staff === true : topico.apenas_staff === false
+      );
+      const sortedData = filteredData.sort((a, b) => {
+        if (b.is_pinned && !a.is_pinned) return -1;
+        if (!b.is_pinned && a.is_pinned) return 1;
+        return new Date(b.created_at) - new Date(a.created_at);
+      });
+      setTopicos(sortedData);
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
     console.log('-> useEffect disparado!', { activeTab, user, categoriaSelecionada });
@@ -25,74 +98,58 @@ function ComunidadePage({ user, navigateTo }) {
       return; // Sai do useEffect se o status do usuário ainda não foi definido.
     }
 
-    const fetchTopicos = async () => {
-      console.log('1. Iniciando fetchTopicos...');
-      setLoading(true);
-      setError(null);
-
-      const { data, error: fetchError } = await supabase.rpc('get_topicos_com_status_leitura', {
-        categoria_filtro: categoriaSelecionada
-      });
-
-      console.log('2. Resposta do Supabase recebida:', { data, fetchError });
-
-      if (fetchError) {
-        console.error('3. ERRO DETECTADO no fetch!', fetchError);
-        setError('Não foi possível carregar os tópicos.');
-      } else {
-        console.log('3. SUCESSO no fetch! Começando a filtrar os dados...');
-        const filteredData = data.filter(topico =>
-          activeTab === 'staff' ? topico.apenas_staff === true : topico.apenas_staff === false
-        );
-        
-        console.log(`4. Dados filtrados (apenas onde apenas_staff é ${activeTab !== 'staff'}):`, filteredData);
-
-        // A ordenação foi movida para fora do filter para clareza
-        const sortedData = filteredData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-        
-        console.log('5. Definindo o estado dos tópicos com os dados ordenados.');
-        setTopicos(sortedData);
-      }
-      
-      console.log('6. Finalizando o fetch, definindo loading para false.');
-      setLoading(false);
-    };
-
     fetchTopicos();
     
   }, [activeTab, user, categoriaSelecionada]);
 
   // Suas outras funções (handleRowClick, etc) continuam as mesmas
-  const handleRowClick = async (topicoId) => {
-    if (!user) {
-        // Se o usuário não estiver logado, apenas navega sem marcar como lido
-        navigateTo('topicoDetalhe', { topicId: topicoId });
-        return;
-    }
-
-    try {
-        await supabase
-        .from('topicos_lidos')
-        .upsert({
-            topico_id: topicoId,
-            user_id: user.id,
-            lido_em: new Date().toISOString()
-        });
-        setTopicos(prev =>
+const handleTogglePin = async (topico, isCurrentlyPinned) => {
+  if (!isStaff) return;
+  try {
+    const { error: pinError } = await supabase
+      .from('topicos')
+      .update({ is_pinned: !isCurrentlyPinned })
+      .eq('id', topico.id);
+    if (pinError) {
+      alert("Não foi possível alterar a fixação do tópico.");
+    } else {
+      // Atualiza a lista
+      setTopicos(prev =>
         prev.map(t =>
-            t.id === topicoId ? { ...t, foi_lido: true } : t
+          t.id === topico.id ? { ...t, is_pinned: !isCurrentlyPinned } : t
         )
-        );
-    } catch (err) {
-        console.error('Erro ao marcar tópico como lido:', err);
+      );
+      // Ou recarrega do banco:
+      // fetchTopicos();
     }
-    navigateTo('topicoDetalhe', { topicId: topicoId });
-  };
+  } catch (err) {
+    alert("Erro ao fixar/desafixar tópico.");
+  }
+};
 
+const handleContextMenu = (event, topico) => {
+  event.preventDefault();
+  setContextMenu({
+    isOpen: true,
+    position: { x: event.clientX, y: event.clientY },
+    topico,
+  });
+};
+const handleTouchStart = (event, topico) => {
+  longPressTimer.current = setTimeout(() => {
+    const touch = event.touches[0];
+    setContextMenu({
+      isOpen: true,
+      position: { x: touch.clientX, y: touch.clientY },
+      topico,
+    });
+  }, 500);
+};
+const handleTouchEnd = () => clearTimeout(longPressTimer.current);
+const closeContextMenu = () => setContextMenu({ isOpen: false, position: null, topico: null });
 
   return (
     <div className="comunidade-container">
-      {/* O resto do seu JSX continua o mesmo */}
       <div className="comunidade-header">
         <h1>Comunidade</h1>
         {/* Oculta o botão de criar tópico se o usuário não estiver logado */}
@@ -141,22 +198,20 @@ function ComunidadePage({ user, navigateTo }) {
             </tr>
           </thead>
           <tbody>
-            {loading && (
-              <tr><td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>Carregando tópicos...</td></tr>
-            )}
-            {error && (
-              <tr><td colSpan="6" className="error-message" style={{ textAlign: 'center', padding: '20px' }}>{error}</td></tr>
-            )}
-            {!loading && !error && topicos.length === 0 && (
-              <tr><td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>Nenhum tópico encontrado nesta seção.</td></tr>
-            )}
             {!loading && !error && topicos.map(topico => (
-              <tr 
-                key={topico.id} 
-                onClick={() => handleRowClick(topico.id)} 
+              <tr
+                key={topico.id}
+                onClick={() => handleRowClick(topico.id)}
                 className={`clickable-row ${!topico.foi_lido ? 'nao-lido' : ''}`}
+                onContextMenu={isStaff ? (e) => handleContextMenu(e, topico) : undefined}
+                onTouchStart={isStaff ? (e) => handleTouchStart(e, topico) : undefined}
+                onTouchEnd={isStaff ? handleTouchEnd : undefined}
+                onTouchMove={isStaff ? handleTouchEnd : undefined}
               >
-                <td className="col-numero">{topico.id_serial}</td>
+                <td className="col-numero">
+                  {topico.is_pinned && <span title="Tópico fixado" style={{marginRight: 4}}>📌</span>}
+                  {topico.id_serial}
+                </td>
                 <td className="col-titulo">{topico.titulo}</td>
                 <td className="col-categoria">{topico.categoria}</td>
                 <td className={`col-autor cargo-text-${topico.profile_cargo?.toLowerCase()}`}>{`${topico.profile_nome || ''} ${topico.profile_sobrenome || ''}`.trim()}</td>
@@ -169,7 +224,53 @@ function ComunidadePage({ user, navigateTo }) {
               </tr>
             ))}
           </tbody>
-        </table>
+       </table>
+        {contextMenu.isOpen && (
+          <ContextMenu
+            position={contextMenu.position}
+            onClose={closeContextMenu}
+            options={[
+              {
+                label: contextMenu.topico.is_pinned ? 'Desafixar tópico' : 'Fixar tópico',
+                action: () => {
+                  handleTogglePin(contextMenu.topico, contextMenu.topico.is_pinned);
+                  closeContextMenu();
+                }
+              },
+              {
+                label: 'Mover tópico',
+                action: () => {
+                  handleOpenMoveModal(contextMenu.topico);
+                  closeContextMenu();
+                }
+              },
+              {
+                label: contextMenu.topico.apenas_staff ? 'Mover para área pública' : 'Mover para área staff',
+                action: () => {
+                  handleToggleStaffArea(contextMenu.topico);
+                  closeContextMenu();
+                }
+              },
+              {
+                label: 'Fechar tópico',
+                action: () => {
+                  handleCloseTopic(contextMenu.topico.id);
+                  closeContextMenu();
+                }
+              },
+            ]}
+          />
+        )}
+        {/* Modal de mover tópico */}
+        <MoverTopicoModal
+          isOpen={isMoveModalOpen}
+          onClose={() => setIsMoveModalOpen(false)}
+          topico={topicoParaMover}
+          onMoveSuccess={() => {
+            setIsMoveModalOpen(false);
+            fetchTopicos();
+          }}
+        />
       </div>
     </div>
   );
