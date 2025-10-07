@@ -142,7 +142,7 @@ function UserProfilePage({ user, viewUserId }) {
           
           {/* <-- MUDANÇA 3: Lógica para exibir a insígnia correta --> */}
           {isAutor && (
-            <img src="https://i.imgur.com/7i0uvVC.png" alt="Insígnia do Autor" className="autor-badge-profile" />
+            <img src="https://i.imgur.com/Wu6llM0.png" alt="Insígnia do Autor" className="autor-badge-profile" />
           )}
           {isRegularStaff && (
             <img src="https://i.imgur.com/J6hJQ7i.png" alt="Insígnia da Staff" className="staff-badge" />

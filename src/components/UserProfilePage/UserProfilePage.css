@@ -465,7 +465,7 @@
 }
 
 .autor-badge-profile {
-  height: 60px; /* Altura maior para dar destaque à faixa */
+  height: 150px; /* Altura maior para dar destaque à faixa */
   width: auto;
   max-width: 250px;
   margin-top: 10px; /* Espaço para respirar abaixo do cargo */
