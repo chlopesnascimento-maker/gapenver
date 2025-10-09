@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../Shared/Form.css';
-import { supabase } from '../../supabaseClient'; // Corrigido o caminho do import
-
+import { supabase } from '../../supabaseClient'; 
 // --- FUNÇÃO AUXILIAR PARA TRADUZIR ERROS ---
 // Colocamos ela fora do componente para melhor organização.
 const traduzErros = (mensagem) => {

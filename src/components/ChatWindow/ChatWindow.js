@@ -4,6 +4,7 @@ import { supabase } from '../../supabaseClient';
 import './ChatWindow.css';
 import RichTextEditor from '../RichTextEditor/RichTextEditor';
 import DOMPurify from 'dompurify';
+import ConfirmacaoModal from '../Shared/ConfirmacaoModal/ConfirmacaoModal'; // Importação do modal
 
 function ChatWindow({ user, conversaId, deletedTimestamp, isStaffChat, participantProfile, onCloseChat }) {
   const [mensagens, setMensagens] = useState([]);
@@ -12,15 +13,29 @@ function ChatWindow({ user, conversaId, deletedTimestamp, isStaffChat, participa
   const [novaMensagem, setNovaMensagem] = useState('');
   const [enviando, setEnviando] = useState(false);
 
-  // estado que controla a bolha "ativa"
   const [mensagemAtiva, setMensagemAtiva] = useState(null);
-
-  // detecta mobile (só até 768px)
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.matchMedia('(max-width: 768px)').matches : false);
 
   const mensagensEndRef = useRef(null);
 
-  // Atualiza isMobile ao redimensionar / mudar orientação
+  // Estado do modal de confirmação/alerta
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    message: '',
+    onConfirm: null,
+    onCancel: null,
+  });
+
+  // Função utilitária para alertas simples
+  const showAlert = (message) => {
+    setConfirmModal({
+      isOpen: true,
+      message,
+      onConfirm: () => setConfirmModal((prev) => ({ ...prev, isOpen: false })),
+      onCancel: null,
+    });
+  };
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const mq = window.matchMedia('(max-width: 768px)');
@@ -33,7 +48,6 @@ function ChatWindow({ user, conversaId, deletedTimestamp, isStaffChat, participa
     };
   }, []);
 
-  // Fetch mensagens
   const fetchMensagens = async () => {
     if (!conversaId) return;
     try {
@@ -61,7 +75,6 @@ function ChatWindow({ user, conversaId, deletedTimestamp, isStaffChat, participa
     }
   };
 
-  // Marca como lida (mantendo deletedTimestamp se houver)
   const marcarComoLida = async () => {
     if (!conversaId || !user?.id) return;
     const updatePayload = { last_read_at: new Date().toISOString() };
@@ -81,12 +94,10 @@ function ChatWindow({ user, conversaId, deletedTimestamp, isStaffChat, participa
     }
   };
 
-  // auto-scroll pra última mensagem
   useEffect(() => {
     mensagensEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [mensagens]);
 
-  // carga inicial + listener realtime
   useEffect(() => {
     if (!conversaId) return;
     setLoading(true);
@@ -111,7 +122,7 @@ function ChatWindow({ user, conversaId, deletedTimestamp, isStaffChat, participa
     e.preventDefault();
     const conteudoParaEnviar = novaMensagem;
     if (!conteudoParaEnviar || conteudoParaEnviar === '<p></p>') {
-      alert("A mensagem não pode estar vazia.");
+      showAlert("A mensagem não pode estar vazia.");
       return;
     }
 
@@ -126,10 +137,9 @@ function ChatWindow({ user, conversaId, deletedTimestamp, isStaffChat, participa
 
     if (insertError) {
       console.error("Erro ao enviar mensagem:", insertError);
-      alert(`Não foi possível enviar a mensagem. Erro: ${insertError.message}`);
+      showAlert(`Não foi possível enviar a mensagem. Erro: ${insertError.message}`);
       setNovaMensagem(conteudoParaEnviar);
     } else {
-      // Garante atualização imediata
       fetchMensagens();
     }
 
@@ -137,21 +147,17 @@ function ChatWindow({ user, conversaId, deletedTimestamp, isStaffChat, participa
   };
 
   useEffect(() => {
-  // sinaliza ao Header que o chat está aberto ao montar
-  window.dispatchEvent(new CustomEvent('chatActive', { detail: { active: true } }));
-  return () => {
-    // sinaliza que o chat foi fechado ao desmontar
-    window.dispatchEvent(new CustomEvent('chatActive', { detail: { active: false } }));
-  };
-}, []);
-
+    window.dispatchEvent(new CustomEvent('chatActive', { detail: { active: true } }));
+    return () => {
+      window.dispatchEvent(new CustomEvent('chatActive', { detail: { active: false } }));
+    };
+  }, []);
 
   if (loading) return <div>Carregando mensagens...</div>;
   if (error) return <div>{error}</div>;
 
   const participantName = participantProfile ? `${participantProfile.nome} ${participantProfile.sobrenome || ''}`.trim() : 'Conversa';
 
-  // overlay via portal (apenas mobile)
   const BlurOverlayPortal = () => {
     if (!isMobile || !mensagemAtiva) return null;
     if (typeof document === 'undefined') return null;
@@ -167,7 +173,6 @@ function ChatWindow({ user, conversaId, deletedTimestamp, isStaffChat, participa
 
   return (
     <>
-      {/* overlay renderizado por portal */}
       <BlurOverlayPortal />
 
       <div className={`chat-window ${isStaffChat ? 'staff-chat' : ''}`}>
@@ -186,7 +191,7 @@ function ChatWindow({ user, conversaId, deletedTimestamp, isStaffChat, participa
             const remetenteProfile = msg.remetente;
             const nomeCompleto = remetenteProfile ? `${remetenteProfile.nome} ${remetenteProfile.sobrenome || ''}`.trim() : '';
 
-             const cargoRemetente = remetenteProfile?.cargo?.toLowerCase();
+            const cargoRemetente = remetenteProfile?.cargo?.toLowerCase();
             const isRemetenteAutor = cargoRemetente === 'autor';
             const isRemetenteStaff = ['admin', 'oficialreal', 'guardareal'].includes(cargoRemetente);
 
@@ -196,7 +201,7 @@ function ChatWindow({ user, conversaId, deletedTimestamp, isStaffChat, participa
               <div
                 key={msg.id}
                 onClick={() => setMensagemAtiva(prev => (prev === msg.id ? null : msg.id))}
-                 className={`mensagem-balao ${msg.remetente_id === user.id ? 'minha' : 'outrem'} ${isRemetenteAutor ? 'autor-bubble' : (isRemetenteStaff ? 'staff-bubble' : '')} ${isActive ? 'active' : ''}`}
+                className={`mensagem-balao ${msg.remetente_id === user.id ? 'minha' : 'outrem'} ${isRemetenteAutor ? 'autor-bubble' : (isRemetenteStaff ? 'staff-bubble' : '')} ${isActive ? 'active' : ''}`}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setMensagemAtiva(prev => (prev === msg.id ? null : msg.id)); }}
@@ -224,6 +229,14 @@ function ChatWindow({ user, conversaId, deletedTimestamp, isStaffChat, participa
           </button>
         </form>
       </div>
+
+      {/* Modal de confirmação/alerta */}
+      <ConfirmacaoModal
+        isOpen={confirmModal.isOpen}
+        message={confirmModal.message}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={confirmModal.onCancel || (() => setConfirmModal((prev) => ({ ...prev, isOpen: false })))}
+      />
     </>
   );
 }

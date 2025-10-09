@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import './CriarTopicoPage.css';
+import ConfirmacaoModal from '../Shared/ConfirmacaoModal/ConfirmacaoModal';
 
 function CriarTopicoPage({ user, navigateTo }) {
   const [titulo, setTitulo] = useState('');
@@ -9,6 +10,24 @@ function CriarTopicoPage({ user, navigateTo }) {
   const [apenasStaff, setApenasStaff] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Modal de confirmação/alerta
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    message: '',
+    onConfirm: null,
+    onCancel: null,
+  });
+
+  // Função utilitária para alertas simples
+  const showAlert = (message) => {
+    setConfirmModal({
+      isOpen: true,
+      message,
+      onConfirm: () => setConfirmModal((prev) => ({ ...prev, isOpen: false })),
+      onCancel: null,
+    });
+  };
 
   const currentUserRole = user?.app_metadata?.roles?.[0]?.toLowerCase() || 'default';
   const isStaff = ['admin', 'oficialreal', 'guardareal'].includes(currentUserRole);
@@ -34,8 +53,8 @@ function CriarTopicoPage({ user, navigateTo }) {
         user_id: user.id,
         apenas_staff: isStaff ? apenasStaff : false // Garante que não-staff não possa criar tópico privado
       })
-      .select() // Pede ao Supabase para retornar o registro que acabamos de criar
-      .single(); // Pois sabemos que criamos apenas um
+      .select()
+      .single();
 
     setLoading(false);
 
@@ -43,11 +62,17 @@ function CriarTopicoPage({ user, navigateTo }) {
       console.error('Erro ao criar tópico:', insertError);
       setError('Não foi possível criar o tópico. Tente novamente.');
     } else {
-      alert('Tópico criado com sucesso!');
-      // Redireciona o usuário para a página do novo tópico (que criaremos a seguir)
-      console.log('Redirecionar para o tópico com ID:', data.id);
-      // navigateTo('topicDetail', { topicId: data.id }); 
-      navigateTo('comunidade'); // Por enquanto, volta para a lista
+      showAlert('Tópico criado com sucesso!');
+      // Após fechar o modal, redireciona para a comunidade
+      setConfirmModal({
+        isOpen: true,
+        message: 'Tópico criado com sucesso!',
+        onConfirm: () => {
+          setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+          navigateTo('comunidade');
+        },
+        onCancel: null,
+      });
     }
   };
 
@@ -116,6 +141,13 @@ function CriarTopicoPage({ user, navigateTo }) {
           </button>
         </div>
       </form>
+      {/* Modal de confirmação/alerta */}
+      <ConfirmacaoModal
+        isOpen={confirmModal.isOpen}
+        message={confirmModal.message}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={confirmModal.onCancel || (() => setConfirmModal((prev) => ({ ...prev, isOpen: false })))}
+      />
     </div>
   );
 }

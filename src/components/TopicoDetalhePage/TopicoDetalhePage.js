@@ -6,6 +6,7 @@ import MoverTopicoModal from '../MoverTopicoModal/MoverTopicoModal';
 import RichTextEditor from '../RichTextEditor/RichTextEditor'; // Ajuste o caminho se necessário
 import DOMPurify from 'dompurify';
 import '../RichTextEditor/RichTextEditor.css';
+import ConfirmacaoModal from '../Shared/ConfirmacaoModal/ConfirmacaoModal';
 
 function TopicoDetalhePage({ user, pageState, navigateTo }) {
   console.log('pageState recebido:', pageState);
@@ -34,6 +35,41 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
 
   const currentUserRole = user?.app_metadata?.roles?.[0]?.toLowerCase() || 'default';
   const isStaff = ['admin', 'oficialreal', 'guardareal', 'autor'].includes(currentUserRole);
+
+  // Estado do modal de confirmação/alerta
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    message: '',
+    onConfirm: null,
+    onCancel: null,
+  });
+
+  // Função utilitária para alertas simples
+  const showAlert = (message) => {
+    setConfirmModal({
+      isOpen: true,
+      message,
+      onConfirm: () => setConfirmModal((prev) => ({ ...prev, isOpen: false })),
+      onCancel: null,
+    });
+  };
+
+  const askConfirmation = (message) => {
+  return new Promise((resolve) => {
+    setConfirmModal({
+      isOpen: true,
+      message,
+      onConfirm: () => {
+        setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+        resolve(true);
+      },
+      onCancel: () => {
+        setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+        resolve(false);
+      },
+    });
+  });
+};
 
   const fetchDados = useCallback(async () => {
     if (!topicId) {
@@ -103,7 +139,7 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
 
 const handleCurtir = async (post, tipo) => {
     if (!user) {
-      alert("Você precisa estar logado para interagir.");
+      showAlert("Você precisa estar logado para interagir.");
       return;
     }
 
@@ -141,7 +177,7 @@ const handleCurtir = async (post, tipo) => {
         .eq(tipo === 'topico' ? 'topico_id' : 'resposta_id', postId);
 
       if (error) {
-        alert("Erro ao descurtir. A página será atualizada.");
+        showAlert("Erro ao descurtir. A página será atualizada.");
         fetchDados(); // Desfaz a mudança visual em caso de erro
       }
     } else {
@@ -154,7 +190,7 @@ const handleCurtir = async (post, tipo) => {
       });
 
       if (error) {
-        alert("Erro ao processar a curtida. A página será atualizada.");
+        showAlert("Erro ao processar a curtida. A página será atualizada.");
         fetchDados(); // Desfaz a mudança visual em caso de erro
       }
     }
@@ -162,12 +198,13 @@ const handleCurtir = async (post, tipo) => {
 
 
   const handleModerateAction = async (action, targetId, payload = {}) => {
-    if (!window.confirm(`Você tem certeza que deseja executar a ação "${action}"?`)) return;
+    const confirmed = await askConfirmation(`Você tem certeza que deseja executar a ação "${action}"?`);
+if (!confirmed) return;
     const { error: moderateError } = await supabase.functions.invoke('moderate-content', { body: { action, targetId, payload } });
     if (moderateError) {
-      alert(`Erro ao moderar: ${moderateError.message || moderateError}`);
+      showAlert(`Erro ao moderar: ${moderateError.message || moderateError}`);
     } else {
-      alert('Ação executada com sucesso!');
+      showAlert('Ação executada com sucesso!');
       if (action === 'delete_topic') {
         navigateTo('comunidade');
       } else {
@@ -177,10 +214,11 @@ const handleCurtir = async (post, tipo) => {
   };
 
   const handleDeleteOwnReply = async (replyId) => {
-    if (!window.confirm("Você tem certeza que deseja excluir seu próprio comentário?")) return;
+    const confirmed = await askConfirmation("Você tem certeza que deseja excluir seu próprio comentário?");
+if (!confirmed) return;
     const { error: deleteError } = await supabase.from('respostas').delete().eq('id', replyId);
     if (deleteError) {
-        alert(`Erro ao excluir comentário: ${deleteError.message}`);
+        showAlert(`Erro ao excluir comentário: ${deleteError.message}`);
     } else {
         fetchDados();
     }
@@ -206,7 +244,7 @@ const handleCurtir = async (post, tipo) => {
   setEnviando(false);
   
   if (error) {
-    alert('Erro ao enviar resposta: ' + error.message);
+    showAlert('Erro ao enviar resposta: ' + error.message);
   } else {
     // A resposta foi enviada e a notificação (se aplicável) foi criada!
     // Agora só precisamos limpar o formulário e recarregar os dados.
@@ -228,7 +266,7 @@ const handleCurtir = async (post, tipo) => {
     const isOwnReply = user && user.id === editingReplyId;
     if (isStaff && !isOwnReply) {
       if (!editedContent.trim() || !editReason.trim()) {
-        alert("O conteúdo e o motivo da edição são obrigatórios.");
+        showAlert("O conteúdo e o motivo da edição são obrigatórios.");
         setEnviando(false);
         return;
       }
@@ -238,7 +276,7 @@ const handleCurtir = async (post, tipo) => {
       });
     } else {
       if (!editedContent.trim()) {
-        alert("O conteúdo não pode estar vazio.");
+        showAlert("O conteúdo não pode estar vazio.");
         setEnviando(false);
         return;
       }
@@ -249,7 +287,7 @@ const handleCurtir = async (post, tipo) => {
           usuario_editou_em: new Date().toISOString()
         })
         .eq('id', editingReplyId);
-      if (error) alert(`Erro ao salvar edição: ${error.message}`);
+      if (error) showAlert(`Erro ao salvar edição: ${error.message}`);
     }
     setEnviando(false);
     setEditingReplyId(null);
@@ -268,7 +306,7 @@ const handleCurtir = async (post, tipo) => {
   const handleSaveEditTopic = async () => {
     setEnviando(true);
     if (!editedContent.trim()) {
-      alert("O conteúdo não pode estar vazio.");
+      showAlert("O conteúdo não pode estar vazio.");
       setEnviando(false);
       return;
     }
@@ -277,7 +315,7 @@ const handleCurtir = async (post, tipo) => {
 
     if (isStaff && !isOwnTopic) {
       if (!editReason.trim()) {
-        alert("O motivo da edição é obrigatório para a moderação.");
+        showAlert("O motivo da edição é obrigatório para a moderação.");
         setEnviando(false);
         return;
       }
@@ -297,7 +335,7 @@ const handleCurtir = async (post, tipo) => {
 
     setEnviando(false);
     if (error) {
-      alert(`Erro ao salvar edição do tópico: ${error.message}`);
+      showAlert(`Erro ao salvar edição do tópico: ${error.message}`);
     } else {
       setIsEditingTopic(false);
       fetchDados();
@@ -492,6 +530,13 @@ const handleCurtir = async (post, tipo) => {
         onClose={() => setIsMoveModalOpen(false)}
         topico={topico}
         onMoveSuccess={() => { setIsMoveModalOpen(false); fetchDados(); }}
+      />
+       {/* Modal de confirmação/alerta */}
+      <ConfirmacaoModal
+        isOpen={confirmModal.isOpen}
+        message={confirmModal.message}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={confirmModal.onCancel || (() => setConfirmModal((prev) => ({ ...prev, isOpen: false })))}
       />
     </div>
   );

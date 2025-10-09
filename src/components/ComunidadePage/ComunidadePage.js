@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../supabaseClient';
 import ContextMenu from '../Shared/ContextMenu/ContextMenu';
 import MoverTopicoModal from '../MoverTopicoModal/MoverTopicoModal';
+import ConfirmacaoModal from '../Shared/ConfirmacaoModal/ConfirmacaoModal'; // <-- Importação adicionada!
 import './ComunidadePage.css';
 
 const categorias = ['Todos', 'Personagens', 'Mundo', 'Geral', 'Regras'];
@@ -9,7 +10,6 @@ const categorias = ['Todos', 'Personagens', 'Mundo', 'Geral', 'Regras'];
 function ComunidadePage({ user, navigateTo }) {
   console.log('--- COMPONENTE RENDERIZOU ---', { user });
   const handleRowClick = (topicId) => {
-    // Exemplo: navega para a página do tópico
     navigateTo('topicoDetalhe', { topicId });
   };
 
@@ -31,6 +31,41 @@ function ComunidadePage({ user, navigateTo }) {
   });
   const longPressTimer = useRef();
 
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    message: '',
+    onConfirm: null,
+    onCancel: null,
+  });
+
+  // Função utilitária para confirmação
+  const askConfirmation = (message) => {
+    return new Promise((resolve) => {
+      setConfirmModal({
+        isOpen: true,
+        message,
+        onConfirm: () => {
+          setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+          resolve(true);
+        },
+        onCancel: () => {
+          setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+          resolve(false);
+        },
+      });
+    });
+  };
+
+  // Função utilitária para alertas simples
+  const showAlert = (message) => {
+    setConfirmModal({
+      isOpen: true,
+      message,
+      onConfirm: () => setConfirmModal((prev) => ({ ...prev, isOpen: false })),
+      onCancel: null,
+    });
+  };
+
   // Função para abrir modal de mover tópico
   const handleOpenMoveModal = (topico) => {
     setTopicoParaMover(topico);
@@ -45,7 +80,7 @@ function ComunidadePage({ user, navigateTo }) {
       .update({ apenas_staff: novoStatus })
       .eq('id', topico.id);
     if (error) {
-      alert("Erro ao mover tópico: " + error.message);
+      showAlert("Erro ao mover tópico: " + error.message);
     } else {
       fetchTopicos();
     }
@@ -53,19 +88,20 @@ function ComunidadePage({ user, navigateTo }) {
 
   // Função para fechar tópico
   const handleCloseTopic = async (topicoId) => {
-    if (!window.confirm("Tem certeza que deseja fechar este tópico?")) return;
+    const confirmed = await askConfirmation("Tem certeza que deseja fechar este tópico?");
+    if (!confirmed) return;
     const { error } = await supabase
       .from('topicos')
       .update({ status: 'fechado' })
       .eq('id', topicoId);
     if (error) {
-      alert("Erro ao fechar tópico: " + error.message);
+      showAlert("Erro ao fechar tópico: " + error.message);
     } else {
       fetchTopicos();
     }
   };
 
-       const fetchTopicos = async () => {
+  const fetchTopicos = async () => {
     setLoading(true);
     setError(null);
 
@@ -80,8 +116,8 @@ function ComunidadePage({ user, navigateTo }) {
         activeTab === 'staff' ? topico.apenas_staff === true : topico.apenas_staff === false
       );
       const sortedData = filteredData.sort((a, b) => {
-        if (b.is_pinned && !a.is_pinned) return -1;
-        if (!b.is_pinned && a.is_pinned) return 1;
+        if (a.is_pinned && !b.is_pinned) return -1;
+        if (!a.is_pinned && b.is_pinned) return 1;
         return new Date(b.created_at) - new Date(a.created_at);
       });
       setTopicos(sortedData);
@@ -92,67 +128,58 @@ function ComunidadePage({ user, navigateTo }) {
   useEffect(() => {
     console.log('-> useEffect disparado!', { activeTab, user, categoriaSelecionada });
 
-    // Adicionamos uma guarda para não executar enquanto o Supabase ainda está verificando a sessão do usuário.
     if (user === undefined) {
       console.log('Usuário ainda é indefinido, aguardando...');
-      return; // Sai do useEffect se o status do usuário ainda não foi definido.
+      return;
     }
 
     fetchTopicos();
     
   }, [activeTab, user, categoriaSelecionada]);
 
-  // Suas outras funções (handleRowClick, etc) continuam as mesmas
-const handleTogglePin = async (topico, isCurrentlyPinned) => {
-  if (!isStaff) return;
-  try {
-    const { error: pinError } = await supabase
-      .from('topicos')
-      .update({ is_pinned: !isCurrentlyPinned })
-      .eq('id', topico.id);
-    if (pinError) {
-      alert("Não foi possível alterar a fixação do tópico.");
-    } else {
-      // Atualiza a lista
-      setTopicos(prev =>
-        prev.map(t =>
-          t.id === topico.id ? { ...t, is_pinned: !isCurrentlyPinned } : t
-        )
-      );
-      // Ou recarrega do banco:
-      // fetchTopicos();
+  // Fixar/desafixar tópico
+  const handleTogglePin = async (topico, isCurrentlyPinned) => {
+    if (!isStaff) return;
+    try {
+      const { error: pinError } = await supabase
+        .from('topicos')
+        .update({ is_pinned: !isCurrentlyPinned })
+        .eq('id', topico.id);
+      if (pinError) {
+        showAlert("Não foi possível alterar a fixação do tópico.");
+      } else {
+        fetchTopicos();
+      }
+    } catch (err) {
+      showAlert("Erro ao fixar/desafixar tópico.");
     }
-  } catch (err) {
-    alert("Erro ao fixar/desafixar tópico.");
-  }
-};
+  };
 
-const handleContextMenu = (event, topico) => {
-  event.preventDefault();
-  setContextMenu({
-    isOpen: true,
-    position: { x: event.clientX, y: event.clientY },
-    topico,
-  });
-};
-const handleTouchStart = (event, topico) => {
-  longPressTimer.current = setTimeout(() => {
-    const touch = event.touches[0];
+  const handleContextMenu = (event, topico) => {
+    event.preventDefault();
     setContextMenu({
       isOpen: true,
-      position: { x: touch.clientX, y: touch.clientY },
+      position: { x: event.clientX, y: event.clientY },
       topico,
     });
-  }, 500);
-};
-const handleTouchEnd = () => clearTimeout(longPressTimer.current);
-const closeContextMenu = () => setContextMenu({ isOpen: false, position: null, topico: null });
+  };
+  const handleTouchStart = (event, topico) => {
+    longPressTimer.current = setTimeout(() => {
+      const touch = event.touches[0];
+      setContextMenu({
+        isOpen: true,
+        position: { x: touch.clientX, y: touch.clientY },
+        topico,
+      });
+    }, 500);
+  };
+  const handleTouchEnd = () => clearTimeout(longPressTimer.current);
+  const closeContextMenu = () => setContextMenu({ isOpen: false, position: null, topico: null });
 
   return (
     <div className="comunidade-container">
       <div className="comunidade-header">
         <h1>Comunidade</h1>
-        {/* Oculta o botão de criar tópico se o usuário não estiver logado */}
         {user && <button className="novo-topico-btn" onClick={() => navigateTo('criarTopico')}>Criar Novo Tópico</button>}
       </div>
 
@@ -271,11 +298,16 @@ const closeContextMenu = () => setContextMenu({ isOpen: false, position: null, t
             fetchTopicos();
           }}
         />
+        {/* Modal de confirmação/alerta */}
+        <ConfirmacaoModal
+          isOpen={confirmModal.isOpen}
+          message={confirmModal.message}
+          onConfirm={confirmModal.onConfirm}
+          onCancel={confirmModal.onCancel || (() => setConfirmModal((prev) => ({ ...prev, isOpen: false })))}
+        />
       </div>
     </div>
   );
 }
-
-
 
 export default ComunidadePage;

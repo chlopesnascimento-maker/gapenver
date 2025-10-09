@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import './MyAccountPage.css';
 import '../Shared/Form.css';
 import { supabase } from '../../supabaseClient';
+import ConfirmacaoModal from '../Shared/ConfirmacaoModal/ConfirmacaoModal';
 
 function MyAccountPage({ navigateTo }) {
   const [user, setUser] = useState(null);
@@ -10,6 +11,42 @@ function MyAccountPage({ navigateTo }) {
   const [deleting, setDeleting] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [sendingVerification, setSendingVerification] = useState(false);
+
+  // Modal de confirmação/alerta
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    message: '',
+    onConfirm: null,
+    onCancel: null,
+  });
+
+  // Função utilitária para alertas simples
+  const showAlert = (message) => {
+    setConfirmModal({
+      isOpen: true,
+      message,
+      onConfirm: () => setConfirmModal((prev) => ({ ...prev, isOpen: false })),
+      onCancel: null,
+    });
+  };
+
+  // Função utilitária para confirmação
+  const askConfirmation = (message) => {
+    return new Promise((resolve) => {
+      setConfirmModal({
+        isOpen: true,
+        message,
+        onConfirm: () => {
+          setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+          resolve(true);
+        },
+        onCancel: () => {
+          setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+          resolve(false);
+        },
+      });
+    });
+  };
 
   const fetchUserData = useCallback(async () => {
     setLoading(true);
@@ -40,7 +77,6 @@ function MyAccountPage({ navigateTo }) {
       aboutMe: authUser.user_metadata?.aboutMe || ''
     };
     
-    console.log("Dados finais combinados:", finalUserData);
     setUserData(finalUserData);
     setLoading(false);
   }, []);
@@ -55,9 +91,9 @@ function MyAccountPage({ navigateTo }) {
       setSendingVerification(true);
       const { error } = await supabase.auth.resend({ type: 'signup', email: user.email });
       if (error) throw error;
-      alert('E-mail de verificação enviado! Verifique sua caixa de entrada e spam.');
+      showAlert('E-mail de verificação enviado! Verifique sua caixa de entrada e spam.');
     } catch (err) {
-      alert('Erro ao enviar e-mail: ' + err.message);
+      showAlert('Erro ao enviar e-mail: ' + err.message);
     } finally {
       setSendingVerification(false);
     }
@@ -66,22 +102,21 @@ function MyAccountPage({ navigateTo }) {
   const handleDeleteAccount = async (e) => {
     e.preventDefault();
     if (deleteConfirmText.toUpperCase() !== 'DELETAR') {
-      alert('Para confirmar a exclusão, digite DELETAR no campo.');
+      showAlert('Para confirmar a exclusão, digite DELETAR no campo.');
       return;
     }
-    if (!window.confirm("Você tem certeza ABSOLUTA que deseja apagar sua conta? Esta ação não pode ser desfeita.")) {
-        return;
-    }
+    const confirmed = await askConfirmation("Você tem certeza ABSOLUTA que deseja apagar sua conta? Esta ação não pode ser desfeita.");
+    if (!confirmed) return;
     setDeleting(true);
     try {
       const { error } = await supabase.functions.invoke('delete-user');
       if (error) throw error;
-      alert('Sua conta foi deletada com sucesso. Sentiremos sua falta!');
+      showAlert('Sua conta foi deletada com sucesso. Sentiremos sua falta!');
       await supabase.auth.signOut();
       navigateTo('home');
     } catch (err) {
       console.error(err);
-      alert('Ocorreu um erro ao deletar sua conta: ' + err.message);
+      showAlert('Ocorreu um erro ao deletar sua conta: ' + err.message);
     } finally {
       setDeleting(false);
     }
@@ -186,6 +221,13 @@ function MyAccountPage({ navigateTo }) {
           </button>
         </section>
       </div>
+      {/* Modal de confirmação/alerta */}
+      <ConfirmacaoModal
+        isOpen={confirmModal.isOpen}
+        message={confirmModal.message}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={confirmModal.onCancel || (() => setConfirmModal((prev) => ({ ...prev, isOpen: false })))}
+      />
     </div>
   );
 }

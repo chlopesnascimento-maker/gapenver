@@ -6,6 +6,7 @@ import { supabase } from '../../supabaseClient';
 import './Header.css';
 import { FaTiktok, FaYoutube, FaInstagram, FaFacebook } from "react-icons/fa";
 import NotificationDropdown from '../NotificationDropdown/NotificationDropdown';
+import ConfirmacaoModal from '../Shared/ConfirmacaoModal/ConfirmacaoModal';
 
 function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
   // --- Estados do Componente ---
@@ -26,6 +27,21 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
   const sidebarRef = useRef(null);
   const hamburgerRef = useRef(null);
   const notificationRef = useRef(null);
+
+  const [confirmModal, setConfirmModal] = useState({
+  isOpen: false,
+  message: '',
+  onConfirm: null,
+  onCancel: null,
+});
+const showAlert = (message) => {
+  setConfirmModal({
+    isOpen: true,
+    message,
+    onConfirm: () => setConfirmModal((prev) => ({ ...prev, isOpen: false })),
+    onCancel: null,
+  });
+};
 
   // --- Hooks de Efeito ---
 
@@ -246,13 +262,13 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
     ) : (
       <>
         <li><a href="#" onClick={(e) => { e.preventDefault(); handleMenuClick('gapenver'); }}>Gapenver</a></li>
-        <li><a href="#" onClick={() => alert('Página em breve!')}>Saraver</a></li>
-        <li><a href="#" onClick={() => alert('Página em breve!')}>Corvusk</a></li>
-        <li><a href="#" onClick={() => alert('Página em breve!')}>Lo'otrak</a></li>
+        <li><a href="#" onClick={() => showAlert('Página em breve!')}>Saraver</a></li>
+        <li><a href="#" onClick={() => showAlert('Página em breve!')}>Corvusk</a></li>
+        <li><a href="#" onClick={() => showAlert('Página em breve!')}>Lo'otrak</a></li>
         <li><a href="#" onClick={(e) => { e.preventDefault(); handleMenuClick('cidadaosDoReino'); }}>Cidadãos do Reino</a></li>
         <li><a href="#" onClick={(e) => { e.preventDefault(); handleMenuClick('comunidade'); }}>Fórum</a></li>
-        <li><a href="#" onClick={() => alert('Página em breve!')}>Sugestões</a></li>
-        <li><a href="#" onClick={() => alert('Página em breve!')}>Mapa Mundo</a></li>
+        <li><a href="#" onClick={() => showAlert('Página em breve!')}>Sugestões</a></li>
+        <li><a href="#" onClick={() => showAlert('Página em breve!')}>Mapa Mundo</a></li>
         <li><a href="#" onClick={(e) => { e.preventDefault(); handleMenuClick('faleConosco'); }}>Fale Conosco</a></li>
         <li><a href="#" onClick={(e) => { e.preventDefault(); handleMenuClick('staff'); }}>STAFF</a></li>
       </>
@@ -414,6 +430,12 @@ function Header({ navigateTo, user, userData, handleLogout, sessionChecked }) {
       </header>
 
       {overlayPortal}
+      <ConfirmacaoModal
+  isOpen={confirmModal.isOpen}
+  message={confirmModal.message}
+  onConfirm={confirmModal.onConfirm}
+  onCancel={confirmModal.onCancel || (() => setConfirmModal((prev) => ({ ...prev, isOpen: false })))}
+/>
     </>
   );
 }

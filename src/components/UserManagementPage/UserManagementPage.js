@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import './UserManagementPage.css';
 import EditUserModal from '../EditUserModal/EditUserModal';
+import ConfirmacaoModal from '../Shared/ConfirmacaoModal/ConfirmacaoModal';
 
 function UserManagementPage({ navigateTo, user }) {
   const [users, setUsers] = useState([]);
@@ -52,20 +53,51 @@ function UserManagementPage({ navigateTo, user }) {
     }
   };
 
+  const [confirmModal, setConfirmModal] = useState({
+  isOpen: false,
+  message: '',
+  onConfirm: null,
+  onCancel: null,
+});
+const showAlert = (message) => {
+  setConfirmModal({
+    isOpen: true,
+    message,
+    onConfirm: () => setConfirmModal((prev) => ({ ...prev, isOpen: false })),
+    onCancel: null,
+  });
+};
+
+const askConfirmation = (message) => {
+  return new Promise((resolve) => {
+    setConfirmModal({
+      isOpen: true,
+      message,
+      onConfirm: () => {
+        setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+        resolve(true);
+      },
+      onCancel: () => {
+        setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+        resolve(false);
+      },
+    });
+  });
+};
+
   const handleDeleteUser = async (userId, userEmail) => {
-    if (!window.confirm(`Você tem certeza que deseja deletar o usuário ${userEmail}? Esta ação é irreversível.`)) {
-      return;
-    }
-    try {
-      const { error } = await supabase.functions.invoke('delete-user-by-admin', {
-        body: { user_id: userId },
-      });
-      if (error) throw error;
-      setUsers(currentUsers => currentUsers.filter(u => u.id !== userId));
-    } catch (err) {
-      alert(`Falha ao deletar usuário: ${err.message}`);
-    }
-  };
+  const confirmed = await askConfirmation(`Você tem certeza que deseja deletar o usuário ${userEmail}? Esta ação é irreversível.`);
+  if (!confirmed) return;
+  try {
+    const { error } = await supabase.functions.invoke('delete-user-by-admin', {
+      body: { user_id: userId },
+    });
+    if (error) throw error;
+    setUsers(currentUsers => currentUsers.filter(u => u.id !== userId));
+  } catch (err) {
+    showAlert(`Falha ao deletar usuário: ${err.message}`);
+  }
+};
 
   // ESTE useEffect RODA APENAS UMA VEZ E É RESPONSÁVEL PELO LOAD INICIAL
   useEffect(() => {
@@ -207,7 +239,14 @@ function UserManagementPage({ navigateTo, user }) {
           onClose={() => setIsEditModalOpen(false)}
           onUpdateSuccess={handleUpdateSuccess}
         />
-      )}
+            )}
+
+            <ConfirmacaoModal
+  isOpen={confirmModal.isOpen}
+  message={confirmModal.message}
+  onConfirm={confirmModal.onConfirm}
+  onCancel={confirmModal.onCancel || (() => setConfirmModal((prev) => ({ ...prev, isOpen: false })))}
+/>
     </div>
   );
 }
