@@ -30,12 +30,12 @@
 
 .autor-card-container .autor-info-stack h3 {
   margin: 0;
-  font-size: 1rem;
+  font-size: 18px;
   color: #fff;
 }
 
 .autor-card-container .autor-cargo-text {
-  font-size: 1rem;
+  font-size: 13px;
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -47,11 +47,22 @@
 }
 
 /* Cores para o TEXTO de cada cargo */
+.autor-card-container .autor-cargo-text {
+  color: #a0a0a0; /* Um cinza padrão */
+}
+
+/* Agora, as regras específicas que irão sobrepor a padrão */
+.autor-card-container .cargo-autor { color: #f1c40f; text-shadow: 0 0 8px #f1c40f; }
 .autor-card-container .cargo-admin { color: #e74c3c; }
 .autor-card-container .cargo-oficialreal { color: #f39c12; }
 .autor-card-container .cargo-guardareal { color: #2ecc71; }
 .autor-card-container .cargo-viajante { color: #3498db; }
-.autor-card-container .cargo-banido { color: #9b59b6; }
+.autor-card-container .cargo-banido { color: #f862f8; }
+
+/* --- NOVOS CARGOS DA COMUNA --- */
+.autor-card-container .cargo-cidadão { color: #a0a0a0; }
+.autor-card-container .cargo-guardião { color: #a0a0a0; text-shadow: 1px 1px 8px #daa520; }
+.autor-card-container .cargo-veterano { color: #a0a0a0; text-shadow: 0 0 20px #daa520; }
 
 
 /* ========================================================== */

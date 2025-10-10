@@ -8,6 +8,7 @@ import DOMPurify from 'dompurify';
 import '../RichTextEditor/RichTextEditor.css';
 import ConfirmacaoModal from '../Shared/ConfirmacaoModal/ConfirmacaoModal';
 
+
 function TopicoDetalhePage({ user, pageState, navigateTo }) {
   console.log('pageState recebido:', pageState);
   // --- ESTADOS ---
@@ -16,11 +17,9 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
   const [respostas, setRespostas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [novaResposta, setNovaResposta] = useState('');
   const [enviando, setEnviando] = useState(false);
-  
   const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
   
   // --- ESTADOS PARA EDIÇÃO DE RESPOSTAS ---
@@ -30,9 +29,7 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
 
   // --- NOVO: ESTADO PARA EDIÇÃO DO TÓPICO ---
   const [isEditingTopic, setIsEditingTopic] = useState(false);
-
   const [curtidasUsuario, setCurtidasUsuario] = useState(new Set());
-
   const currentUserRole = user?.app_metadata?.roles?.[0]?.toLowerCase() || 'default';
   const isStaff = ['admin', 'oficialreal', 'guardareal', 'autor'].includes(currentUserRole);
 
@@ -120,7 +117,7 @@ function TopicoDetalhePage({ user, pageState, navigateTo }) {
     }
     
     setLoading(false);
-  }, [topicId]);
+  }, [topicId, user]);
 
   useEffect(() => {
     if (!topicId || !user) return;

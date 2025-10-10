@@ -77,12 +77,18 @@
   text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* Cores específicas para cada cargo */
+.cargo-autor { color: #f1c40f; text-shadow: 0 0 8px #f1c40f; } /* Corrigido para Autor */
 .cargo-admin { color: #e74c3c; }
 .cargo-oficialreal { color: #f39c12; }
 .cargo-guardareal { color: #2ecc71; }
 .cargo-viajante { color: #3498db; }
-.cargo-banidos { color: #f862f8; }
+.cargo-banido { color: #f862f8; }
+
+/* --- NOVOS CARGOS DA COMUNIDADE --- */
+/* O tradutor 'getBaseCargo' garantirá que "Cidadão de Gápenver" se torne a classe "cargo-cidadao" */
+.cargo-cidadão { color: #ffffff; }
+.cargo-guardião { color: #ffffff; text-shadow: 0 0 8px #daa520; } /* Exemplo de cor para Guardião */
+.cargo-veterano { color: #ffffff; text-shadow: 0 0 20px #daa520; } /* Exemplo de cor para Veterano */
 
 .staff-badge {
   height: 25px; /* ajusta a altura pra encaixar melhor */

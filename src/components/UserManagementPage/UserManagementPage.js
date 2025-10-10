@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import './UserManagementPage.css';
+import { HIERARQUIA_CARGOS } from '../../constants/roles';
+import { getBaseCargo } from '../../utils/helpers'; 
 import EditUserModal from '../EditUserModal/EditUserModal';
 import ConfirmacaoModal from '../Shared/ConfirmacaoModal/ConfirmacaoModal';
 
@@ -12,17 +14,7 @@ function UserManagementPage({ navigateTo, user }) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [currentUserRole, setCurrentUserRole] = useState("default");
-    
-  const roleHierarchy = {
-    autor: 0,
-    admin: 1,
-    oficialreal: 2,
-    guardareal: 3,
-    viajante: 4,
-    banidos: 5,
-    default: 99
-  };
-
+  
   const fetchUsers = async () => {
     // Garantimos que o loading seja ativado no início de cada busca
     setLoading(true);
@@ -41,8 +33,8 @@ function UserManagementPage({ navigateTo, user }) {
       const sortedUsers = fetchedUsers.sort((a, b) => {
         const roleA = a.user_metadata?.cargo?.toLowerCase() || 'default';
         const roleB = b.user_metadata?.cargo?.toLowerCase() || 'default';
-        const rankA = roleHierarchy[roleA] || roleHierarchy['default'];
-        const rankB = roleHierarchy[roleB] || roleHierarchy['default'];
+        const rankA = HIERARQUIA_CARGOS[roleA] || HIERARQUIA_CARGOS['default'];
+        const rankB = HIERARQUIA_CARGOS[roleB] || HIERARQUIA_CARGOS['default'];
         return rankA - rankB;
       });
       setUsers(sortedUsers);
@@ -169,29 +161,26 @@ const askConfirmation = (message) => {
             {users.length > 0 ? (
               users.map((u) => {
                 // ===== NOVA LÓGICA DE PERMISSÃO =====
-                const targetRole = u.user_metadata?.cargo?.toLowerCase() || 'default';
+                const targetRole = getBaseCargo(u.user_metadata?.cargo) || 'default';
                 let canEdit = false;
                 let canDelete = false;
 
                 // Regra 1: Ninguém pode editar ou deletar o 'autor'.
                 if (targetRole !== 'autor') {
-                  const callerRank = roleHierarchy[currentUserRole];
-                  const targetRank = roleHierarchy[targetRole];
-
-                  // Regra 2: A permissão para editar é baseada na hierarquia. Você só pode editar quem está abaixo de você.
+                  const callerRank = HIERARQUIA_CARGOS[getBaseCargo(currentUserRole)] ?? HIERARQUIA_CARGOS['default'];
+                  const targetRank = HIERARQUIA_CARGOS[targetRole] ?? HIERARQUIA_CARGOS['default'];
+// Pode editar qualquer um abaixo de você na hierarquia
                   if (callerRank < targetRank) {
-                    canEdit = true;
-                  }
-
-                  // Regra 3: A permissão para deletar é mais restrita.
-                  // Apenas 'autor' e 'admin' podem deletar...
-                  if (['admin', 'autor'].includes(currentUserRole)) {
-                    // ...e apenas quem está abaixo deles na hierarquia.
-                    if (callerRank < targetRank) {
-                      canDelete = true;
-                    }
+                     canEdit = true;
+                }
+                  // Regra 2: A permissão para editar é baseada na hierarquia. Você só pode editar quem está abaixo de você.
+                  if (['admin', 'autor'].includes(getBaseCargo(currentUserRole))) {
+    // ...e apenas quem está abaixo deles na hierarquia.
+                  if (callerRank < targetRank) {
+                    canDelete = true;
                   }
                 }
+              }
                 // =====================================
 
                 return (

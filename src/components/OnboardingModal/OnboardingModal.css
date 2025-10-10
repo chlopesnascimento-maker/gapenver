@@ -1,0 +1,95 @@
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.onboarding-modal {
+  width: 90%;
+  max-width: 500px;
+  position: relative;
+}
+
+.quest-card {
+  background: #17172b;
+  border: 1px solid rgba(218, 165, 32, 0.3);
+  border-radius: 15px;
+  padding: 40px 30px;
+  margin: 10px;
+  text-align: center;
+  color: #e0e0e0;
+  height: 350px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.quest-title {
+  font-family: 'Cinzel', serif;
+  color: #DAA520;
+  font-size: 1.8rem;
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.quest-description {
+  font-size: 1rem;
+  line-height: 1.6;
+  opacity: 0.9;
+  margin-bottom: 30px;
+}
+
+.quest-cta {
+  background: #DAA520;
+  color: #111827;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.quest-cta:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(218, 165, 32, 0.5);
+}
+
+.skip-button {
+  position: absolute;
+  bottom: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  font-size: 0.9rem;
+  text-decoration: underline;
+}
+
+/* --- Estilos para customizar o Carrossel --- */
+.onboarding-carousel .carousel .slide {
+  background: none; /* Remove o fundo padrão da biblioteca */
+}
+
+/* Deixa o card do meio maior e os laterais menores */
+.onboarding-carousel .carousel .slide.selected {
+  transform: scale(1);
+  opacity: 1;
+  z-index: 2;
+}
+.onboarding-carousel .carousel .slide {
+  transform: scale(0.85);
+  opacity: 0.5;
+  transition: all 0.3s ease-in-out;
+}

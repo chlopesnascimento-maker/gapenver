@@ -1,25 +1,42 @@
 import React from 'react';
 import './AutorCard.css'; // Importa seu próprio CSS isolado
+import { getBaseCargo } from '../../utils/helpers'; // Ajuste o caminho se necessário
 
-// <-- MUDANÇA 1: Adicionado 'autor' à lista de nomes de exibição (se já não estiver)
-const roleDisplayNames = {
-    'admin': 'Administrador',
-  'oficialreal': 'Oficial Real',
-  'guardareal': 'Guarda Real',
-  'viajante': 'Viajante',
-  'banidos': 'Banido',
-  'default': 'Indefinido'
-};
+// -- MAPA DE NOMES ANTIGO REMOVIDO --
+// const roleDisplayNames = { ... };
 
 function AutorCard({ profile }) {
   if (!profile) return null;
 
-  const cargoKey = profile.cargo?.toLowerCase() || 'default';
-  const displayName = roleDisplayNames[cargoKey];
+  // ====================================================================
+  // === INÍCIO DO BLOCO DE LÓGICA DE CARGOS REATORADO ===
+  // ====================================================================
 
-  // <-- MUDANÇA 2: Criamos variáveis separadas para cada tipo de cargo
-  const isAutor = cargoKey === 'autor';
-  const isRegularStaff = ['admin', 'oficialreal', 'guardareal'].includes(cargoKey);
+  // 1. Traduz o cargo completo para o cargo-base (ex: "cidadão")
+  const baseCargo = getBaseCargo(profile.cargo);
+
+  // 2. Define o nome de exibição de forma inteligente
+  const getDisplayCargo = (fullCargo, baseCargo) => {
+    const displayNames = {
+      
+      'admin': 'Administrador',
+      'oficialreal': 'Oficial Real',
+      'guardareal': 'Guarda Real',
+      'viajante': 'Viajante',
+      'banido': 'Banido',
+    };
+    // Se for um cargo dinâmico (contém " de "), retorna o nome completo.
+    // Senão, busca no mapa de nomes de exibição.
+    if (fullCargo?.includes(' de ')) {
+      return fullCargo;
+    }
+    return displayNames[baseCargo] || '';
+  };
+  const displayName = getDisplayCargo(profile.cargo, baseCargo);
+
+  // 3. Lógica para exibir as insígnias, agora baseada no cargo-base
+  const isAutor = baseCargo === 'autor';
+  const isRegularStaff = ['admin', 'oficialreal', 'guardareal'].includes(baseCargo);
 
   return (
     <div className="autor-card-container">
@@ -30,7 +47,7 @@ function AutorCard({ profile }) {
       />
       <div className="autor-info-stack">
         <h3>{`${profile.nome} ${profile.sobrenome || ''}`}</h3>
-        <span className={`autor-cargo-text cargo-${cargoKey}`}>{displayName}</span>
+                <span className={`autor-cargo-text cargo-${baseCargo}`}>{displayName}</span>
         
         {/* <-- MUDANÇA 3: Lógica para exibir a insígnia correta --> */}
         {isAutor && (

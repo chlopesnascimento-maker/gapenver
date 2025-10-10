@@ -28,6 +28,8 @@ import CriarTopicoPage from './components/CriarTopicoPage/CriarTopicoPage';
 import TopicoDetalhePage from './components/TopicoDetalhePage/TopicoDetalhePage';
 import BannedPage from './components/BannedPage/BannedPage';
 import MensagensPage from './components/MensagensPage/MensagensPage';
+import OnboardingModal from './components/OnboardingModal/OnboardingModal';
+import EscolhaReinoModal from './components/EscolhaReinoModal/EscolhaReinoModal';
 import { ModalProvider } from './contexts/ModalContext';
 
 //INICIALIZAÇÃO DO GOOGLE ANALYTICS
@@ -42,6 +44,8 @@ function App() {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [sessionChecked, setSessionChecked] = useState(false);
+  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
+  const [showEscolhaReinoModal, setShowEscolhaReinoModal] = useState(false);
 
   useEffect(() => {
     // Função para buscar dados da sessão e do perfil de uma só vez
@@ -64,6 +68,9 @@ function App() {
           // Juntamos os metadados com os dados do perfil, dando prioridade ao perfil
           const finalUserData = { ...currentUser.user_metadata, ...profileData };
           setUserData(finalUserData);
+          if (finalUserData && finalUserData.onboarding_completed === false) {
+        setShowOnboardingModal(true);
+      }
         }
       } else {
         setUserData(null);
@@ -273,9 +280,34 @@ function App() {
             viewUserId={user?.id}
           />
         )}
-        {/* Rota 'cidadaosDoReino' agora usa pageParams, eliminando o pageProps antigo */}
+        
+        {/* Rota 'cidadaosDoReino' */}
         {currentPage === "cidadaosDoReino" && (
           <CidadaosdoReino navigateTo={navigateTo} user={user} {...pageParams} />
+        )}
+
+        {/* NOVO: Renderiza o modal de onboarding se ele estiver ativo */}
+        {showOnboardingModal && (
+          <>
+            {showOnboardingModal && (
+    <OnboardingModal 
+      user={user} 
+      onClose={() => setShowOnboardingModal(false)} 
+      onOpenEscolhaReino={() => setShowEscolhaReinoModal(true)}
+    />
+  )}
+
+  <EscolhaReinoModal
+  isOpen={showEscolhaReinoModal}
+  onClose={() => setShowEscolhaReinoModal(false)}
+  onReinoEscolhido={(reinoId) => {
+    console.log(`TODO: Salvar o reino ${reinoId} para o usuário.`);
+    // Aqui chamaremos a função para atualizar o perfil no futuro
+  }}
+  user={user}
+/>
+  
+                      </>
         )}
               </main>
 

@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import './UserProfilePage.css';
 import EditUserModal from '../EditUserModal/EditUserModal';
+import { HIERARQUIA_CARGOS } from '../../constants/roles';
+import { getBaseCargo } from '../../utils/helpers';
 
-// Mapeamento dos banners e brasões dos reinos
+// Mapeamento dos banners e brasões dos reinos (continua o mesmo)
 const reinoAssets = {
   'gapenver': {
     banner: 'https://i.imgur.com/5qP53OJ.png',
@@ -32,7 +34,6 @@ const reinoAssets = {
   }
 };
 
-// --- NOVO: Adicionamos as descrições dos Reinos ---
 const reinoDescriptions = {
   'gapenver': 'O Coração Verdejante. O último bastião da magia ancestral, onde a lealdade é forjada na natureza e nos laços de sangue.',
   'saraver': 'O Império do Sol. Terras douradas de comércio e conquista, onde a ambição brilha mais forte que o aço.',
@@ -41,25 +42,9 @@ const reinoDescriptions = {
   'reinos independentes': 'Viajantes sem bandeira, cuja lealdade pertence apenas ao caminho que trilham e às histórias que coletam.'
 };
 
-const roleDisplayNames = {
-  'autor': "Saudações",
-  'admin': 'Administrador',
-  'oficialreal': 'Oficial Real',
-  'guardareal': 'Guarda Real',
-  'viajante': 'Viajante',
-  'banidos': 'Banido',
-  'default': 'Indefinido'
-};
-
-const roleHierarchy = {
-  autor: 0,
-  admin: 1,
-  oficialreal: 2,
-  guardareal: 3,
-  viajante: 4,
-  banidos: 5,
-  default: 99
-};
+// -- ANTIGOS MAPAS DE CARGOS REMOVIDOS --
+// const roleDisplayNames = { ... };
+// const roleHierarchy = { ... };
 
 function UserProfilePage({ user, viewUserId }) {
   const [profile, setProfile] = useState(null);
@@ -101,27 +86,54 @@ function UserProfilePage({ user, viewUserId }) {
   if (error) return <div className="profile-page-container"><p className="error-message">{error}</p></div>;
   if (!profile) return <div className="profile-page-container"><p>Perfil não encontrado.</p></div>;
   
-  const { nome, sobrenome, foto_url, sobre_mim, reino, nota, nota_expires_at, cargo, titulo } = profile;
-  const notaExpirou = nota_expires_at && new Date(nota_expires_at) < new Date();
-  const reinoKey = reino?.toLowerCase() || 'reinos independentes';
-  const assets = reinoAssets[reinoKey] || reinoAssets['reinos independentes'];
-  const description = reinoDescriptions[reinoKey];
-  const cargoKeyLower = cargo?.toLowerCase();
-  const isAutor = cargoKeyLower === 'autor';
-  const isRegularStaff = ['admin', 'oficialreal', 'guardareal'].includes(cargoKeyLower);
-  const displayName = roleDisplayNames[cargo?.toLowerCase()] || roleDisplayNames['default'];
+    // Extrai as propriedades do perfil
+const { nome, sobrenome, foto_url, sobre_mim, reino, nota, nota_expires_at, cargo, titulo } = profile;
+
+// Traduz o cargo completo para o cargo-base
+const profileBaseCargo = getBaseCargo(cargo);
+const currentUserBaseCargo = getBaseCargo(user?.app_metadata?.roles?.[0]);
+
+// Pega a prioridade de cada um usando o MAPA CENTRAL
+const targetRank = HIERARQUIA_CARGOS[profileBaseCargo] || 99;
+const callerRank = HIERARQUIA_CARGOS[currentUserBaseCargo] || 99;
+
+// FUNÇÃO INTELIGENTE para gerar NOME DE EXIBIÇÃO e NOME DE CLASSE CSS
+const getCargoInfo = (fullCargo, baseCargo) => {
+  const displayNames = {
+    'autor': 'Saudações',
+    'admin': 'Administrador',
+    'oficialreal': 'Oficial Real',
+    'guardareal': 'Guarda Real',
+    'viajante': 'Viajante',
+    'banido': 'Banido',
+  };
+
+  const displayName = fullCargo?.includes(' de ') ? fullCargo : displayNames[baseCargo] || 'Indefinido';
   
-  const currentUserRole = user?.app_metadata?.roles?.[0]?.toLowerCase() || 'default';
-  const profileUserRole = cargo?.toLowerCase() || 'default';
-  const callerRank = roleHierarchy[currentUserRole];
-  const targetRank = roleHierarchy[profileUserRole];
-  const canEdit = user && profile && (callerRank < targetRank);
+  // Converte o cargo base para um nome de classe válido (ex: "oficialreal" -> "oficial-real")
+  const className = baseCargo.replace(/ /g, '-');
+
+  return { displayName, className };
+};
+const { displayName, className: cargoClassName } = getCargoInfo(cargo, profileBaseCargo);
+
+// Lógica de status e permissão
+const isAutor = profileBaseCargo === 'autor';
+const canEdit = user && profile && (callerRank < targetRank);
+const isRegularStaff = ['admin', 'oficialreal', 'guardareal'].includes(profileBaseCargo);
+
+// --- Lógica de assets ---
+const notaExpirou = nota_expires_at && new Date(nota_expires_at) < new Date();
+const reinoKey = reino?.toLowerCase() || 'reinos independentes';
+const assets = reinoAssets[reinoKey] || reinoAssets['reinos independentes'];
+const description = reinoDescriptions[reinoKey];
+
 
   return (
     <div className={`profile-page-container theme-${reinoKey.replace(/'/g, "")}`}>
       <div className="profile-banner" style={{ backgroundImage: `url(${assets.banner})` }}>
         <div className="banner-overlay"></div>
-        {(isAutor || isRegularStaff) ? ( // Efeito de portal para Autor e Staff
+        {(isAutor || isRegularStaff) ? (
           <div className="profile-avatar-positioner"> 
             <div className="portal-fx-container"> 
               <img src={foto_url || '/default-avatar.png'} alt="Avatar do Usuário" className="portal-avatar-img"/>
@@ -138,9 +150,8 @@ function UserProfilePage({ user, viewUserId }) {
           {(isAutor || isRegularStaff) && titulo && (
             <h3 className="profile-title">{titulo}</h3>
           )}
-          <h2 className={`profile-cargo cargo-${cargoKeyLower}`}>{displayName}</h2>
+          <h2 className={`profile-cargo cargo-${cargoClassName}`}>{displayName}</h2>
           
-          {/* <-- MUDANÇA 3: Lógica para exibir a insígnia correta --> */}
           {isAutor && (
             <img src="https://i.imgur.com/Wu6llM0.png" alt="Insígnia do Autor" className="autor-badge-profile" />
           )}
@@ -163,20 +174,19 @@ function UserProfilePage({ user, viewUserId }) {
         
         <div className="profile-main-grid">
           <div className="profile-card about-card"><h2>Sobre Mim</h2><p>{sobre_mim || 'Nenhuma informação fornecida ainda.'}</p></div>
-                            {/* --- ALTERADO: O card do Reino foi completamente substituído --- */}
                             
           <div className={`kingdom-card ${reinoKey.replace(/'/g, "")}`}>
-    <h2>Reino Principal</h2>
-    <img src={assets.crest} alt={`Brasão de ${reino}`} className="kingdom-crest" />
-        <p className="kingdom-description">{description}</p>
-</div>
+            <h2>Reino Principal</h2>
+            <img src={assets.crest} alt={`Brasão de ${reino}`} className="kingdom-crest" />
+            <p className="kingdom-description">{description}</p>
+          </div>
           <div className="profile-card extra-card"><h2>Conquistas</h2><p>Em breve...</p></div>
         </div>
       </div>
 
       <EditUserModal
         userToEdit={profile}
-        currentUserRole={currentUserRole}
+        currentUserRole={currentUserBaseCargo} // Enviando o cargo-base para o modal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         onUpdateSuccess={handleUpdateSuccess}
