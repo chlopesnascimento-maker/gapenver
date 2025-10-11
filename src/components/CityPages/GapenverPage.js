@@ -21,7 +21,7 @@ function GapenverPage() {
   {/* Cardzão com imagem centralizada */}
   <div className="city-banner">
     <img 
-      src="https://i.imgur.com/v0z10ns.png" 
+      src="https://i.imgur.com/AMZWB9O.jpeg" 
       alt="Brasão de Gapenver"
     />
   </div>
