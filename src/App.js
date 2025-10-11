@@ -68,10 +68,13 @@ function App() {
           // Juntamos os metadados com os dados do perfil, dando prioridade ao perfil
           const finalUserData = { ...currentUser.user_metadata, ...profileData };
           setUserData(finalUserData);
-          if (finalUserData && finalUserData.onboarding_completed === false) {
-        setShowOnboardingModal(true);
-      }
-        }
+          if (finalUserData && (finalUserData.onboarding_completed === false || finalUserData.onboarding_completed === null)) {
+            const jaPulouNestaSessao = sessionStorage.getItem('onboardingMinimized');
+            if (!jaPulouNestaSessao) {
+              setShowOnboardingModal(true);
+            }
+          }
+             }
       } else {
         setUserData(null);
       }
@@ -118,6 +121,7 @@ function App() {
   }, [userData, currentPage]); // Depende de userData e currentPage
   
   const handleLogout = () => {
+    sessionStorage.removeItem('onboardingPulado');
     supabase.auth.signOut().then(() => {
       navigateTo('home');
     }).catch((error) => {
@@ -223,7 +227,7 @@ function App() {
 
   // O 'autor' também é considerado um administrador de nível mais alto
   const isAdmin = ['admin', 'autor'].includes(userRole);
-
+console.log("App.js - Valor de 'user' antes de renderizar:", user);
   return (
      <ModalProvider>
     <div className="App">

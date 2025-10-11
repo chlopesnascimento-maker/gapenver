@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import './CriarTopicoPage.css';
+import RichTextEditor from '../RichTextEditor/RichTextEditor';
 import ConfirmacaoModal from '../Shared/ConfirmacaoModal/ConfirmacaoModal';
 
 function CriarTopicoPage({ user, navigateTo }) {
@@ -108,14 +109,14 @@ function CriarTopicoPage({ user, navigateTo }) {
 
         <div className="form-group">
           <label htmlFor="conteudo">Sua Mensagem</label>
-          <textarea
+          <RichTextEditor
             id="conteudo"
             value={conteudo}
             onChange={(e) => setConteudo(e.target.value)}
             placeholder="Descreva sua dúvida ou o assunto que quer discutir..."
             rows="10"
             required
-          ></textarea>
+          ></RichTextEditor>
         </div>
 
         {isStaff && (

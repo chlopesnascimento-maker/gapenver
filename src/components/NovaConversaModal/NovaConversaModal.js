@@ -3,6 +3,7 @@ import { supabase } from '../../supabaseClient';
 import './NovaConversaModal.css';
 import RichTextEditor from '../RichTextEditor/RichTextEditor';
 
+
 function NovaConversaModal({ user, isOpen, onClose, onNewConversation }) {
   const [allUsers, setAllUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');

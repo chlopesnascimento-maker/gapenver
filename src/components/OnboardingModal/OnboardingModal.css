@@ -1,9 +1,10 @@
+/* === VERSÃO FINAL: CARROSSEL CUSTOMIZADO E ESTADO MINIMIZADO === */
+
 .onboarding-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
   z-index: 9999;
   display: flex;
   align-items: center;
@@ -14,6 +15,26 @@
   width: 90%;
   max-width: 500px;
   position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- NOSSO NOVO CARROSSEL --- */
+.onboarding-carousel-viewport {
+  overflow: hidden;
+  width: 100%;
+}
+
+.onboarding-carousel-track {
+  display: flex;
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  will-change: transform; /* Dica de performance */
+}
+
+.carousel-slide-item {
+  flex: 0 0 100%;
+  box-sizing: border-box;
+  padding: 10px;
 }
 
 .quest-card {
@@ -21,54 +42,61 @@
   border: 1px solid rgba(218, 165, 32, 0.3);
   border-radius: 15px;
   padding: 40px 30px;
-  margin: 10px;
   text-align: center;
   color: #e0e0e0;
-  height: 350px;
+  height: 380px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+/* ... (as regras de .quest-title, .quest-description, etc. continuam as mesmas) ... */
+.quest-title { font-family: 'Cinzel', serif; color: #DAA520; font-size: 1.8rem; margin: 0 0 20px 0; }
+.quest-description { font-size: 1rem; line-height: 1.6; opacity: 0.9; margin-bottom: 30px; }
+.quest-reward { background-color: rgba(218, 165, 32, 0.1); border: 1px solid rgba(218, 165, 32, 0.3); padding: 10px 15px; border-radius: 5px; margin-bottom: 25px; text-align: center; }
+.quest-reward span { display: block; font-size: 0.9rem; color: #fff; }
+.quest-reward small { font-size: 0.75rem; opacity: 0.7; }
+.quest-cta { background: #DAA520; color: #111827; border: none; padding: 12px 30px; border-radius: 5px; font-weight: bold; cursor: pointer; text-decoration: none; font-size: 1rem; transition: all 0.2s ease; }
+.quest-cta:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(218, 165, 32, 0.5); }
+
+
+/* --- NAVEGAÇÃO DO CARROSSEL --- */
+.carousel-navigation {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
+  padding: 10px 0;
+  width: 100%;
 }
-
-.quest-title {
-  font-family: 'Cinzel', serif;
-  color: #DAA520;
-  font-size: 1.8rem;
-  margin-top: 0;
-  margin-bottom: 20px;
-}
-
-.quest-description {
-  font-size: 1rem;
-  line-height: 1.6;
-  opacity: 0.9;
-  margin-bottom: 30px;
-}
-
-.quest-cta {
-  background: #DAA520;
-  color: #111827;
+.carousel-nav-arrow {
+  background: none;
   border: none;
-  padding: 12px 30px;
-  border-radius: 5px;
-  font-weight: bold;
+  color: #DAA520;
+  font-size: 2.5rem;
   cursor: pointer;
-  text-decoration: none;
-  font-size: 1rem;
-  transition: all 0.2s ease;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.carousel-nav-arrow:hover {
+  opacity: 1;
+}
+.carousel-dots {
+  display: flex;
+  gap: 8px;
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.3);
+  transition: background-color 0.3s;
+}
+.dot.active {
+  background-color: #DAA520;
 }
 
-.quest-cta:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 15px rgba(218, 165, 32, 0.5);
-}
 
 .skip-button {
-  position: absolute;
-  bottom: -40px;
-  left: 50%;
-  transform: translateX(-50%);
+  margin-top: 15px;
   background: none;
   border: none;
   color: rgba(255, 255, 255, 0.6);
@@ -76,20 +104,87 @@
   font-size: 0.9rem;
   text-decoration: underline;
 }
-
-/* --- Estilos para customizar o Carrossel --- */
-.onboarding-carousel .carousel .slide {
-  background: none; /* Remove o fundo padrão da biblioteca */
+.complete-button { /* Botão de debug, pode ser removido depois */
+  margin-top: 5px;
+  color: cyan;
+  background: none;
+  border: none;
+  font-size: 0.8rem;
+  cursor: pointer;
 }
 
-/* Deixa o card do meio maior e os laterais menores */
-.onboarding-carousel .carousel .slide.selected {
-  transform: scale(1);
-  opacity: 1;
-  z-index: 2;
+/* --- ESTILO DO BOTÃO MINIMIZADO --- */
+.onboarding-minimized-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #DAA520;
+  color: #111827;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 20px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  z-index: 9998;
+  animation: pulse 2.5s infinite;
 }
-.onboarding-carousel .carousel .slide {
-  transform: scale(0.85);
-  opacity: 0.5;
-  transition: all 0.3s ease-in-out;
+
+@keyframes pulse {
+  0% { transform: scale(1); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); }
+  50% { transform: scale(1.05); box-shadow: 0 8px 25px rgba(218, 165, 32, 0.6); }
+  100% { transform: scale(1); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); }
+}
+
+/* =============================================== */
+/* --- RESPONSIVIDADE PARA MOBILE (VERSÃO FINAL) --- */
+/* =============================================== */
+@media (max-width: 768px) {
+
+  .onboarding-modal {
+    width: 100%;
+    max-width: 95%; /* Ocupa quase toda a largura, com uma pequena margem */
+    padding: 0; /* Removemos o padding para o carrossel usar todo o espaço */
+  }
+
+  .carousel-slide-item {
+    padding: 0 5px; /* Diminui o espaçamento entre os cards */
+  }
+
+  .quest-card {
+    /* A MUDANÇA MAIS IMPORTANTE: a altura agora é flexível */
+    height: auto;
+    min-height: 380px; /* Garante uma altura mínima, mas permite crescer */
+    padding: 30px 20px; /* Diminui o padding interno */
+  }
+
+  /* Reduz o tamanho das fontes para caber melhor */
+  .quest-title {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+  }
+
+  .quest-description {
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+  }
+  
+  .quest-reward {
+    margin-bottom: 20px;
+  }
+
+  .quest-cta {
+    padding: 10px 25px;
+    font-size: 0.9rem;
+  }
+
+  /* Ajusta a navegação do carrossel */
+  .carousel-navigation {
+    padding: 5px 0;
+  }
+
+  .carousel-nav-arrow {
+    font-size: 2rem; /* Diminui o tamanho das setas */
+  }
 }

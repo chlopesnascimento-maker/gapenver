@@ -63,3 +63,28 @@ export const jurarLealdadeAoReino = async (userId, reinoID, reinoNome) => {
   console.log(`Usuário ${userId} agora é um ${novoCargo}.`);
   return { success: true };
 };
+
+/**
+ * Marca o processo de onboarding de um usuário como concluído.
+ * @param {string} userId - O ID do usuário.
+ * @returns {Promise<{success: boolean, error?: any}>}
+ */
+export const marcarOnboardingConcluido = async (userId) => {
+  if (!userId) {
+    console.error("ID do usuário não fornecido para concluir o onboarding.");
+    return { success: false, error: "ID do usuário ausente." };
+  }
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ onboarding_completed: true })
+    .eq('id', userId);
+
+  if (error) {
+    console.error("Erro ao marcar onboarding como concluído:", error);
+    return { success: false, error };
+  }
+
+  console.log(`Onboarding do usuário ${userId} foi marcado como concluído.`);
+  return { success: true };
+};

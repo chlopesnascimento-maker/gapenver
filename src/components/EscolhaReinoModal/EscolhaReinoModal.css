@@ -1,71 +1,39 @@
-/* === VERSÃO FINAL: CARROSSEL CUSTOMIZADO === */
-
 .escolha-reino-overlay {
   position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(8px); z-index: 10000; display: flex;
-  align-items: center; justify-content: center; padding: 20px 0;
+  align-items: center; justify-content: center; padding: 20px;
 }
 
 .escolha-reino-modal {
   background: #10101b url('https://i.imgur.com/bnjZqVy.png') no-repeat center center;
   background-size: cover; border: 1px solid rgba(218, 165, 32, 0.3);
   border-radius: 20px; width: 100%; max-width: 1200px;
-  padding: 40px 0; text-align: center; color: #fff; position: relative;
+  padding: 40px; text-align: center; color: #fff; position: relative;
 }
 
 .escolha-reino-modal h2 { font-family: 'Cinzel', serif; color: #DAA520; font-size: 2.2rem; margin-top: 0; }
-.escolha-reino-modal > p { opacity: 0.8; margin-bottom: 10px; }
+.escolha-reino-modal > p { opacity: 0.8; margin-bottom: 30px; }
 .close-button { position: absolute; top: 15px; right: 15px; background: none; border: none; color: #fff; font-size: 28px; cursor: pointer; opacity: 0.7; }
 .close-button:hover { opacity: 1; }
 
-/* --- A ESTRUTURA DO NOSSO CARROSSEL --- */
-
-.custom-carousel-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.carousel-viewport {
-  width: 100%;
-  overflow: hidden; /* A "janela" que esconde os outros slides */
-}
-
-.carousel-track {
-  display: flex;
-  /* A mágica da animação suave acontece aqui */
-  transition: transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
-  will-change: transform;
-}
-
-.carousel-slide {
-  flex: 0 0 33.333%; /* No desktop, cada slide ocupa 1/3 do espaço */
-  padding: 0 15px;
-  box-sizing: border-box;
+/* --- LAYOUT DE DESKTOP (GRID, SEM CARROSSEL) --- */
+.reinos-container-esteira {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 25px;
 }
 
 .reino-card {
-  background-color: var(--reino-cor-bg);
-  border-radius: 15px;
-  padding: 30px 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  height: 400px;
-  border: 2px solid transparent;
-  position: relative;
-  transition: transform 0.3s ease, opacity 0.3s ease, border-color 0.3s ease;
-  transform: scale(1); 
-  opacity: 1;
+  background-color: var(--reino-cor-bg); border-radius: 15px; padding: 30px 20px;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: space-between; height: 400px; border: 2px solid transparent;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .reino-card:hover {
-  transform: scale(1.05); /* Cresce um pouco ao passar o mouse */
+  transform: translateY(-10px);
   border-color: #DAA520;
   box-shadow: 0 10px 30px rgba(218, 165, 32, 0.3);
-  z-index: 2;
 }
 
 .reino-card h3 { font-family: 'Cinzel', serif; font-size: 2rem; margin-top: 0; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
@@ -74,47 +42,107 @@
 .reino-escolher-btn:hover { background: #DAA520; color: #111; border-color: #DAA520; }
 
 
-/* --- As Setas de Navegação --- */
-.carousel-arrow {
-  background: rgba(218, 165, 32, 0.8);
-  border: none;
-  border-radius: 50%;
-  color: #111;
-  width: 40px;
-  height: 40px;
-  font-size: 24px;
-  font-weight: bold;
-  cursor: pointer;
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 10;
-  opacity: 0.8;
-  transition: opacity 0.2s ease;
-}
-.carousel-arrow:hover {
-  opacity: 1;
-}
-
-.left-arrow { left: 20px; }
-.right-arrow { right: 20px; }
-
-/* --- RESPONSIVIDADE PARA MOBILE --- */
 @media (max-width: 800px) {
-  .escolha-reino-modal { padding: 20px 0; background-image: none; }
-  .left-arrow { left: 5px; }
-  .right-arrow { right: 5px; }
 
-  /* No mobile, cada slide ocupa a tela inteira */
-  .carousel-slide {
-    flex: 0 0 100%;
-    padding: 0 25px; /* Deixa um espaço para o slide não colar nas bordas */
+  .escolha-reino-overlay {
+    /* Garante que o modal não fique colado no topo/baixo em telas muito curtas */
+    padding: 20px 0;
   }
 
-  /* O cálculo do deslocamento muda para 1 slide por vez */
-  /* Precisamos de uma pequena mudança no JS para isso... */
+  .escolha-reino-modal {
+    padding: 30px 0; /* Aumenta o padding vertical interno */
+    background-color: rgba(16, 16, 27, 0.7);
+    background-blend-mode: multiply;
+    max-width: 95vw; /* O modal nunca será mais largo que 95% da tela */
+  }
+
+  /* 1. A ESTEIRA DE SCROLL (continua a mesma) */
+  .reinos-container-esteira {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding: 0 30px;
+    gap: 15px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    grid-template-columns: none;
+  }
+  .reinos-container-esteira::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* 2. A CORREÇÃO PRINCIPAL: REMOVENDO A ALTURA FIXA */
+  .reinos-container-esteira .reino-card {
+    flex: 0 0 80%;
+    scroll-snap-align: center;
+    height: auto; /* <-- A MÁGICA: A altura agora se adapta ao conteúdo */
+    min-height: 380px; /* Garante uma altura mínima para consistência visual */
+    padding: 30px 25px; /* Ajusta o padding interno para telas menores */
+  }
+}@media (max-width: 800px) {
+  .escolha-reino-modal {
+    padding: 20px 0;
+    background-color: rgba(16, 16, 27, 0.7);
+    background-blend-mode: multiply;
+  }
+
+  /* 1. TRANSFORMA O CONTAINER EM UMA ESTEIRA DE SCROLL */
+  .reinos-container-esteira {
+    display: flex;
+    overflow-x: auto; /* A PERMISSÃO PARA ARRASTAR */
+    scroll-snap-type: x mandatory;
+    padding: 0 30px; /* Espaço nas laterais para os cards "escondidos" */
+    gap: 15px;
+    
+    /* Limpeza */
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    grid-template-columns: none; /* Garante que a regra de grid não interfira */
+  }
+  .reinos-container-esteira::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* 2. DEFINE O TAMANHO DOS CARDS NA ESTEIRA */
+  .reinos-container-esteira .reino-card {
+    flex: 0 0 80%; /* Cada card ocupa 80% da tela */
+    scroll-snap-align: center; /* O imã que centraliza o card */
+    height: 420px;
+  }
 }
 
-.carousel-track.no-transition {
-  transition: none;
+/* ======================================================= */
+/* --- AJUSTE FINO PARA TELAS PEQUENAS (EX: S8+) --- */
+/* ======================================================= */
+@media (max-width: 370px) {
+
+   .escolha-reino-modal {
+    padding: 20px 0;
+    background-color: rgba(16, 16, 27, 0.7);
+    background-blend-mode: multiply;
+  }
+
+  /* 1. TRANSFORMA O CONTAINER EM UMA ESTEIRA DE SCROLL */
+  .reinos-container-esteira {
+    display: flex;
+    overflow-x: auto; /* A PERMISSÃO PARA ARRASTAR */
+    scroll-snap-type: x mandatory;
+    padding: 0 30px; /* Espaço nas laterais para os cards "escondidos" */
+    gap: 15px;
+    
+    /* Limpeza */
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    grid-template-columns: none; /* Garante que a regra de grid não interfira */
+  }
+  .reinos-container-esteira::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* 2. DEFINE O TAMANHO DOS CARDS NA ESTEIRA */
+  .reinos-container-esteira .reino-card {
+    flex: 0 0 80%; /* Cada card ocupa 80% da tela */
+    scroll-snap-align: center; /* O imã que centraliza o card */
+    height: 370px;
+  }
 }
