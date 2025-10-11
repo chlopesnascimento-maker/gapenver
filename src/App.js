@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import './App.css';
 import ReactGA from "react-ga4";
 
@@ -6,31 +6,31 @@ import ReactGA from "react-ga4";
 import { supabase } from './supabaseClient'; 
 
 // Importa as páginas
-import AdminDashboard from './components/AdminDashboard/AdminDashboard';
-import UserManagementPage from './components/UserManagementPage/UserManagementPage';
-import Header from './components/Header/Header';
-import HomePage from './components/HomePage/HomePage';
-import LoginPage from './components/LoginPage/LoginPage';
-import RegisterPage from './components/RegisterPage/RegisterPage';
-import ForgotPasswordPage from './components/ForgotPasswordPage/ForgotPasswordPage';
-import WelcomePage from './components/WelcomePage/WelcomePage';
-import EditProfilePage from './components/EditProfilePage/EditProfilePage';
-import MyAccountPage from './components/MyAccountPage/MyAccountPage';
-import Footer from './components/Footer/Footer';
-import LoadingOverlay from './components/Shared/LoadingOverlay/LoadingOverlay';
-import UserProfilePage from './components/UserProfilePage/UserProfilePage'; 
-import StaffPage from './components/StaffPage/StaffPage'; 
-import CidadaosdoReino from "./components/CidadaosdoReino/CidadaosdoReino";
-import GapenverPage from './components/CityPages/GapenverPage'; 
-import FaleConoscoPage from './components/FaleConoscoPage/FaleConoscoPage';
-import ComunidadePage from './components/ComunidadePage/ComunidadePage';
-import CriarTopicoPage from './components/CriarTopicoPage/CriarTopicoPage';
-import TopicoDetalhePage from './components/TopicoDetalhePage/TopicoDetalhePage';
-import BannedPage from './components/BannedPage/BannedPage';
-import MensagensPage from './components/MensagensPage/MensagensPage';
-import OnboardingModal from './components/OnboardingModal/OnboardingModal';
-import EscolhaReinoModal from './components/EscolhaReinoModal/EscolhaReinoModal';
-import { ModalProvider } from './contexts/ModalContext';
+const AdminDashboard = React.lazy(() => import('./components/AdminDashboard/AdminDashboard'));
+const UserManagementPage = React.lazy(() => import ('./components/UserManagementPage/UserManagementPage'));
+const Header = React.lazy(() => import ('./components/Header/Header'));
+const HomePage = React.lazy(() => import ('./components/HomePage/HomePage'));
+const LoginPage = React.lazy(() => import ('./components/LoginPage/LoginPage'));
+const RegisterPage = React.lazy(() => import ('./components/RegisterPage/RegisterPage'));
+const ForgotPasswordPage = React.lazy(() => import ('./components/ForgotPasswordPage/ForgotPasswordPage'));
+const WelcomePage = React.lazy(() => import('./components/WelcomePage/WelcomePage'));
+const EditProfilePage = React.lazy(() => import('./components/EditProfilePage/EditProfilePage'));
+const MyAccountPage = React.lazy(() => import('./components/MyAccountPage/MyAccountPage'));
+const Footer = React.lazy(() => import('./components/Footer/Footer'));
+const LoadingOverlay = React.lazy(() => import('./components/Shared/LoadingOverlay/LoadingOverlay'));
+const UserProfilePage = React.lazy(() => import('./components/UserProfilePage/UserProfilePage'));
+const StaffPage = React.lazy(() => import('./components/StaffPage/StaffPage'));
+const CidadaosdoReino = React.lazy(() => import('./components/CidadaosdoReino/CidadaosdoReino'));
+const GapenverPage = React.lazy(() => import('./components/CityPages/GapenverPage'));
+const FaleConoscoPage = React.lazy(() => import('./components/FaleConoscoPage/FaleConoscoPage'));
+const ComunidadePage = React.lazy(() => import('./components/ComunidadePage/ComunidadePage'));
+const CriarTopicoPage = React.lazy(() => import('./components/CriarTopicoPage/CriarTopicoPage'));
+const TopicoDetalhePage = React.lazy(() => import('./components/TopicoDetalhePage/TopicoDetalhePage'));
+const BannedPage = React.lazy(() => import('./components/BannedPage/BannedPage'));
+const MensagensPage = React.lazy(() => import('./components/MensagensPage/MensagensPage'));
+const OnboardingModal = React.lazy(() => import('./components/OnboardingModal/OnboardingModal'));
+const EscolhaReinoModal = React.lazy(() => import('./components/EscolhaReinoModal/EscolhaReinoModal'));
+const ModalProvider = React.lazy(() => import('./contexts/ModalContext'));
 
 //INICIALIZAÇÃO DO GOOGLE ANALYTICS
 const MEASUREMENT_ID = "G-N6Q8RTN5PL"; 
@@ -243,6 +243,7 @@ console.log("App.js - Valor de 'user' antes de renderizar:", user);
       />
 
       <main>
+        <Suspense fallback={<LoadingOverlay show={true} />}>
         {currentPage === 'bannedPage' && <BannedPage />}
         {currentPage === 'home' && <HomePage user={user} navigateTo={navigateTo} />}
         {currentPage === 'login' && <LoginPage navigateTo={navigateTo} setLoading={setLoading} />}
@@ -313,6 +314,7 @@ console.log("App.js - Valor de 'user' antes de renderizar:", user);
   
                       </>
         )}
+        </Suspense>
               </main>
 
 
