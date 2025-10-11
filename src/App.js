@@ -5,10 +5,15 @@ import ReactGA from "react-ga4";
 // Importando o Supabase
 import { supabase } from './supabaseClient'; 
 
+import Header from './components/Header/Header';
+import Footer from './components/Footer/Footer';
+import LoadingOverlay from './components/Shared/LoadingOverlay/LoadingOverlay';
+import { ModalProvider } from './contexts/ModalContext';
+
 // Importa as páginas
 const AdminDashboard = React.lazy(() => import('./components/AdminDashboard/AdminDashboard'));
 const UserManagementPage = React.lazy(() => import ('./components/UserManagementPage/UserManagementPage'));
-const Header = React.lazy(() => import ('./components/Header/Header'));
+
 const HomePage = React.lazy(() => import ('./components/HomePage/HomePage'));
 const LoginPage = React.lazy(() => import ('./components/LoginPage/LoginPage'));
 const RegisterPage = React.lazy(() => import ('./components/RegisterPage/RegisterPage'));
@@ -16,8 +21,6 @@ const ForgotPasswordPage = React.lazy(() => import ('./components/ForgotPassword
 const WelcomePage = React.lazy(() => import('./components/WelcomePage/WelcomePage'));
 const EditProfilePage = React.lazy(() => import('./components/EditProfilePage/EditProfilePage'));
 const MyAccountPage = React.lazy(() => import('./components/MyAccountPage/MyAccountPage'));
-const Footer = React.lazy(() => import('./components/Footer/Footer'));
-const LoadingOverlay = React.lazy(() => import('./components/Shared/LoadingOverlay/LoadingOverlay'));
 const UserProfilePage = React.lazy(() => import('./components/UserProfilePage/UserProfilePage'));
 const StaffPage = React.lazy(() => import('./components/StaffPage/StaffPage'));
 const CidadaosdoReino = React.lazy(() => import('./components/CidadaosdoReino/CidadaosdoReino'));
@@ -30,7 +33,7 @@ const BannedPage = React.lazy(() => import('./components/BannedPage/BannedPage')
 const MensagensPage = React.lazy(() => import('./components/MensagensPage/MensagensPage'));
 const OnboardingModal = React.lazy(() => import('./components/OnboardingModal/OnboardingModal'));
 const EscolhaReinoModal = React.lazy(() => import('./components/EscolhaReinoModal/EscolhaReinoModal'));
-const ModalProvider = React.lazy(() => import('./contexts/ModalContext'));
+
 
 //INICIALIZAÇÃO DO GOOGLE ANALYTICS
 const MEASUREMENT_ID = "G-N6Q8RTN5PL"; 
@@ -219,15 +222,13 @@ function App() {
   }, []);
 
   // Lógica de permissão
-   const userRole = userData?.cargo; // Lendo do 'userData' para maior consistência
-  
-  // O 'autor' agora tem acesso a tudo que os outros staff têm
+  const userRole = userData?.cargo; // Lendo do 'userData' para maior consistência
+    // O 'autor' agora tem acesso a tudo que os outros staff têm
   const canAccessPanel = ['admin', 'oficialreal', 'guardareal', 'autor'].includes(userRole);
   const canManageUsers = ['admin', 'oficialreal', 'guardareal', 'autor'].includes(userRole);
-
   // O 'autor' também é considerado um administrador de nível mais alto
   const isAdmin = ['admin', 'autor'].includes(userRole);
-console.log("App.js - Valor de 'user' antes de renderizar:", user);
+
   return (
      <ModalProvider>
     <div className="App">
@@ -243,90 +244,86 @@ console.log("App.js - Valor de 'user' antes de renderizar:", user);
       />
 
       <main>
-        <Suspense fallback={<LoadingOverlay show={true} />}>
-        {currentPage === 'bannedPage' && <BannedPage />}
-        {currentPage === 'home' && <HomePage user={user} navigateTo={navigateTo} />}
-        {currentPage === 'login' && <LoginPage navigateTo={navigateTo} setLoading={setLoading} />}
-        {currentPage === 'register' && <RegisterPage navigateTo={navigateTo} setLoading={setLoading} />}
-        {currentPage === 'forgotPassword' && <ForgotPasswordPage navigateTo={navigateTo} setLoading={setLoading} />}
-        {currentPage === 'welcome' && <WelcomePage navigateTo={navigateTo} />}
-        {currentPage === 'editProfile' && (
-          <EditProfilePage 
-            navigateTo={navigateTo}
-            onProfileUpdate={handleProfileUpdate}
-          />
+          <Suspense fallback={<LoadingOverlay show={true} />}>
+            {currentPage === 'bannedPage' && <BannedPage />}
+            {currentPage === 'home' && <HomePage user={user} navigateTo={navigateTo} />}
+            {currentPage === 'login' && <LoginPage navigateTo={navigateTo} setLoading={setLoading} />}
+            {currentPage === 'register' && <RegisterPage navigateTo={navigateTo} setLoading={setLoading} />}
+            {currentPage === 'forgotPassword' && <ForgotPasswordPage navigateTo={navigateTo} setLoading={setLoading} />}
+            {currentPage === 'welcome' && <WelcomePage navigateTo={navigateTo} />}
+            {currentPage === 'editProfile' && (
+              <EditProfilePage 
+                navigateTo={navigateTo}
+                onProfileUpdate={handleProfileUpdate}
+              />
         )}
-        {currentPage === 'myAccount' && (
-          <MyAccountPage navigateTo={navigateTo} user={user} userData={userData}/>
+            {currentPage === 'myAccount' && (
+             <MyAccountPage navigateTo={navigateTo} user={user} userData={userData}/>
         )}
-        {currentPage === 'criarTopico' && <CriarTopicoPage user={user} navigateTo={navigateTo} />}
-        {currentPage === 'adminDashboard' && canAccessPanel && (
-          <AdminDashboard user={user} navigateTo={navigateTo} />
+            {currentPage === 'criarTopico' && <CriarTopicoPage user={user} navigateTo={navigateTo} />}
+            {currentPage === 'adminDashboard' && canAccessPanel && (
+              <AdminDashboard user={user} navigateTo={navigateTo} />
         )}
-        {currentPage === 'userManagement' && canManageUsers && (
-          <UserManagementPage navigateTo={navigateTo} user={user} />
+            {currentPage === 'userManagement' && canManageUsers && (
+              <UserManagementPage navigateTo={navigateTo} user={user} />
         )}
-        {currentPage === 'comunidade' && <ComunidadePage user={user} navigateTo={navigateTo} />}
-        {currentPage === 'gapenver' && <GapenverPage />}
-        {currentPage === 'topicoDetalhe' && <TopicoDetalhePage user={user} pageState={pageParams} navigateTo={navigateTo} />}
-        {currentPage === 'faleConosco' && <FaleConoscoPage />}
-        {currentPage === 'staff' && <StaffPage navigateTo={navigateTo} />}
-        {currentPage === 'userProfile' && pageParams?.userId && (
-          <UserProfilePage
-            user={user}
-            viewUserId={pageParams.userId}
-          />
+            {currentPage === 'comunidade' && <ComunidadePage user={user} navigateTo={navigateTo} />}
+            {currentPage === 'gapenver' && <GapenverPage />}
+            {currentPage === 'topicoDetalhe' && <TopicoDetalhePage user={user} pageState={pageParams} navigateTo={navigateTo} />}
+            {currentPage === 'faleConosco' && <FaleConoscoPage />}
+            {currentPage === 'staff' && <StaffPage navigateTo={navigateTo} />}
+            {currentPage === 'userProfile' && pageParams?.userId && (
+              <UserProfilePage
+                user={user}
+                viewUserId={pageParams.userId}
+             />
         )}
-
-        {currentPage === 'mensagens' && <MensagensPage user={user} navigateTo={navigateTo} />}
-        {currentPage === 'myProfile' && (
-          <UserProfilePage
-            user={user}
-            viewUserId={user?.id}
-          />
+            {currentPage === 'mensagens' && <MensagensPage user={user} navigateTo={navigateTo} />}
+            {currentPage === 'myProfile' && (
+             <UserProfilePage
+               user={user}
+                viewUserId={user?.id}
+              />
         )}
-        
-        {/* Rota 'cidadaosDoReino' */}
-        {currentPage === "cidadaosDoReino" && (
-          <CidadaosdoReino navigateTo={navigateTo} user={user} {...pageParams} />
+                {/* Rota 'cidadaosDoReino' */}
+            {currentPage === "cidadaosDoReino" && (
+              <CidadaosdoReino navigateTo={navigateTo} user={user} {...pageParams} />
         )}
-
-        {/* NOVO: Renderiza o modal de onboarding se ele estiver ativo */}
-        {showOnboardingModal && (
-          <>
-            {showOnboardingModal && (
-    <OnboardingModal 
-      user={user} 
-      onClose={() => setShowOnboardingModal(false)} 
-      onOpenEscolhaReino={() => setShowEscolhaReinoModal(true)}
-    />
-  )}
-
-  <EscolhaReinoModal
-  isOpen={showEscolhaReinoModal}
-  onClose={() => setShowEscolhaReinoModal(false)}
-  onReinoEscolhido={(reinoId) => {
-    console.log(`TODO: Salvar o reino ${reinoId} para o usuário.`);
-    // Aqui chamaremos a função para atualizar o perfil no futuro
-  }}
-  user={user}
-/>
-  
-                      </>
-        )}
-        </Suspense>
+          </Suspense>   
               </main>
 
+<Suspense fallback={<></>}>
+          {showOnboardingModal && (
+            <OnboardingModal 
+              user={user} 
+              onClose={() => setShowOnboardingModal(false)}
+              onOpenEscolhaReino={() => {
+                setShowOnboardingModal(false);
+                setShowEscolhaReinoModal(true);
+              }}
+            />
+          )}
 
-      <Footer />
+          <EscolhaReinoModal
+            isOpen={showEscolhaReinoModal}
+            onClose={() => setShowEscolhaReinoModal(false)}
+            onReinoEscolhido={(reinoId) => {
+              console.log(`TODO: Salvar o reino ${reinoId} para o usuário.`);
+            }}
+            user={user}
+          />
+        </Suspense>
 
-      <button id="backToTopBtn" title="Voltar ao topo">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24px" height="24px">
-          <path d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z"/>
-        </svg>
-      </button>
-    </div>
-  </ModalProvider>);
+        <Footer />
+
+        <button id="backToTopBtn" title="Voltar ao topo">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24px" height="24px">
+            <path d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z"/>
+          </svg>
+        </button>
+      </div>
+    </ModalProvider>
+  );
 }
 
 export default App;
