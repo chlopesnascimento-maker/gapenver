@@ -10,7 +10,7 @@ function GapenverPage() {
             src="https://i.imgur.com/AnC6dG6.png" // Troque pela imagem/brasão de Gapenver
             alt="Brasão de Gapenver" 
             className="city-crest" 
-            onError={(e) => { e.target.onerror = null; e.target.src='https://i.imgur.com/ZUQJmco.png'; }} // Fallback para o logo principal
+            onError={(e) => { e.target.onerror = null; e.target.src='https://i.imgur.com/AMZWB9O.jpeg'; }} // Fallback para o logo principal
           />
           <h1 className="city-title">Gapenver</h1>
         </div>
