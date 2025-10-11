@@ -10,24 +10,37 @@
   border-radius: 20px; width: 100%; max-width: 1200px;
   padding: 40px; text-align: center; color: #fff; position: relative;
 }
-
+/* ... (regras de h2, p, close-button continuam iguais) ... */
 .escolha-reino-modal h2 { font-family: 'Cinzel', serif; color: #DAA520; font-size: 2.2rem; margin-top: 0; }
 .escolha-reino-modal > p { opacity: 0.8; margin-bottom: 30px; }
 .close-button { position: absolute; top: 15px; right: 15px; background: none; border: none; color: #fff; font-size: 28px; cursor: pointer; opacity: 0.7; }
 .close-button:hover { opacity: 1; }
 
-/* --- LAYOUT DE DESKTOP (GRID, SEM CARROSSEL) --- */
+
+/* --- LAYOUT DE DESKTOP (GRID) --- */
 .reinos-container-esteira {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 25px;
 }
 
+/* --- ESTILOS DO NOVO CARD COM IMAGEM --- */
 .reino-card {
-  background-color: var(--reino-cor-bg); border-radius: 15px; padding: 30px 20px;
-  display: flex; flex-direction: column; align-items: center;
-  justify-content: space-between; height: 400px; border: 2px solid transparent;
+  border-radius: 15px;
+  border: 2px solid transparent;
+  height: 400px;
+  position: relative;
+  overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+/* --- A NOVA ANIMAÇÃO A++ --- */
+.reino-card-background {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.4s ease-out; /* A animação do zoom */
 }
 
 .reino-card:hover {
@@ -36,113 +49,66 @@
   box-shadow: 0 10px 30px rgba(218, 165, 32, 0.3);
 }
 
-.reino-card h3 { font-family: 'Cinzel', serif; font-size: 2rem; margin-top: 0; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
-.reino-descricao { flex-grow: 1; font-size: 0.95rem; line-height: 1.6; opacity: 0.8; }
-.reino-escolher-btn { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.5); color: #fff; padding: 10px 25px; border-radius: 20px; cursor: pointer; font-weight: bold; transition: all 0.2s ease; }
-.reino-escolher-btn:hover { background: #DAA520; color: #111; border-color: #DAA520; }
-
-
-@media (max-width: 800px) {
-
-  .escolha-reino-overlay {
-    /* Garante que o modal não fique colado no topo/baixo em telas muito curtas */
-    padding: 20px 0;
-  }
-
-  .escolha-reino-modal {
-    padding: 30px 0; /* Aumenta o padding vertical interno */
-    background-color: rgba(16, 16, 27, 0.7);
-    background-blend-mode: multiply;
-    max-width: 95vw; /* O modal nunca será mais largo que 95% da tela */
-  }
-
-  /* 1. A ESTEIRA DE SCROLL (continua a mesma) */
-  .reinos-container-esteira {
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    padding: 0 30px;
-    gap: 15px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    grid-template-columns: none;
-  }
-  .reinos-container-esteira::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* 2. A CORREÇÃO PRINCIPAL: REMOVENDO A ALTURA FIXA */
-  .reinos-container-esteira .reino-card {
-    flex: 0 0 80%;
-    scroll-snap-align: center;
-    height: auto; /* <-- A MÁGICA: A altura agora se adapta ao conteúdo */
-    min-height: 380px; /* Garante uma altura mínima para consistência visual */
-    padding: 30px 25px; /* Ajusta o padding interno para telas menores */
-  }
-}@media (max-width: 800px) {
-  .escolha-reino-modal {
-    padding: 20px 0;
-    background-color: rgba(16, 16, 27, 0.7);
-    background-blend-mode: multiply;
-  }
-
-  /* 1. TRANSFORMA O CONTAINER EM UMA ESTEIRA DE SCROLL */
-  .reinos-container-esteira {
-    display: flex;
-    overflow-x: auto; /* A PERMISSÃO PARA ARRASTAR */
-    scroll-snap-type: x mandatory;
-    padding: 0 30px; /* Espaço nas laterais para os cards "escondidos" */
-    gap: 15px;
-    
-    /* Limpeza */
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    grid-template-columns: none; /* Garante que a regra de grid não interfira */
-  }
-  .reinos-container-esteira::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* 2. DEFINE O TAMANHO DOS CARDS NA ESTEIRA */
-  .reinos-container-esteira .reino-card {
-    flex: 0 0 80%; /* Cada card ocupa 80% da tela */
-    scroll-snap-align: center; /* O imã que centraliza o card */
-    height: 420px;
-  }
+/* Quando passamos o mouse no card, a imagem de fundo cresce */
+.reino-card:hover .reino-card-background {
+  transform: scale(1.1);
 }
 
-/* ======================================================= */
-/* --- AJUSTE FINO PARA TELAS PEQUENAS (EX: S8+) --- */
-/* ======================================================= */
+/* O resto do seu CSS continua o mesmo */
+.reino-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.95) 100%);
+  z-index: 1;
+}
+
+.reino-card-content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  padding: 30px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.reino-card h3 { font-family: 'Cinzel', serif; font-size: 2rem; margin-top: 0; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+.reino-descricao { flex-grow: 1; font-size: 0.95rem; line-height: 1.6; opacity: 0.8; }
+
+/* --- ESTILOS DO NOVO BOTÃO DE IMAGEM --- */
+.reino-escolher-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  width: 80%; /* Ajuste a largura do botão como preferir */
+  max-width: 200px;
+}
+.reino-escolher-btn img {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.2s ease;
+}
+.reino-escolher-btn:hover img {
+  transform: scale(1.05);
+}
+
+
+/* =============================================== */
+/* --- RESPONSIVIDADE PARA MOBILE --- */
+/* =============================================== */
+
+/* --- TELAS MÉDIAS (ex: iPhone 14 Pro Max) --- */
+@media (max-width: 800px) {
+  .escolha-reino-modal { padding: 30px 0; background-color: rgba(16, 16, 27, 0.7); background-blend-mode: multiply; max-width: 95vw; }
+  .reinos-container-esteira { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding: 0 30px; gap: 15px; -webkit-overflow-scrolling: touch; scrollbar-width: none; grid-template-columns: none; }
+  .reinos-container-esteira::-webkit-scrollbar { display: none; }
+  .reinos-container-esteira .reino-card { flex: 0 0 80%; scroll-snap-align: center; height: auto; min-height: 380px; padding: 30px 25px; }
+}
+
+/* --- TELAS PEQUENAS (ex: S8+) --- */
 @media (max-width: 370px) {
-
-   .escolha-reino-modal {
-    padding: 20px 0;
-    background-color: rgba(16, 16, 27, 0.7);
-    background-blend-mode: multiply;
-  }
-
-  /* 1. TRANSFORMA O CONTAINER EM UMA ESTEIRA DE SCROLL */
-  .reinos-container-esteira {
-    display: flex;
-    overflow-x: auto; /* A PERMISSÃO PARA ARRASTAR */
-    scroll-snap-type: x mandatory;
-    padding: 0 30px; /* Espaço nas laterais para os cards "escondidos" */
-    gap: 15px;
-    
-    /* Limpeza */
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    grid-template-columns: none; /* Garante que a regra de grid não interfira */
-  }
-  .reinos-container-esteira::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* 2. DEFINE O TAMANHO DOS CARDS NA ESTEIRA */
-  .reinos-container-esteira .reino-card {
-    flex: 0 0 80%; /* Cada card ocupa 80% da tela */
-    scroll-snap-align: center; /* O imã que centraliza o card */
-    height: 370px;
-  }
+  .reinos-container-esteira .reino-card { height: 370px; }
 }

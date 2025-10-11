@@ -102,6 +102,7 @@ function NovaConversaModal({ user, isOpen, onClose, onNewConversation }) {
     <div className="modal-overlay">
       <div className="modal-content nc-modal">
         <h2 className="modal-title">Nova Mensagem Privada</h2>
+        <p className="modal-subtitle">Mensagens privadas são criptografadas, em caso de abuso, denuncie.</p>
         <div className="form-group">
             <label>Para:</label>
             {selectedUser ? (

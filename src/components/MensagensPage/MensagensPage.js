@@ -143,7 +143,7 @@ function MensagensPage({ user, navigateTo }) {
             const profile = participanteAlvo?.profiles;
             const isStaffConv = ['admin', 'oficialreal', 'guardareal', 'autor'].includes(profile?.cargo?.toLowerCase());
             const nomeDisplay = profile ? `${profile.nome} ${profile.sobrenome || ''}`.trim() : 'Conversa';
-            const fotoUrl = profile?.foto_url || 'https://i.imgur.com/SbdJgVb.png';
+            const fotoUrl = profile?.foto_url || 'https://i.imgur.com/kRaulF4.png';
 
             return (
               <div
@@ -157,7 +157,7 @@ function MensagensPage({ user, navigateTo }) {
               >
                 {conversa.is_pinned && <div className="pin-icon">📌</div>}
                 <div className="conversa-avatar-wrapper">
-                  <img src={fotoUrl} alt={nomeDisplay} onError={(e) => { e.currentTarget.src = 'https://i.imgur.com/SbdJgVb.png'; }} />
+                  <img src={fotoUrl} alt={nomeDisplay} onError={(e) => { e.currentTarget.src = 'https://i.imgur.com/kRaulF4.png'; }} />
                   {conversa.unread_count > 0 && (<span className="unread-badge">{conversa.unread_count}</span>)}
                 </div>
                 <div className="conversa-info">

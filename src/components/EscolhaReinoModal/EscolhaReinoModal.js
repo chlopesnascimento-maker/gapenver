@@ -3,10 +3,34 @@ import './EscolhaReinoModal.css';
 import { jurarLealdadeAoReino } from '../../utils/userActions';
 
 const reinos = [
-  { id: 'gapenver', nome: 'GÁPENVER', cor: 'rgba(26, 42, 35, 0.8)', descricao: 'O reino central, conhecido por sua diplomacia, comércio e pela imponente capital de Apenver.' },
-  { id: 'saraver', nome: 'SÁRAVER', cor: 'rgba(205, 164, 52, 0.8)', descricao: 'Um império desértico de guerreiros honrados, onde a força e a lealdade são forjadas sob o sol escaldante.' },
-  { id: 'lootrak', nome: "LO'OTRAK", cor: 'rgba(22, 105, 105, 0.8)', descricao: 'Uma densa floresta encantada, lar de criaturas místicas e guardiões de segredos ancestrais.' },
-  { id: 'corvusk', nome: 'CORVUSK', cor: 'rgba(30, 30, 80, 0.8)', descricao: 'As maiores e mais gélidas montanhas são o lar dos que sabem o peso da vitória e da dor.' },
+  { 
+    id: 'gapenver', 
+    nome: 'GÁPENVER', 
+    descricao: 'Conhecido por ser a casa de guerreiros lendários. Força, coragem e integridade são naturais por aqui.',
+    cardImage: 'https://i.imgur.com/dhL5Y8h.png',
+    buttonImage: 'https://i.imgur.com/fYTjWp5.png'
+  },
+  { 
+    id: 'saraver', 
+    nome: 'SÁRAVER', 
+    descricao: 'Um império desértico de guerreiros honrados, onde a força e a lealdade são forjadas sob o sol escaldante.',
+    cardImage: 'https://i.imgur.com/P0qOwMs.png',
+    buttonImage: 'https://i.imgur.com/ILP3oSW.png'
+  },
+  { 
+    id: "lo'otrak", 
+    nome: "LO'OTRAK", 
+    descricao: "Na costa dos mares, Lo'otrak é a casa de nobres e elegantes guerreiros, cuja graça é tão vivaz quanto suas habilidades.",
+    cardImage: 'https://i.imgur.com/Pi6dUrn.png',
+    buttonImage: 'https://i.imgur.com/5KnuKD6.png'
+  },
+  { 
+    id: 'corvusk', 
+    nome: 'CORVUSK', 
+    descricao: 'As maiores e mais gélidas montanhas são o lar dos que sabem o peso da persistência e da resiliência.',
+    cardImage: 'https://i.imgur.com/QupuFn4.png',
+    buttonImage: 'https://i.imgur.com/L6POxcw.png'
+  },
 ];
 
 function EscolhaReinoModal({ isOpen, onClose, onReinoEscolhido, user }) {
@@ -32,15 +56,30 @@ function EscolhaReinoModal({ isOpen, onClose, onReinoEscolhido, user }) {
         <h2>ESCOLHA SEU REINO</h2>
         <p>Sua jornada começa com uma decisão, Viajante. A qual reino você jurará lealdade?</p>
         
-        {/* A ESTRUTURA AGORA É SIMPLES: UM CONTAINER E OS CARDS DIRETAMENTE DENTRO */}
         <div className="reinos-container-esteira">
           {reinos.map((reino) => (
-            <div key={reino.id} className="reino-card" style={{ backgroundColor: reino.cor }}>
-              <h3>{reino.nome}</h3>
-              <p className="reino-descricao">{reino.descricao}</p>
-              <button className="reino-escolher-btn" onClick={() => handleEscolha(reino)}>
-                Jurar Lealdade
-              </button>
+            <div 
+              key={reino.id} 
+              className="reino-card" 
+              >
+              <div 
+                className="reino-card-background" 
+                style={{ backgroundImage: `url(${reino.cardImage})` }}
+              ></div>
+              <div className="reino-card-overlay"></div>
+              {/* ======================== */}
+              
+              <div className="reino-card-content">
+                <h3>{reino.nome}</h3>
+                <p className="reino-descricao">{reino.descricao}</p>
+                <button className="reino-escolher-btn" onClick={() => handleEscolha(reino)}>
+                  <img 
+                    src={reino.buttonImage} 
+                    alt={`Jurar Lealdade a ${reino.nome}`} 
+                    loading="lazy"
+                  />
+                </button>
+              </div>
             </div>
           ))}
         </div>

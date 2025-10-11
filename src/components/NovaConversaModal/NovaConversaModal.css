@@ -1,6 +1,28 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0; /* Ocupa a tela inteira (top, right, bottom, left = 0) */
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000; /* Garante que fique por cima de tudo */
+}
+
+.modal-content {
+  background-color: #17172b; /* Sua cor de fundo do painel */
+  padding: 30px;
+  border-radius: 15px;
+  border: 1px solid rgba(218, 165, 32, 0.2);
+  width: 90%;
+  max-width: 500px; /* Largura máxima do modal */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
 .nc-modal .form-group { margin-bottom: 20px; }
 .nc-modal .error-message.small-error { font-size: 0.9rem; margin-top: 15px; }
-.nc-modal input, .nc-modal textarea { width: 100%; padding: 10px; background-color: rgba(0,0,0,0.3); border: 1px solid #4a4e69; border-radius: 6px; color: #fff; }
+.nc-modal input, .nc-modal textarea { width: 92%; padding: 10px; background-color: rgba(0,0,0,0.3); border: 1px solid #4a4e69; border-radius: 6px; color: #fff; }
 
 .selected-user {
     display: flex;
@@ -48,6 +70,52 @@
   min-height: 150px; /* Altura mínima para o editor */
 }
 
+/* --- ESTILOS DOS BOTÕES DE AÇÃO (A GRANDE MUDANÇA) --- */
+.modal-actions {
+  display: flex;
+  justify-content: space-evenly; /* Alinha os botões à direita */
+  gap: 15px; /* Espaçamento entre os botões */
+  margin-top: 20px;
+}
+
+/* Estilo base para os botões */
+.modal-actions button {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+/* Botão de Cancelar (Secundário) */
+.modal-actions .cancel-button {
+  background-color: transparent;
+  border-color: #4a4e69;
+  color: #a0a0a0;
+}
+.modal-actions .cancel-button:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+/* Botão de Enviar (Primário) */
+.modal-actions .save-button {
+  background-color: #DAA520;
+  border-color: #DAA520;
+  color: #111827;
+}
+.modal-actions .save-button:hover {
+  background-color: #f0e68c;
+  border-color: #f0e68c;
+  box-shadow: 0 0 10px rgba(218, 165, 32, 0.5);
+}
+
+.modal-subtitle {
+  font-size: 12px;
+  color: gray;
+}
+
 .nc-modal .editor-toolbar {
   padding: 8px 10px;
   border-bottom: 1px solid rgba(218, 165, 32, 0.2);
@@ -65,4 +133,20 @@
 
 .nc-modal .rich-text-editor .prose p {
   text-align: left;
+}
+
+@media (max-width: 480px) {
+
+  /* Adiciona um espaçamento nas laterais do fundo do modal */
+  .modal-overlay {
+    padding: 0 15px;
+    box-sizing: border-box; /* Garante que o padding não cause problemas de layout */
+  }
+
+  /* Faz o modal ocupar a largura disponível dentro desse novo espaçamento */
+  .modal-content.nc-modal {
+    width: 100%;
+    /* Opcional: Reduz o padding interno para dar mais espaço ao conteúdo em telas pequenas */
+    padding: 25px; 
+  }
 }

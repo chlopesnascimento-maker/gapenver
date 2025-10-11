@@ -143,31 +143,40 @@ function App() {
   };
 
   // Efeito de partículas
-  useEffect(() => {
-    let moveCounter = 0;
-    const handleMouseMove = (e) => {
-      const particle = document.createElement('div');
-      particle.className = 'trail-particle';
-      particle.style.left = `${e.clientX}px`;
-      particle.style.top = `${e.clientY}px`;
-      document.body.appendChild(particle);
-      setTimeout(() => particle.remove(), 1000);
+useEffect(() => {
+  let lastTime = 0;
+  let moveCounter = 0;
 
-      moveCounter++;
-      if (moveCounter % 4 === 0) {
-        const star = document.createElement('div');
-        star.className = 'star-particle';
-        const offsetX = (Math.random() - 0.5) * 30;
-        const offsetY = (Math.random() - 0.5) * 30;
-        star.style.left = `${e.clientX + offsetX}px`;
-        star.style.top = `${e.clientY + offsetY}px`;
-        document.body.appendChild(star);
-        setTimeout(() => star.remove(), 800);
-      }
-    };
-    document.addEventListener('mousemove', handleMouseMove);
-    return () => document.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+  const handleMouseMove = (e) => {
+    const now = performance.now();
+    // cria partículas no máximo a cada 45ms (~22 FPS) — suficiente visualmente e bem leve
+    if (now - lastTime < 45) return;
+    lastTime = now;
+
+    // cria trail
+    const particle = document.createElement('div');
+    particle.className = 'trail-particle';
+    particle.style.left = `${e.clientX}px`;
+    particle.style.top = `${e.clientY}px`;
+    document.body.appendChild(particle);
+    setTimeout(() => particle.remove(), 1000);
+
+    moveCounter++;
+    if (moveCounter % 4 === 0) {
+      const star = document.createElement('div');
+      star.className = 'star-particle';
+      const offsetX = (Math.random() - 0.5) * 30;
+      const offsetY = (Math.random() - 0.5) * 30;
+      star.style.left = `${e.clientX + offsetX}px`;
+      star.style.top = `${e.clientY + offsetY}px`;
+      document.body.appendChild(star);
+      setTimeout(() => star.remove(), 800);
+    }
+  };
+
+  document.addEventListener('mousemove', handleMouseMove);
+  return () => document.removeEventListener('mousemove', handleMouseMove);
+}, []);
 
   // Lógica do Botão Voltar ao Topo
   useEffect(() => {
@@ -292,7 +301,11 @@ function App() {
           </Suspense>   
               </main>
 
-<Suspense fallback={<></>}>
+
+
+        <Footer />
+
+        <Suspense fallback={<></>}>
           {showOnboardingModal && (
             <OnboardingModal 
               user={user} 
@@ -313,8 +326,6 @@ function App() {
             user={user}
           />
         </Suspense>
-
-        <Footer />
 
         <button id="backToTopBtn" title="Voltar ao topo">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24px" height="24px">

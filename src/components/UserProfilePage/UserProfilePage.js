@@ -38,7 +38,7 @@ const reinoDescriptions = {
   'gapenver': 'O Coração Verdejante. O último bastião da magia ancestral, onde a lealdade é forjada na natureza e nos laços de sangue.',
   'saraver': 'O Império do Sol. Terras douradas de comércio e conquista, onde a ambição brilha mais forte que o aço.',
   'corvusk': 'O Ninho do Corvo. Um reino de segredos e astúcia, governado nas sombras das montanhas congeladas por aqueles que valorizam o conhecimento acima de tudo.',
-  "lo'otrak": 'A Bravura dos Mares. Nascidos para a nobreza e classe, como as bonanças martímas. Onde a coragem, força e inteligência são natas em cada um.',
+  "lo'otrak": 'A Bravura dos Mares. Nascidos para a nobreza e classe, como as bonanças marítimas. Onde a coragem, força e inteligência são natas em cada um.',
   'reinos independentes': 'Viajantes sem bandeira, cuja lealdade pertence apenas ao caminho que trilham e às histórias que coletam.'
 };
 

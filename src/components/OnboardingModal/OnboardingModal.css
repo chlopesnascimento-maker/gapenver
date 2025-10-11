@@ -114,10 +114,12 @@
 }
 
 /* --- ESTILO DO BOTÃO MINIMIZADO --- */
-.onboarding-minimized-button {
+.onboarding-minimized-button.draggable {
   position: fixed;
+  /* Posição inicial: no canto inferior direito */
   bottom: 20px;
   right: 20px;
+  
   background-color: #DAA520;
   color: #111827;
   border: none;
@@ -125,10 +127,23 @@
   padding: 12px 20px;
   font-weight: bold;
   font-size: 0.9rem;
-  cursor: pointer;
+  cursor: grab;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
   z-index: 9998;
   animation: pulse 2.5s infinite;
+  
+  /* A propriedade 'transform' é controlada pelo JS. Isso é para performance. */
+  will-change: transform;
+  
+  /* Impede que o usuário selecione o texto do botão ao arrastar */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.onboarding-minimized-button.draggable:active {
+  cursor: grabbing;
+  animation: none; /* Pausa a animação de pulso durante o arrasto */
+
 }
 
 @keyframes pulse {
@@ -136,6 +151,8 @@
   50% { transform: scale(1.05); box-shadow: 0 8px 25px rgba(218, 165, 32, 0.6); }
   100% { transform: scale(1); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); }
 }
+
+
 
 /* =============================================== */
 /* --- RESPONSIVIDADE PARA MOBILE (VERSÃO FINAL) --- */
