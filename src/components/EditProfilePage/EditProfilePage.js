@@ -5,6 +5,8 @@ import { supabase } from '../../supabaseClient';
 import Cropper from 'react-easy-crop';
 import { getCroppedImg } from '../../utils/cropUtils'; // Supondo que você tenha este utilitário
 import ConfirmacaoModal from '../Shared/ConfirmacaoModal/ConfirmacaoModal';
+import TrocaReinoModal from '../TrocaReinoModal/TrocaReinoModal';
+
 
 
 function EditProfilePage({ navigateTo, onProfileUpdate }) {
@@ -18,6 +20,10 @@ function EditProfilePage({ navigateTo, onProfileUpdate }) {
   const [message, setMessage] = useState(null);
   const [messageType, setMessageType] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showTrocaReinoModal, setShowTrocaReinoModal] = useState(false);
+  const [user, setUser] = useState(null);
+
+
 
   // --- ESTADOS PARA O CROPPER DE IMAGEM ---
   const [imageSrc, setImageSrc] = useState(null); // url do arquivo selecionado para o cropper (object url)
@@ -54,7 +60,7 @@ function EditProfilePage({ navigateTo, onProfileUpdate }) {
   useEffect(() => {
     const fetchUserData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
+      if (user) { setUser(user);
         // Pega dados rápidos do metadata
         setUserData({
           nome: user.user_metadata?.nome || '',
@@ -408,12 +414,20 @@ function EditProfilePage({ navigateTo, onProfileUpdate }) {
         <ConfirmacaoModal
   isOpen={showTrocaConfirmModal}
   title="Antes de arrumar as malas"
-  message="Os ventos de outras culturas está atraíndo sua atenção? Fique à vontade, mas lembre-se: no novo reino você será apenas um recém-chegado. Precisará conquistar a confiança de todos eles."
+  message="Atendes ao chamado de um novo estandarte?  És livre para trilhar um novo caminho, mas saiba que tua reputação não cruzará as fronteiras. No novo reino, serás visto como um novo cidadão, e tua jornada para conquistar a confiança e novos títulos começará novamente."
   onCancel={() => setShowTrocaConfirmModal(false)}
-  onConfirm={() => {
-    setShowTrocaConfirmModal(false);
-    console.log('Usuário confirmou troca de reino');
+  onConfirm={() => {setShowTrocaConfirmModal(false);
+  setShowTrocaReinoModal(true);
   }}
+/>
+
+<TrocaReinoModal
+  isOpen={showTrocaReinoModal}
+  onClose={() => setShowTrocaReinoModal(false)}
+  onReinoEscolhido={(novoReinoId) => {
+    setUser({ ...user, reino_id: novoReinoId }); // Exemplo: atualiza localmente
+  }}
+  user={user}
 />
 
         <button onClick={handleSaveChanges} className="cta-button" disabled={isLoading}>
