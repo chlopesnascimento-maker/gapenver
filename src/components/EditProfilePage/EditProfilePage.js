@@ -4,6 +4,8 @@ import '../Shared/Form.css';
 import { supabase } from '../../supabaseClient';
 import Cropper from 'react-easy-crop';
 import { getCroppedImg } from '../../utils/cropUtils'; // Supondo que você tenha este utilitário
+import ConfirmacaoModal from '../Shared/ConfirmacaoModal/ConfirmacaoModal';
+
 
 function EditProfilePage({ navigateTo, onProfileUpdate }) {
   // --- ESTADOS EXISTENTES ---
@@ -36,6 +38,8 @@ function EditProfilePage({ navigateTo, onProfileUpdate }) {
   const [reino, setReino] = useState('Reinos Independentes');
   const [nota, setNota] = useState('');
   const [sobreMim, setSobreMim] = useState('');
+  const [showTrocaConfirmModal, setShowTrocaConfirmModal] = useState(false);
+
 
   // --- ESTADOS DE VALIDAÇÃO DE SENHA ---
   const [passwordValidations, setPasswordValidations] = useState({
@@ -73,6 +77,16 @@ function EditProfilePage({ navigateTo, onProfileUpdate }) {
     };
     fetchUserData();
   }, []);
+
+  useEffect(() => {
+  // adiciona o atributo no body assim que o componente monta
+  document.body.setAttribute("data-page", "edit-profile");
+
+  // remove o atributo ao sair da página (limpeza)
+  return () => {
+    document.body.removeAttribute("data-page");
+  };
+}, []);
 
   useEffect(() => {
     setPasswordValidations({
@@ -354,15 +368,15 @@ function EditProfilePage({ navigateTo, onProfileUpdate }) {
           <div className="profile-column">
             <h3 className="column-title">Identidade do Reino</h3>
             <div className="form-group">
-              <label htmlFor="reino">SEU REINO PRINCIPAL:</label>
-              <select id="reino" value={reino} onChange={(e) => setReino(e.target.value)}>
-                <option value="Reinos Independentes">Reinos Independentes</option>
-                <option value="Gapenver">Gapenver</option>
-                <option value="Saraver">Saraver</option>
-                <option value="Corvusk">Corvusk</option>
-                <option value="Lo'otrak">Lo'otrak</option>
-              </select>
-            </div>
+  <label>SEU REINO PRINCIPAL:</label>
+  <button
+  type="button"
+  className="reino-button"
+  onClick={() => setShowTrocaConfirmModal(true)}
+>
+  TROCAR DE REINO
+</button>
+</div>
              <div className="form-group">
               <label htmlFor="nota">NOTA (dura 24h):</label>
               <input id="nota" type="text" value={nota} onChange={(e) => setNota(e.target.value)} maxLength="60" placeholder="Deixe um pensamento..."/>
@@ -390,6 +404,17 @@ function EditProfilePage({ navigateTo, onProfileUpdate }) {
             </div>
           </div>
         </form>
+
+        <ConfirmacaoModal
+  isOpen={showTrocaConfirmModal}
+  title="Antes de arrumar as malas"
+  message="Os ventos de outras culturas está atraíndo sua atenção? Fique à vontade, mas lembre-se: no novo reino você será apenas um recém-chegado. Precisará conquistar a confiança de todos eles."
+  onCancel={() => setShowTrocaConfirmModal(false)}
+  onConfirm={() => {
+    setShowTrocaConfirmModal(false);
+    console.log('Usuário confirmou troca de reino');
+  }}
+/>
 
         <button onClick={handleSaveChanges} className="cta-button" disabled={isLoading}>
           {isLoading ? 'SALVANDO...' : 'SALVAR ALTERAÇÕES'}

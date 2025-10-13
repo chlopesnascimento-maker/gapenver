@@ -51,6 +51,7 @@
 .role-guardareal { background: seagreen; color: #fff; }
 .role-viajante { background: royalblue; color: #fff; }
 .role-default { background: gray; color: #fff; }
+.role-cidadãodegápenver { background: radial-gradient(250, 192, 66);}
 
 .citizen-reino {
   font-size: 0.9rem;

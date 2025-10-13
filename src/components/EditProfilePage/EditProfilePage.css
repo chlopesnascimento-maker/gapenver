@@ -249,9 +249,6 @@
   color: #f44336;
 } 
 
-@media (max-width: 768px) { 
-  .profile-form { flex-direction: column; gap: 0; } 
-}
 
 /* =================================== */
 /* NOVO ESTILO PARA O AVISO DE CAPS LOCK */
@@ -265,3 +262,112 @@
   text-align: left;
 }
 
+/* ======================================================= */
+/* CORREÇÃO TEMPORÁRIA — EDIÇÃO DE PERFIL ESPREMIDA        */
+/* ======================================================= */
+
+/* Cria um namespace para evitar conflito */
+body[data-page="edit-profile"] .form-container {
+  max-width: 1200px !important;
+  width: 90% !important;
+  margin: 0 auto !important;
+  padding: 50px 40px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+body[data-page="edit-profile"] .profile-form {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+  gap: 80px !important;
+  width: 100% !important;
+  flex-wrap: nowrap !important;
+}
+
+body[data-page="edit-profile"] .profile-column {
+  flex: 1 1 33% !important;
+  min-width: 300px !important;
+}
+
+body[data-page="edit-profile"] .column-title {
+  text-align: center !important;
+}
+
+@media (max-width: 768px) {
+  body[data-page="edit-profile"] .form-container {
+    max-width: 95% !important;
+    width: 95% !important;
+    margin: 0 auto !important;
+    padding: 20px 10px !important;
+  }
+
+  body[data-page="edit-profile"] .profile-form {
+    flex-direction: column !important;
+    gap: 30px !important;
+    align-items: center !important;
+  }
+
+  body[data-page="edit-profile"] .profile-column {
+    width: 100% !important;
+    min-width: unset !important;
+  }
+
+  body[data-page="edit-profile"] .column-title {
+    text-align: center !important;
+    font-size: 1.2rem !important;
+  }
+
+  body[data-page="edit-profile"] input,
+  body[data-page="edit-profile"] select,
+  body[data-page="edit-profile"] textarea {
+    width: 100% !important;
+    font-size: 1rem !important;
+  }
+}
+
+@media (max-width: 400px) {
+  body[data-page="edit-profile"] .form-container {
+    padding: 15px 5px !important;
+  }
+
+  body[data-page="edit-profile"] .profile-user-name {
+    font-size: 1.2rem !important;
+  }
+
+  body[data-page="edit-profile"] .profile-header .form-title {
+    font-size: 1.4rem !important;
+  }
+}
+
+/* =================================== */
+/* BOTÃO "TROCAR DE REINO" DOURADO     */
+/* =================================== */
+.reino-button {
+  width: 100%;
+  background: linear-gradient(180deg, #f0c93d 0%, #d9a521 100%);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  border-radius: 6px;
+  color: #000;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  font-family: 'Cinzel', serif;
+  padding: 12px 16px;
+  font-size: 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+}
+
+.reino-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(0,0,0,0.4);
+  filter: brightness(1.1);
+}
+
+.reino-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}

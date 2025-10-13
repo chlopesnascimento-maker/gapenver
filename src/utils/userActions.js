@@ -88,3 +88,84 @@ export const marcarOnboardingConcluido = async (userId) => {
   console.log(`Onboarding do usuário ${userId} foi marcado como concluído.`);
   return { success: true };
 };
+
+/**
+ * Marca uma quest específica como concluída para o usuário.
+ * Se já existir, não duplica (usa upsert).
+ */
+export const marcarQuestConcluida = async (maybeUserId, questId) => {
+  try {
+    if (!questId) {
+      console.error("marcarQuestConcluida: questId ausente");
+      return { success: false, error: "questId ausente" };
+    }
+
+    // 1) pega o user autenticado pelo client (garante que auth.uid() bata)
+    const { data: currentUserData, error: userError } = await supabase.auth.getUser();
+    if (userError) {
+      console.error("Erro ao obter usuário autenticado:", userError);
+      // continuamos, talvez o caller forneceu o userId, mas logamos o problema
+    }
+    const authUserId = currentUserData?.user?.id || null;
+
+    // 2) se não temos id autenticado, use o que foi passado (mas logue)
+    if (!authUserId && !maybeUserId) {
+      console.error("Nenhum userId disponível (nem auth nem param). Abortando.");
+      return { success: false, error: "Nenhum userId disponível" };
+    }
+
+    const userId = authUserId || maybeUserId;
+
+    // Aviso útil: se o front está passando um userId diferente do auth.uid(), logamos
+    if (authUserId && maybeUserId && authUserId !== maybeUserId) {
+      console.warn("marcarQuestConcluida: userId passado difere do auth.uid(). Usando auth.uid().",
+        { authUserId, maybeUserId });
+    }
+
+    // 3) tenta o upsert (onConflict como array)
+    const payload = { user_id: userId, quest_id: questId };
+
+    // Usamos upsert, assim não duplicamos linhas; onConflict recebe array de colunas
+    const { data, error } = await supabase
+      .from('user_quests')
+      .upsert([payload], { onConflict: ['user_id', 'quest_id'] })
+      .select(); // retorna a linha criada/atualizada
+
+    if (error) {
+      // Se for erro de permissão (RLS), vai aparecer aqui — log completo
+      console.error("Erro ao upsert user_quests:", error);
+      return { success: false, error };
+    }
+
+    // sucesso
+    return { success: true, data };
+  } catch (err) {
+    console.error("Exceção em marcarQuestConcluida:", err);
+    return { success: false, error: err };
+  }
+};
+
+export const buscarQuestsConcluidas = async (userId) => {
+  try {
+    if (!userId) {
+      console.error("buscarQuestsConcluidas: userId ausente");
+      return [];
+    }
+
+    const { data, error } = await supabase
+      .from('user_quests')
+      .select('quest_id')
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error("Erro ao buscar quests concluídas:", error);
+      return [];
+    }
+
+    // retorna apenas os IDs das quests
+    return data.map((q) => q.quest_id);
+  } catch (err) {
+    console.error("Exceção em buscarQuestsConcluidas:", err);
+    return [];
+  }
+};

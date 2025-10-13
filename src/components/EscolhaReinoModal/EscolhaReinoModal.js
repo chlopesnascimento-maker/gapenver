@@ -1,6 +1,6 @@
 import React from 'react';
 import './EscolhaReinoModal.css';
-import { jurarLealdadeAoReino } from '../../utils/userActions';
+import { jurarLealdadeAoReino, marcarQuestConcluida } from '../../utils/userActions';
 
 const reinos = [
   { 
@@ -19,7 +19,7 @@ const reinos = [
   },
   { 
     id: "lo'otrak", 
-    nome: "LO'OTRAK", 
+    nome: "LO'OTRAK",
     descricao: "Na costa dos mares, Lo'otrak é a casa de nobres e elegantes guerreiros, cuja graça é tão vivaz quanto suas habilidades.",
     cardImage: 'https://i.imgur.com/Pi6dUrn.png',
     buttonImage: 'https://i.imgur.com/5KnuKD6.png'
@@ -39,15 +39,18 @@ function EscolhaReinoModal({ isOpen, onClose, onReinoEscolhido, user }) {
   }
 
   const handleEscolha = async (reino) => {
-      const { success } = await jurarLealdadeAoReino(user.id, reino.id, reino.nome);
-    if (success) {
-      alert(`Lealdade jurada! Você agora é um Cidadão de ${reino.nome}.`);
-      if (onReinoEscolhido) onReinoEscolhido(reino.id);
-      onClose();
-    } else {
-      alert("Houve um erro ao processar seu juramento.");
-    }
-  };
+  const { success } = await jurarLealdadeAoReino(user.id, reino.id, reino.nome);
+  if (success) {
+    // ✅ Marca a quest como concluída no Supabase
+    await marcarQuestConcluida(user.id, 'escolher_reino');
+
+    alert(`Lealdade jurada! Você agora é um Cidadão de ${reino.nome}.`);
+    if (onReinoEscolhido) onReinoEscolhido(reino.id);
+    onClose();
+  } else {
+    alert("Houve um erro ao processar seu juramento.");
+  }
+};
 
   return (
     <div className="escolha-reino-overlay" onClick={onClose}>
