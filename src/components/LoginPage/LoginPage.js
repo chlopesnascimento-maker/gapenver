@@ -69,6 +69,19 @@ if (data.user) {
     }
   };
 
+  // --- NOVA FUNÇÃO PARA O LOGIN COM GOOGLE ---
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+    });
+    if (error) {
+        setError('Não foi possível autenticar com o Google. Por favor, tente novamente.');
+        console.error("Erro no login com Google:", error);
+        setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     const senhaInput = document.getElementById('login-senha');
     const togglePassword = document.getElementById('toggle-login-password');
@@ -105,6 +118,14 @@ if (data.user) {
         <div className="form-title-container">
           <h2 className="form-title">LOGIN</h2>
         </div>
+
+        {/* --- NOVO BOTÃO E DIVISOR --- */}
+        <button className="google-login-button" onClick={handleGoogleLogin} disabled={isLoading}>
+            Entrar com o Google
+        </button>
+        <div className="divider"><span>ou entre com seu e-mail</span></div>
+        {/* --- FIM DA ADIÇÃO --- */}
+        
         <form onSubmit={handleLogin}>
           {/* O seu JSX continua o mesmo */}
           <div className="form-group">

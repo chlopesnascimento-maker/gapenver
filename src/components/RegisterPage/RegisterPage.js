@@ -74,6 +74,22 @@ function RegisterPage({ navigateTo, setLoading }) {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    if (setLoading) setLoading(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+    });
+    if (error) {
+        setError('Não foi possível autenticar com o Google. Por favor, tente novamente.');
+        console.error("Erro no login com Google:", error);
+        setIsLoading(false);
+        if (setLoading) setLoading(false);
+    }
+    // Se o login for bem-sucedido, o onAuthStateChange no App.js cuidará do redirecionamento.
+  };
+
+
   const handleDateInput = (e) => {
     let value = e.target.value.replace(/\D/g, '');
     if (value.length > 2) value = value.substring(0, 2) + '/' + value.substring(2);
@@ -112,12 +128,19 @@ function RegisterPage({ navigateTo, setLoading }) {
     };
   }, []);
 
-  return (
+   return (
     <div className="form-page-container">
       <div className="form-container">
         <div className="form-title-container">
           <h2 className="form-title">CADASTRE-SE</h2>
         </div>
+        
+        {/* --- NOVO BOTÃO E DIVISOR --- */}
+        <button className="google-login-button" onClick={handleGoogleLogin} disabled={isLoading}>
+            Criar conta com o Google
+        </button>
+        <div className="divider"><span>ou cadastre-se com seu e-mail</span></div>
+        {/* --- FIM DA ADIÇÃO --- */}
 
         <form onSubmit={handleRegister}>
           <div className="form-group">

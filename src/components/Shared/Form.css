@@ -179,6 +179,50 @@
   text-decoration: none; /* mantém sem riscar, se preferir */
 }
 
+/* --- ESTILO PARA O BOTÃO GOOGLE E DIVISOR --- */
+.google-login-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 20px;
+  font-weight: bold;
+  font-size: 1rem;
+  color: #f0e68c; /* Dourado claro */
+  background-color: transparent;
+  border: 1px solid #4a4e69; /* Borda sutil */
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.google-login-button:hover {
+  background-color: rgba(218, 165, 32, 0.1);
+  border-color: #DAA520;
+}
+
+.google-login-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.divider {
+  width: 100%;
+  text-align: center;
+  border-bottom: 1px solid #4a4e69;
+  line-height: 0.1em;
+  margin: 10px 0 30px 0; /* Aumenta a margem inferior */
+  font-weight: bold;
+  color: #a0a0a0;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+.divider span {
+  background: #17172b; /* A cor de fundo do seu card de formulário */
+  padding: 0 10px;
+}
 
 
 
