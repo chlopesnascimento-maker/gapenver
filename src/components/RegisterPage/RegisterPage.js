@@ -239,7 +239,7 @@ setIsLoading(true);
             onSuccess={(token) => setCaptchaToken(token)}
           />
 
-          <button type="submit" disabled={isLoading} className="cta-button">
+          <button type="submit" disabled={isLoading || !captchaToken} className="cta-button">
             {isLoading ? 'CADASTRANDO...' : 'CADASTRE-SE AGORA'}
           </button>
         </form>

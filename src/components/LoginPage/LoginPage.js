@@ -181,10 +181,13 @@ if (data.user) {
 
            <Turnstile
             sitekey="0x4AAAAAAB6zX8rwVn8Dri1a"
-            onSuccess={(token) => setCaptchaToken(token)}
-          />
+            onSuccess={(token) => {
+    console.log("Token do Turnstile gerado com sucesso!", token); // <-- ADICIONE ESTA LINHA
+    setCaptchaToken(token);
+  }}
+/>
 
-          <button type="submit" className="cta-button" disabled={isLoading}>
+          <button type="submit" className="cta-button" disabled={isLoading || !captchaToken}>
             {isLoading ? 'ENTRANDO...' : 'ENTRAR'}
           </button>
         </form>
