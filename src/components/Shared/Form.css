@@ -224,5 +224,15 @@
   padding: 0 10px;
 }
 
+.google-login-button {
+  gap: 12px;
+}
+
+/* Define o tamanho do logo */
+.google-logo {
+  width: 20px;
+  height: 20px;
+}
+
 
 

@@ -137,8 +137,9 @@ function RegisterPage({ navigateTo, setLoading }) {
         
         {/* --- NOVO BOTÃO E DIVISOR --- */}
         <button className="google-login-button" onClick={handleGoogleLogin} disabled={isLoading}>
-            Criar conta com o Google
-        </button>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png" alt="Google logo" className="google-logo" />
+    Criar conta com o Google
+</button>
         <div className="divider"><span>ou cadastre-se com seu e-mail</span></div>
         {/* --- FIM DA ADIÇÃO --- */}
 
