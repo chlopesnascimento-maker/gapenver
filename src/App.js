@@ -63,29 +63,33 @@ const updateUserSession = async (session, _event) => {
       .eq('id', currentUser.id)
       .single();
     
-    // === A LÓGICA INTELIGENTE ESTÁ AQUI ===
-    if (error && error.code !== 'PGRST116') {
-      console.error("Erro ao buscar perfil do usuário:", error);
-      
-      // SE FOR UM LOGIN NOVO e o perfil ainda não foi criado pelo trigger,
-      // nós assumimos que o onboarding não foi completo.
+    // === LÓGICA CORRIGIDA AQUI ===
+    // Agora verificamos se o erro é ESPECIFICAMENTE 'perfil não encontrado'
+    if (error && error.code === 'PGRST116') {
+      // Se o perfil não foi encontrado (porque o trigger ainda não rodou)...
+      // E o evento é um login novo...
       if (_event === 'SIGNED_IN') {
-         console.log("Perfil não encontrado, mas é um login novo. Assumindo onboarding pendente.");
+         console.log("Perfil não encontrado após login novo. Disparando lógica de onboarding.");
+         // Criamos um 'userData' temporário com os dados do Google
+         // e forçamos o onboarding a ser incompleto.
          const tempUserData = { ...currentUser.user_metadata, onboarding_completed: false };
          setUserData(tempUserData);
       } else {
-         setUserData(currentUser.user_metadata); // Mantém o fallback para outros casos
+         // Se o erro não for de login novo, usamos o fallback
+         setUserData(currentUser.user_metadata);
       }
-
+    } else if (error) {
+      // Se for qualquer outro erro, logamos
+      console.error("Erro ao buscar perfil do usuário:", error);
+      setUserData(null);
     } else {
-      // Juntamos os metadados com os dados do perfil, dando prioridade ao perfil
+      // Se NÃO HOUVE erro, o perfil foi encontrado e usamos os dados dele
       const finalUserData = { ...currentUser.user_metadata, ...profileData };
       setUserData(finalUserData);
     }
-    // A lógica de checar o onboarding e o sessionStorage pode ser movida para fora,
-    // para rodar em ambos os casos (sucesso ou fallback de SIGNED_IN)
     
   } else {
+    // Se não há sessão, limpamos tudo
     setUserData(null);
   }
   setSessionChecked(true);

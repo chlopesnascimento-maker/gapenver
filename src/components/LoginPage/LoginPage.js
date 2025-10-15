@@ -122,7 +122,7 @@ if (data.user) {
         {/* --- NOVO BOTÃO E DIVISOR --- */}
         <button className="google-login-button" onClick={handleGoogleLogin} disabled={isLoading}>
     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png" alt="Google logo" className="google-logo" />
-    Criar conta com o Google
+    Entrar com conta do Google
 </button>
         <div className="divider"><span>ou entre com seu e-mail</span></div>
         {/* --- FIM DA ADIÇÃO --- */}
