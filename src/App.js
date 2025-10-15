@@ -52,37 +52,44 @@ function App() {
 
   useEffect(() => {
     // Função para buscar dados da sessão e do perfil de uma só vez
-    const updateUserSession = async (session) => {
-      const currentUser = session?.user;
-      setUser(currentUser ?? null);
+const updateUserSession = async (session, _event) => {
+  const currentUser = session?.user;
+  setUser(currentUser ?? null);
 
-      if (currentUser) {
-        // Buscamos TODOS os dados da tabela profiles para ter as infos mais recentes
-        const { data: profileData, error } = await supabase
-          .from('profiles')
-          .select('*') 
-          .eq('id', currentUser.id)
-          .single();
-        
-        if (error) {
-          console.error("Erro ao buscar perfil do usuário:", error);
-          setUserData(currentUser.user_metadata); // Usa o metadata como fallback
-        } else {
-          // Juntamos os metadados com os dados do perfil, dando prioridade ao perfil
-          const finalUserData = { ...currentUser.user_metadata, ...profileData };
-          setUserData(finalUserData);
-          if (finalUserData && (finalUserData.onboarding_completed === false || finalUserData.onboarding_completed === null)) {
-            const jaPulouNestaSessao = sessionStorage.getItem('onboardingMinimized');
-            if (!jaPulouNestaSessao) {
-              setShowOnboardingModal(true);
-            }
-          }
-             }
+  if (currentUser) {
+    const { data: profileData, error } = await supabase
+      .from('profiles')
+      .select('*') 
+      .eq('id', currentUser.id)
+      .single();
+    
+    // === A LÓGICA INTELIGENTE ESTÁ AQUI ===
+    if (error && error.code !== 'PGRST116') {
+      console.error("Erro ao buscar perfil do usuário:", error);
+      
+      // SE FOR UM LOGIN NOVO e o perfil ainda não foi criado pelo trigger,
+      // nós assumimos que o onboarding não foi completo.
+      if (_event === 'SIGNED_IN') {
+         console.log("Perfil não encontrado, mas é um login novo. Assumindo onboarding pendente.");
+         const tempUserData = { ...currentUser.user_metadata, onboarding_completed: false };
+         setUserData(tempUserData);
       } else {
-        setUserData(null);
+         setUserData(currentUser.user_metadata); // Mantém o fallback para outros casos
       }
-      setSessionChecked(true);
-    };
+
+    } else {
+      // Juntamos os metadados com os dados do perfil, dando prioridade ao perfil
+      const finalUserData = { ...currentUser.user_metadata, ...profileData };
+      setUserData(finalUserData);
+    }
+    // A lógica de checar o onboarding e o sessionStorage pode ser movida para fora,
+    // para rodar em ambos os casos (sucesso ou fallback de SIGNED_IN)
+    
+  } else {
+    setUserData(null);
+  }
+  setSessionChecked(true);
+};
 
     // Busca a sessão inicial
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -91,7 +98,7 @@ function App() {
 
     // Ouve por mudanças na autenticação (login, logout)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      updateUserSession(session);
+      updateUserSession(session, _event);
     });
 
     return () => {
@@ -115,13 +122,22 @@ function App() {
 }, []);
 
   // useEffect de segurança para usuários banidos
-  useEffect(() => {
-    if (userData && userData.cargo === 'banidos') {
-      if (currentPage !== 'bannedPage' && currentPage !== 'faleConosco') {
-        navigateTo('bannedPage');
-      }
+useEffect(() => {
+  // Esta lógica agora roda sempre que userData é ATUALIZADO
+  if (userData && (userData.onboarding_completed === false || userData.onboarding_completed === null)) {
+    const jaPulouNestaSessao = sessionStorage.getItem('onboardingMinimized');
+    if (!jaPulouNestaSessao) {
+      setShowOnboardingModal(true);
     }
-  }, [userData, currentPage]); // Depende de userData e currentPage
+  }
+
+  // Lógica de segurança para banidos
+  if (userData && userData.cargo === 'banidos') {
+    if (currentPage !== 'bannedPage' && currentPage !== 'faleConosco') {
+      navigateTo('bannedPage');
+    }
+  }
+}, [userData, currentPage]);
   
   const handleLogout = () => {
     sessionStorage.removeItem('onboardingPulado');
