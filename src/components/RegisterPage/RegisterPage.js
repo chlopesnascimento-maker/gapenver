@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../Shared/Form.css';
 import { supabase } from '../../supabaseClient';
+import Turnstile from 'react-turnstile';
 
 function RegisterPage({ navigateTo, setLoading }) {
   const [nome, setNome] = useState('');
@@ -17,6 +18,7 @@ function RegisterPage({ navigateTo, setLoading }) {
     hasLower: false,
     hasNumber: false,
   });
+  const [captchaToken, setCaptchaToken] = useState(null);
 
   useEffect(() => {
     const validations = {
@@ -29,9 +31,16 @@ function RegisterPage({ navigateTo, setLoading }) {
     setPasswordValidations(validations);
   }, [password]);
 
+  
   const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
+
+     // Validação do CAPTCHA
+    if (!captchaToken) {
+      setError('Verificação de segurança falhou. Por favor, recarregue a página.');
+      return;
+    }
 
     // Validação de senha
     const allValid = Object.values(passwordValidations).every(v => v === true);
@@ -45,7 +54,7 @@ function RegisterPage({ navigateTo, setLoading }) {
       return;
     }
 
-    setIsLoading(true);
+setIsLoading(true);
     if (setLoading) setLoading(true);
 
     try {
@@ -53,19 +62,15 @@ function RegisterPage({ navigateTo, setLoading }) {
         email,
         password,
         options: {
-          data: {
-            nome,
-            sobrenome,
-            nascimento,
-          },
-          emailRedirectTo: `${window.location.origin}/login`, // link de confirmação
+          data: { nome, sobrenome, nascimento },
+          emailRedirectTo: `${window.location.origin}/login`,
+          captchaToken: captchaToken, // <-- 3. Envia o token do Turnstile
         },
       });
 
       if (signUpError) throw signUpError;
 
-      console.log('Usuário registrado:', data);
-      navigateTo('welcome'); // leva para página de boas-vindas
+      navigateTo('welcome');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -130,6 +135,8 @@ function RegisterPage({ navigateTo, setLoading }) {
       senhaInput.removeEventListener('keyup', handleKeyUp);
     };
   }, []);
+
+
 
    return (
     <div className="form-page-container">
@@ -226,6 +233,11 @@ function RegisterPage({ navigateTo, setLoading }) {
           </div>
 
           {error && <p className="error-message">{error}</p>}
+
+           <Turnstile
+            sitekey="0x4AAAAAAB6zX8rwVn8Dri1a"
+            onSuccess={(token) => setCaptchaToken(token)}
+          />
 
           <button type="submit" disabled={isLoading} className="cta-button">
             {isLoading ? 'CADASTRANDO...' : 'CADASTRE-SE AGORA'}

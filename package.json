@@ -19,6 +19,7 @@
     "react-icons": "^5.5.0",
     "react-scripts": "5.0.1",
     "react-tsparticles": "^2.12.2",
+    "react-turnstile": "^1.1.4",
     "resend": "^6.0.2",
     "three": "^0.180.0",
     "tsparticles-slim": "^2.12.0",

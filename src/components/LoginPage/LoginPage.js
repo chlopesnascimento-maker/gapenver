@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import '../Shared/Form.css';
 import { supabase } from '../../supabaseClient'; 
+import Turnstile from 'react-turnstile';
+
 // --- FUNÇÃO AUXILIAR PARA TRADUZIR ERROS ---
 // Colocamos ela fora do componente para melhor organização.
 const traduzErros = (mensagem) => {
@@ -18,11 +20,17 @@ function LoginPage({ navigateTo }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState(null);
 
   // --- FUNÇÃO handleLogin TOTALMENTE REESTRUTURADA ---
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (!captchaToken) {
+      setError('Verificação de segurança falhou. Por favor, recarregue a página e tente novamente.');
+      return;
+    }
 
     if (!email || !password) {
       setError('Por favor, preencha o e-mail e a senha.');
@@ -32,13 +40,15 @@ function LoginPage({ navigateTo }) {
     setIsLoading(true);
 
     try {
-      // 1. Tenta fazer o login UMA VEZ
+      // <-- MUDANÇA 3: Adicionamos o captchaToken à chamada de login
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
+        options: {
+          captchaToken: captchaToken,
+        },
       });
 
-      // 2. Se houver um erro, traduz e exibe a mensagem
       if (signInError) {
         throw signInError;
       }
@@ -166,7 +176,14 @@ if (data.user) {
           <a href="#" onClick={() => navigateTo('forgotPassword')} className="forgot-password-link">
             Esqueci minha senha
           </a>
+
           {error && <p className="error-message">{error}</p>}
+
+           <Turnstile
+            sitekey="0x4AAAAAAB6zX8rwVn8Dri1a"
+            onSuccess={(token) => setCaptchaToken(token)}
+          />
+
           <button type="submit" className="cta-button" disabled={isLoading}>
             {isLoading ? 'ENTRANDO...' : 'ENTRAR'}
           </button>
