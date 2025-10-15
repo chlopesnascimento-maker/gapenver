@@ -52,44 +52,27 @@ function App() {
 
   useEffect(() => {
     // Função para buscar dados da sessão e do perfil de uma só vez
-const updateUserSession = async (session, _event) => {
+const updateUserSession = async (session) => { // O parâmetro _event não é mais necessário
   const currentUser = session?.user;
   setUser(currentUser ?? null);
 
   if (currentUser) {
+    // A lógica agora é simples: apenas buscamos o perfil que o trigger criou.
     const { data: profileData, error } = await supabase
       .from('profiles')
       .select('*') 
       .eq('id', currentUser.id)
       .single();
     
-    // === LÓGICA CORRIGIDA AQUI ===
-    // Agora verificamos se o erro é ESPECIFICAMENTE 'perfil não encontrado'
-    if (error && error.code === 'PGRST116') {
-      // Se o perfil não foi encontrado (porque o trigger ainda não rodou)...
-      // E o evento é um login novo...
-      if (_event === 'SIGNED_IN') {
-         console.log("Perfil não encontrado após login novo. Disparando lógica de onboarding.");
-         // Criamos um 'userData' temporário com os dados do Google
-         // e forçamos o onboarding a ser incompleto.
-         const tempUserData = { ...currentUser.user_metadata, onboarding_completed: false };
-         setUserData(tempUserData);
-      } else {
-         // Se o erro não for de login novo, usamos o fallback
-         setUserData(currentUser.user_metadata);
-      }
-    } else if (error) {
-      // Se for qualquer outro erro, logamos
-      console.error("Erro ao buscar perfil do usuário:", error);
-      setUserData(null);
+    if (error && error.code !== 'PGRST116') {
+      console.error("Erro grave ao buscar perfil do usuário:", error);
+      setUserData(null); // Em caso de erro, não definimos dados do usuário
     } else {
-      // Se NÃO HOUVE erro, o perfil foi encontrado e usamos os dados dele
-      const finalUserData = { ...currentUser.user_metadata, ...profileData };
-      setUserData(finalUserData);
+      // Se o perfil foi encontrado (profileData não é nulo), usamos ele.
+      // Se não foi (acesso inicial, muito raro), o userData fica nulo por um momento.
+      setUserData(profileData);
     }
-    
   } else {
-    // Se não há sessão, limpamos tudo
     setUserData(null);
   }
   setSessionChecked(true);

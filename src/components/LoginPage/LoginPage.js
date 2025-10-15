@@ -74,6 +74,9 @@ if (data.user) {
     setIsLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
+         options: {
+            redirectTo: window.location.origin // Garante o redirecionamento correto
+          }
     });
     if (error) {
         setError('Não foi possível autenticar com o Google. Por favor, tente novamente.');
@@ -81,7 +84,7 @@ if (data.user) {
         setIsLoading(false);
     }
   };
-
+  
   useEffect(() => {
     const senhaInput = document.getElementById('login-senha');
     const togglePassword = document.getElementById('toggle-login-password');

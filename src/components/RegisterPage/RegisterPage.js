@@ -79,6 +79,9 @@ function RegisterPage({ navigateTo, setLoading }) {
     if (setLoading) setLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
+        options: {
+          redirectTo: window.location.origin // Garante o redirecionamento correto
+        }
     });
     if (error) {
         setError('Não foi possível autenticar com o Google. Por favor, tente novamente.');
