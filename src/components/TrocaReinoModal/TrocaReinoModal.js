@@ -3,14 +3,40 @@ import './TrocaReinoModal.css';
 import { podeTrocarReino, registrarTrocaDeReino } from '../../utils/userActions';
 
 const reinos = [
-  { id: 'gapenver', nome: 'GÁPENVER', descricao: 'Conhecido por ser a casa de guerreiros lendários. Força, coragem e integridade são naturais por aqui.', cardImage: 'https://i.imgur.com/dhL5Y8h.png', buttonImage: 'https://i.imgur.com/fYTjWp5.png' },
-  { id: 'saraver', nome: 'SÁRAVER', descricao: 'Um império desértico de guerreiros honrados, onde a força e a lealdade são forjadas sob o sol escaldante.', cardImage: 'https://i.imgur.com/P0qOwMs.png', buttonImage: 'https://i.imgur.com/ILP3oSW.png' },
-  { id: "lo'otrak", nome: "LO'OTRAK", descricao: "Na costa dos mares, Lo'otrak é a casa de nobres e elegantes guerreiros, cuja graça é tão vivaz quanto suas habilidades.", cardImage: 'https://i.imgur.com/Pi6dUrn.png', buttonImage: 'https://i.imgur.com/5KnuKD6.png' },
-  { id: 'corvusk', nome: 'CORVUSK', descricao: 'As maiores e mais gélidas montanhas são o lar dos que sabem o peso da persistência e da resiliência.', cardImage: 'https://i.imgur.com/QupuFn4.png', buttonImage: 'https://i.imgur.com/L6POxcw.png' },
+  { 
+    id: 'gapenver', 
+    nome: 'GÁPENVER', 
+    descricao: 'Conhecido por ser a casa de guerreiros lendários. Força, coragem e integridade são naturais por aqui.', 
+    cardImage: 'https://i.imgur.com/dhL5Y8h.png', 
+    buttonImage: 'https://i.imgur.com/fYTjWp5.png' 
+  },
+  { 
+    id: 'saraver', 
+    nome: 'SÁRAVER', 
+    descricao: 'Um império desértico de guerreiros honrados, onde a força e a lealdade são forjadas sob o sol escaldante.', 
+    cardImage: 'https://i.imgur.com/P0qOwMs.png', 
+    buttonImage: 'https://i.imgur.com/ILP3oSW.png' 
+  },
+  { 
+    id: "lo'otrak", 
+    nome: "LO'OTRAK", 
+    descricao: "Na costa dos mares, Lo'otrak é a casa de nobres e elegantes guerreiros, cuja graça é tão vivaz quanto suas habilidades.", 
+    cardImage: 'https://i.imgur.com/Pi6dUrn.png', 
+    buttonImage: 'https://i.imgur.com/5KnuKD6.png' 
+  },
+  { 
+    id: 'corvusk', 
+    nome: 'CORVUSK', 
+    descricao: 'As maiores e mais gélidas montanhas são o lar dos que sabem o peso da persistência e da resiliência.', 
+    cardImage: 'https://i.imgur.com/QupuFn4.png', 
+    buttonImage: 'https://i.imgur.com/L6POxcw.png' 
+  },
 ];
 
 function TrocaReinoModal({ isOpen, onClose, onReinoEscolhido, user }) {
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   const handleEscolha = async (reino) => {
     if (!user?.id) {
