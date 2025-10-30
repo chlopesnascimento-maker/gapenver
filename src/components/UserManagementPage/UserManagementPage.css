@@ -228,6 +228,14 @@
 .role-guardareal { background-color: #27ae60; }
 .role-moderadores { background-color: green; }
 .role-banidos { background-color: #8e44ad; }
+.role-badge.role-cidadão,
+.role-badge.role-guardião,
+.role-badge.role-veterano {
+  background-color: #000000; /* Fundo preto */
+  color: #ffffff; /* Letra branca */
+  border: 1px solid #555; /* Uma borda sutil cinza escuro para delinear */
+}
+
 
 
 /* Estilos para o Input de Arquivo Customizado */

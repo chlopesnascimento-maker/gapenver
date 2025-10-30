@@ -33,7 +33,6 @@ const reinos = [
   },
 ];
 
-
 function EscolhaReinoModal({ isOpen, onClose, onReinoEscolhido, user }) {
   if (!isOpen) {
     return null;

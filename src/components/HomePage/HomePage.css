@@ -1,4 +1,133 @@
 /* =============================================== */
+/* NOVA SEÇÃO: PRIMEIRO CAPÍTULO                  */
+/* =============================================== */
+.primeiro-capitulo-section {
+  position: relative; /* Necessário para o pseudo-elemento de overlay */
+  padding: 100px 20px; /* Mais padding para maior impacto vertical */
+  text-align: center;
+  color: #e0e0e0; /* Cor do texto padrão para a seção */
+
+  /* IMAGEM DE FUNDO AQUI */
+  /*background-image: url('/images/fundo-secao-capitulo.webp'); /* <-- SUA IMAGEM AQUI */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  /* Efeito de Parallax (Opcional, se quiser um toque extra) */
+  /* background-attachment: fixed; */ 
+}
+
+/* Adicionar um overlay para garantir legibilidade do texto (similar ao HP) */
+.primeiro-capitulo-section::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.6); /* Overlay preto transparente para escurecer a imagem */
+  z-index: 1; /* Garante que o overlay esteja abaixo do conteúdo mas acima da imagem */
+}
+
+.section-content {
+  position: relative; /* Para garantir que o conteúdo fique acima do overlay */
+  z-index: 2; /* Acima do overlay */
+  max-width: 900px; /* Um pouco mais largo para o texto */
+  margin: 0 auto; /* Centraliza o conteúdo */
+  padding: 20px; /* Um pequeno padding interno para o conteúdo */
+}
+
+.section-title {
+  font-family: 'Cinzel', serif;
+  color: #DAA520; /* Dourado para o título */
+  font-size: 3rem; /* Título maior */
+  margin-top: 0;
+  margin-bottom: 25px;
+  text-shadow: 2px 2px 8px rgba(0,0,0,0.8); /* Sombra mais forte para legibilidade */
+}
+
+.section-text {
+  font-size: 1.3rem; /* Texto maior */
+  color: #e0e0e0; /* Cor clara para o texto */
+  line-height: 1.8;
+  margin-bottom: 40px;
+  text-align: center; /* Centraliza o texto */
+  text-shadow: 1px 1px 6px rgba(0,0,0,0.7); /* Sombra para o texto também */
+}
+
+.section-cta-button {
+  /* Estilos do botão já estão bons */
+}
+
+/* Ajustes para mobile */
+@media (max-width: 768px) {
+  .primeiro-capitulo-section {
+    padding: 80px 15px;
+  }
+  .section-title {
+    font-size: 2.2rem;
+  }
+  .section-text {
+    font-size: 1.1rem;
+  }
+}
+
+.section-content {
+  max-width: 800px; /* Limita a largura do conteúdo */
+}
+
+.section-title {
+  font-family: 'Cinzel', serif;
+  color: #DAA520;
+  font-size: 2.5rem;
+  margin-top: 0;
+  margin-bottom: 20px;
+  text-shadow: 1px 1px 5px rgba(0,0,0,0.5);
+}
+
+.section-text {
+  font-size: 1.2rem;
+  color: #e0e0e0;
+  line-height: 1.8;
+  margin-bottom: 30px;
+}
+
+.section-cta-button {
+  /* Usando o mesmo estilo do botão dourado padrão */
+  padding: 12px 35px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  background: linear-gradient(135deg, #daa520, #ffd700);
+  color: #111827;
+  font-size: 1.1rem; /* Um pouco maior */
+  font-family: 'Cinzel', serif;
+  text-transform: uppercase;
+}
+
+.section-cta-button:hover {
+  background: linear-gradient(135deg, #ffd700, #ffea70);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(218, 165, 32, 0.5);
+}
+
+/* Ajustes para mobile */
+@media (max-width: 768px) {
+  .primeiro-capitulo-section {
+    padding: 40px 15px;
+  }
+  .section-title {
+    font-size: 2rem;
+  }
+  .section-text {
+    font-size: 1rem;
+  }
+  .section-cta-button {
+    font-size: 1rem;
+    padding: 10px 25px;
+  }
+}
+
+/* =============================================== */
 /* ESTILOS GERAIS DA HOMEPAGE (PÁGINA DE VENDAS)  */
 /* =============================================== */
 .section {

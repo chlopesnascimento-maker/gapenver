@@ -1,0 +1,125 @@
+/* src/components/PrimeiroCapituloModal/PrimeiroCapituloModal.css */
+.capitulo-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8); /* Fundo mais escuro */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.capitulo-modal-content {
+  background-color: #17172b; /* Cor base escura */
+  /*background-image: url('/images/fundo-modal-capitulo.webp'); /* <-- SUA IMAGEM AQUI */
+  background-size: cover; /* Cobre todo o espaço */
+  background-position: center; /* Centraliza a imagem */
+  background-repeat: no-repeat; /* Não repete */
+
+  /* Opcional: Adicionar um gradiente escuro por cima da imagem para melhor legibilidade */
+  background-blend-mode: multiply; /* Mistura a cor com a imagem */
+  background-color: rgba(0, 0, 0, 0.7); /* Cor preta transparente para escurecer a imagem */
+
+  padding: 40px;
+  border-radius: 12px;
+  border: 1px solid rgba(218, 165, 32, 0.4);
+  width: 100%;
+  max-width: 650px;
+  color: #e0e0e0;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.capitulo-modal-title {
+  font-family: 'Cinzel', serif;
+  color: #DAA520;
+  font-size: 2rem; /* Título maior e mais impactante */
+  margin-top: 0;
+  margin-bottom: 25px;
+  text-shadow: 1px 1px 5px rgba(0,0,0,0.5);
+}
+
+.capitulo-modal-text {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  margin-bottom: 35px;
+  text-align: justify; /* Justificado fica mais "livro" */
+}
+
+.capitulo-modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap; /* Para mobile */
+  margin-bottom: 20px;
+}
+
+/* Botão padrão (dourado degradê) */
+.capitulo-cta-button {
+  padding: 12px 30px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  background: linear-gradient(135deg, #daa520, #ffd700);
+  color: #111827; /* Cor escura para contraste */
+  font-size: 1rem;
+  font-family: 'Cinzel', serif;
+}
+
+.capitulo-cta-button:hover {
+  background: linear-gradient(135deg, #ffd700, #ffea70);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(218, 165, 32, 0.5);
+}
+
+/* Botão secundário (borda dourada) */
+.capitulo-cta-button.secondary {
+  background: transparent;
+  border: 2px solid #DAA520;
+  color: #DAA520;
+}
+
+.capitulo-cta-button.secondary:hover {
+  background: rgba(218, 165, 32, 0.1);
+  color: #FFD700;
+  box-shadow: none;
+  transform: none;
+}
+
+.capitulo-close-button {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 1.8rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 5px;
+}
+.capitulo-close-button:hover {
+  color: #fff;
+}
+
+/* Ajuste para o grid da HomePage para acomodar o novo card */
+@media (min-width: 769px) { /* Aplica apenas em desktop */
+  .painel-grid {
+    grid-template-areas:
+      "atividade acoes"
+      "atividade cidadaos"
+      "capitulo capitulo"; /* O novo card ocupa a linha inferior inteira */
+  }
+  .card-capitulo { grid-area: capitulo; }
+}
+
+@media (max-width: 768px) {
+  .capitulo-modal-content { padding: 30px 20px; }
+  .capitulo-modal-title { font-size: 1.6rem; }
+  .capitulo-modal-text { font-size: 1rem; }
+  .capitulo-modal-actions button { width: 100%; } /* Botões ocupam largura total */
+}
