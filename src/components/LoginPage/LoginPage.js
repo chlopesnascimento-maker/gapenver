@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../Shared/Form.css";
 import { supabase } from "../../supabaseClient";
-import Turnstile from "react-turnstile";
+
 
 // --- FUNÇÃO AUXILIAR PARA TRADUZIR ERROS ---
 const traduzErros = (mensagem) => {
@@ -20,6 +20,7 @@ function LoginPage({ navigateTo }) {
   const [isLoading, setIsLoading] = useState(false);
   const [captchaToken, setCaptchaToken] = useState(null);
   const [isCaptchaReady, setIsCaptchaReady] = useState(false);
+  const [captchaError, setCaptchaError] = useState(false);
 
 
   // --- HANDLE LOGIN OTIMIZADO ---
@@ -69,6 +70,8 @@ function LoginPage({ navigateTo }) {
           navigateTo("home");
         }
       }
+
+      
 
 // validação assíncrona (em background)
 const tryValidateTurnstile = async (uid, tok) => {
@@ -182,15 +185,31 @@ if (token) {
         document.getElementById("turnstile-container").children.length > 0
       )
         return;
-      window.turnstile.render("#turnstile-container", {
-  sitekey: "0x4AAAAAAB6zX8rwVn8Dri1a",
-  callback: (token) => {
-    setCaptchaToken(token);
-    setIsCaptchaReady(true);
-  },
-  "expired-callback": () => setIsCaptchaReady(false),
-  theme: "light",
-});
+window.turnstile.render("#turnstile-container", {
+      sitekey: "0x4AAAAAAB6zX8rwVn8Dri1a",
+      theme: "light",
+      
+      // Chamado quando o token é gerado com sucesso
+      callback: (token) => {
+        setCaptchaToken(token);
+        setIsCaptchaReady(true);
+        setCaptchaError(false); // Limpa qualquer erro anterior
+      },
+      
+      // Chamado quando o token expira
+      "expired-callback": () => {
+        setCaptchaToken(null);
+        setIsCaptchaReady(false);
+        setCaptchaError(true); // Define o erro como verdadeiro
+        setError("Sua verificação de segurança expirou. Por favor, recarregue a página.");
+      },
+
+      // CHAMADO QUANDO O TURNSTILE FALHA EM CARREGAR
+      "error-callback": () => {
+        setCaptchaError(true);
+        setError("As sentinelas não puderam verificar sua identidade. Recarregue a página.");
+      }
+    });
 
     };
 
@@ -292,16 +311,18 @@ if (token) {
           {/* Contêiner oculto do Turnstile */}
           <div id="turnstile-container" style={{ display: "none" }}></div>
 
-          <button
+         <button
   type="submit"
   className="cta-button"
-  disabled={isLoading || !isCaptchaReady}
+  disabled={isLoading || (!isCaptchaReady && !captchaError)} // Só desativa se NÃO estiver pronto E NÃO houver erro
 >
   {isLoading
     ? "ENTRANDO..."
-    : !isCaptchaReady
+    : captchaError // Se deu erro
+    ? "ERRO - RECARREGUE A PÁGINA" 
+    : !isCaptchaReady // Se ainda está carregando
     ? "AGUARDANDO SENTINELAS..."
-    : "ENTRAR"}
+    : "ENTRAR"} 
 </button>
 
         </form>
