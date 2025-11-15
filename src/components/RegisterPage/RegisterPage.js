@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../Shared/Form.css';
 import { supabase } from '../../supabaseClient';
-import Turnstile from 'react-turnstile';
+// Import do Turnstile removido
 
 function RegisterPage({ navigateTo, setLoading }) {
   const [nome, setNome] = useState('');
@@ -18,10 +18,7 @@ function RegisterPage({ navigateTo, setLoading }) {
     hasLower: false,
     hasNumber: false,
   });
-  
-  // Estados do Turnstile
-  const [captchaToken, setCaptchaToken] = useState(null);
-  const [captchaError, setCaptchaError] = useState(false);
+  // Estados do Turnstile removidos
 
   useEffect(() => {
     const validations = {
@@ -39,12 +36,6 @@ function RegisterPage({ navigateTo, setLoading }) {
     e.preventDefault();
     setError('');
 
-     // Validação do CAPTCHA
-    if (!captchaToken) {
-      setError('Verificação de segurança falhou. Por favor, recarregue a página.');
-      return;
-    }
-
     // Validação de senha
     const allValid = Object.values(passwordValidations).every(v => v === true);
     if (!allValid) {
@@ -61,13 +52,13 @@ function RegisterPage({ navigateTo, setLoading }) {
     if (setLoading) setLoading(true);
 
     try {
+      // Chamada de signUp limpa, sem o captchaToken
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: { nome, sobrenome, nascimento },
           emailRedirectTo: `${window.location.origin}/login`,
-          captchaToken: captchaToken,
         },
       });
 
@@ -75,20 +66,7 @@ function RegisterPage({ navigateTo, setLoading }) {
 
       navigateTo('welcome');
     } catch (err) {
-      // Traduz o erro
-      const traduzErros = (msg) => {
-        if (msg.includes("Captcha verification failed")) {
-          return "Falha na verificação das Sentinelas. Tente novamente.";
-        }
-        return msg;
-      };
-      setError(traduzErros(err.message));
-      
-      // Reseta o captcha se o erro for relacionado a ele
-      if (err.message.includes("Captcha")) {
-        setCaptchaToken(null);
-        if (window.turnstile) window.turnstile.reset();
-      }
+      setError(err.message);
     } finally {
       setIsLoading(false);
       if (setLoading) setLoading(false);
@@ -111,7 +89,6 @@ function RegisterPage({ navigateTo, setLoading }) {
         if (setLoading) setLoading(false);
     }
   };
-
 
   const handleDateInput = (e) => {
     let value = e.target.value.replace(/\D/g, '');
@@ -245,36 +222,14 @@ function RegisterPage({ navigateTo, setLoading }) {
 
           {error && <p className="error-message">{error}</p>}
 
-          {/* COMPONENTE TURNSTILE ATUALIZADO */}
-          <Turnstile
-            sitekey="0x4AAAAAAB6zX8rwVn8Dri1a"
-            onSuccess={(token) => {
-              setCaptchaToken(token);
-              setCaptchaError(false);
-            }}
-            onError={() => {
-              setCaptchaError(true);
-              setError("As sentinelas não puderam verificar sua identidade. Recarregue a página.");
-            }}
-            onExpire={() => {
-              setCaptchaToken(null);
-              setCaptchaError(true);
-            }}
-          />
+           {/* Componente Turnstile REMOVIDO */}
 
-          {/* BOTÃO CORRIGIDO (Sem texto solto quebrando o código) */}
           <button
             type="submit"
             className="cta-button"
-            disabled={isLoading || (!captchaToken && !captchaError)}
+            disabled={isLoading} // Lógica de disabled simplificada
           >
-            {isLoading
-              ? "CADASTRANDO..."
-              : captchaError
-              ? "ERRO - RECARREGUE A PÁGINA"
-              : !captchaToken
-              ? "AGUARDANDO SENTINELAS..."
-              : "CADASTRE-SE AGORA"}
+            {isLoading ? 'CADASTRANDO...' : 'CADASTRE-SE AGORA'}
           </button>
         </form>
       </div>

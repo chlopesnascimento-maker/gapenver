@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "../Shared/Form.css";
 import { supabase } from "../../supabaseClient";
-import Turnstile from "react-turnstile";
 
 // --- FUNÇÃO AUXILIAR PARA TRADUZIR ERROS ---
 const traduzErros = (mensagem) => {
@@ -9,7 +8,6 @@ const traduzErros = (mensagem) => {
     "Invalid login credentials": "Credenciais inválidas. Verifique seu e-mail e senha.",
     "Email not confirmed": "E-mail não confirmado. Por favor, verifique sua caixa de entrada.",
     "User already registered": "Este e-mail já está cadastrado.",
-    "Captcha verification failed": "Falha na verificação das Sentinelas. Tente novamente."
   };
   return mapa[mensagem] || "Ocorreu um erro inesperado. Tente novamente.";
 };
@@ -19,21 +17,12 @@ function LoginPage({ navigateTo }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  
-  // Estados do Turnstile
-  const [captchaToken, setCaptchaToken] = useState(null);
-  const [captchaError, setCaptchaError] = useState(false);
+  // Estados do Turnstile removidos
 
   // --- LOGIN COM EMAIL E SENHA ---
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
-
-    // Verifica se o CAPTCHA já validou
-    if (!captchaToken) {
-      setError("Verificação de segurança falhou ou ainda não terminou. Por favor, aguarde ou recarregue.");
-      return;
-    }
 
     if (!email || !password) {
       setError('Por favor, preencha o e-mail e a senha.');
@@ -43,13 +32,10 @@ function LoginPage({ navigateTo }) {
     setIsLoading(true);
 
     try {
-      // Envia o token junto com o login
+      // Chamada de login limpa, sem o captchaToken
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
-        options: {
-          captchaToken: captchaToken,
-        },
       });
 
       if (signInError) throw signInError;
@@ -66,11 +52,6 @@ function LoginPage({ navigateTo }) {
       }
     } catch (err) {
       setError(traduzErros(err.message));
-      // Se o erro for de CAPTCHA, reseta o token para forçar nova validação
-      if (err.message && err.message.includes("Captcha")) {
-        setCaptchaToken(null);
-        if (window.turnstile) window.turnstile.reset();
-      }
     } finally {
       setIsLoading(false);
     }
@@ -211,35 +192,14 @@ function LoginPage({ navigateTo }) {
 
           {error && <p className="error-message">{error}</p>}
 
-          {/* COMPONENTE TURNSTILE */}
-          <Turnstile
-            sitekey="0x4AAAAAAB6zX8rwVn8Dri1a"
-            onSuccess={(token) => {
-              setCaptchaToken(token);
-              setCaptchaError(false);
-            }}
-            onError={() => {
-              setCaptchaError(true);
-              setError("As sentinelas não puderam verificar sua identidade. Recarregue a página.");
-            }}
-            onExpire={() => {
-              setCaptchaToken(null);
-              setCaptchaError(true);
-            }}
-          />
+          {/* Componente Turnstile REMOVIDO */}
 
           <button
             type="submit"
             className="cta-button"
-            disabled={isLoading || (!captchaToken && !captchaError)}
+            disabled={isLoading} // Lógica de disabled simplificada
           >
-            {isLoading
-              ? "ENTRANDO..."
-              : captchaError
-              ? "ERRO - RECARREGUE A PÁGINA"
-              : !captchaToken
-              ? "AGUARDANDO SENTINELAS..."
-              : "ENTRAR"}
+            {isLoading ? "ENTRANDO..." : "ENTRAR"}
           </button>
         </form>
       </div>
