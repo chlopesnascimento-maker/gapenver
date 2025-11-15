@@ -1,3 +1,6 @@
+/* =============================
+   CONTAINER E GRID
+   ============================= */
 .citizens-container {
   padding: 20px;
   text-align: center;
@@ -10,20 +13,70 @@
   margin-top: 20px;
 }
 
+/* =============================
+   CARD DO CIDADÃO
+   ============================= */
 .citizen-card {
   background: #1e1e2f;
-  border-radius: 12px;
-  padding: 15px;
+  border-radius: 14px;
+  padding: 18px;
   text-align: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
   cursor: pointer;
+  border: 2px solid transparent;
 }
 
 .citizen-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  transform: translateY(-6px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
 }
 
+/* =============================
+   STAFF DESTACADO NO CARD
+   (admin, oficialreal, guardareal)
+   ============================= */
+.role-admin ~ .citizen-reino,
+.role-oficialreal ~ .citizen-reino,
+.role-guardareal ~ .citizen-reino { 
+  /* apenas um seletor para garantir consistência */
+}
+
+.role-admin,
+.role-oficialreal,
+.role-guardareal {
+  position: relative;
+}
+
+.citizen-card:has(.role-admin),
+.citizen-card:has(.role-oficialreal),
+.citizen-card:has(.role-guardareal) {
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 12px rgba(255,255,255,0.12);
+}
+
+.citizen-card:has(.role-admin)::before,
+.citizen-card:has(.role-oficialreal)::before,
+.citizen-card:has(.role-guardareal)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  padding: 2px;
+  background: linear-gradient(135deg,
+    rgba(255,255,255,0.2),
+    rgba(255,255,255,0.05)
+  );
+  -webkit-mask: 
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* =============================
+   FOTO DO CIDADÃO
+   ============================= */
 .citizen-photo {
   width: 90px;
   height: 90px;
@@ -33,31 +86,66 @@
   border: 2px solid #fff;
 }
 
+/* =============================
+   TEXTO
+   ============================= */
 .citizen-info h3 {
   margin: 5px 0;
   font-size: 1.2rem;
 }
-
-.citizen-role {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  margin-bottom: 6px;
-}
-
-.role-admin { background: crimson; color: #fff; }
-.role-oficialreal { background: rgb(250, 192, 66); color: #fff; }
-.role-guardareal { background: seagreen; color: #fff; }
-.role-viajante { background: royalblue; color: #fff; }
-.role-default { background: gray; color: #fff; }
-.role-cidadãodegápenver { background: radial-gradient(250, 192, 66);}
 
 .citizen-reino {
   font-size: 0.9rem;
   color: #ccc;
 }
 
+/* =============================
+   TAG DO CARGO FICTÍCIO
+   ============================= */
+.citizen-role {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  margin-bottom: 6px;
+  font-weight: bold;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  border: 1px solid rgba(255,255,255,0.25);
+}
+
+/* ADMINISTRADOR */
+.role-admin {
+  background: linear-gradient(135deg, #ff4d4d, #8b0000);
+  box-shadow: 0 0 10px rgba(255, 59, 59, 0.4);
+}
+
+/* LUMINIR */
+.role-oficialreal {
+  background: linear-gradient(135deg, #ffdd75, #c69b24);
+  box-shadow: 0 0 10px rgba(255, 220, 99, 0.45);
+}
+
+/* MEHALKIR ALMASTRI */
+.role-guardareal {
+  background: linear-gradient(135deg, #33c27f, #145a3b);
+  box-shadow: 0 0 10px rgba(48, 199, 120, 0.45);
+}
+
+/* VIAJANTE */
+.role-viajante {
+  background: linear-gradient(135deg, #4e8cff, #003c99);
+  box-shadow: 0 0 10px rgba(78, 140, 255, 0.4);
+}
+
+/* PADRÃO */
+.role-default {
+  background: linear-gradient(135deg, gray, #3a3a3a);
+  box-shadow: 0 0 10px rgba(160,160,160,0.25);
+}
+
+/* =============================
+   BUSCA
+   ============================= */
 .search-box {
   margin: 20px auto;
   max-width: 400px;
@@ -76,7 +164,6 @@
   opacity: 0.8;
 }
 
-
 .search-box input {
   flex: 1;
   border: none;
@@ -86,30 +173,23 @@
   outline: none;
 }
 
-/* ========================================
-   ESTILOS PARA O TEASER DE VISITANTES
-   ======================================== */
-
+/* =============================
+   TEASER PARA VISITANTES
+   ============================= */
 .teaser-fade {
   position: relative;
-  grid-column: span 1; /* Garante que ocupe o espaço de um card no grid */
 }
 
-/* O card em si fica embaçado e escurecido */
 .teaser-fade .citizen-card {
   filter: blur(5px);
   opacity: 0.4;
-  pointer-events: none; /* Impede que seja clicável */
+  pointer-events: none;
   transform: scale(0.98);
 }
 
-/* O overlay com o texto que fica por cima */
 .teaser-fade .cta-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   color: white;
   display: flex;
   flex-direction: column;
@@ -118,12 +198,12 @@
   text-align: center;
   padding: 20px;
   z-index: 10;
-  border-radius: 10px; /* Para bater com o card */
+  border-radius: 10px;
   cursor: pointer;
 }
 
 .cta-overlay h3 {
-  color: var(--accent); /* Reutiliza a cor dourada do seu site */
+  color: var(--accent);
   font-size: 1.5rem;
   margin-bottom: 10px;
   text-shadow: 1px 1px 5px rgba(0,0,0,0.7);
@@ -134,7 +214,9 @@
   text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
 }
 
-/* --- ESTILOS PARA PAGINAÇÃO --- */
+/* =============================
+   PAGINAÇÃO
+   ============================= */
 .pagination-controls {
   margin-top: 40px;
   display: flex;
@@ -164,3 +246,139 @@
   border-color: var(--accent);
   font-weight: bold;
 }
+
+/* ===========================================================
+   STAFF AURA ANIMADA
+   =========================================================== */
+.citizen-card.staff {
+  position: relative;
+  overflow: visible;
+}
+
+.citizen-card.staff::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 16px;
+  background: conic-gradient(
+      from 0deg,
+      rgba(255,255,255,0.15),
+      rgba(255,255,255,0),
+      rgba(255,255,255,0.15)
+  );
+  animation: spinAura 6s linear infinite;
+  z-index: -1;
+  filter: blur(3px);
+  opacity: 0.35;
+}
+
+
+
+/* ===========================================================
+   MOLDURA 3D LUMINOSA ESPECIAL
+   =========================================================== */
+.citizen-card.staff::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  padding: 2px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
+  -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  box-shadow: 0 0 18px rgba(255,255,255,0.25);
+}
+
+
+/* ===========================================================
+   ÍCONES / SELOS ESPECIAIS DE STAFF
+   =========================================================== */
+.card-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: #fff;
+  padding: 10px;
+  border-radius: 50%;
+  font-size: 18px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  box-shadow: 0 0 10px rgba(255,255,255,0.4);
+}
+
+/* Ícones individuais */
+.badge-admin       { background: linear-gradient(135deg, #ff4444, #8b0000);   color: white; }
+.badge-oficialreal { background: linear-gradient(135deg, #ffdd75, #b4901a); color: white; }
+.badge-guardareal  { background: linear-gradient(135deg, #33c27f, #125534); color: white; }
+.badge-autor       { background: linear-gradient(135deg, #7d5fff, #4b2bb3); color: white; }
+
+/* ===========================================================
+   NOME COM GRADIENTE ANIMADO
+   =========================================================== */
+.citizen-card.staff .citizen-info h3 {
+  background: linear-gradient(
+    90deg,
+    #fff,
+    #ffe9b0,
+    #ffd86a,
+    #fff
+  );
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: shimmerName 4s linear infinite;
+}
+
+@keyframes shimmerName {
+  0% { background-position: 0% center; }
+  100% { background-position: 300% center; }
+}
+
+.citizens-container .citizen-role {
+  color: #fff;
+}
+
+/* ============================================
+   RUNAS STAFF - minimalistas e elegantes
+   ============================================ */
+.staff-runa {
+  position: absolute;
+  top: 6px;
+  right: 10px;
+  font-size: 20px;
+  opacity: 0.35;
+  color: #f4d68e;
+  pointer-events: none;
+  text-shadow: 0 0 6px rgba(255, 230, 150, 0.25);
+  transition: opacity 0.2s ease;
+}
+
+.citizen-card:hover .staff-runa {
+  opacity: 0.55;
+}
+
+/* cores opcionais por cargo (bem sutis) */
+.staff-runa-admin {
+  color: #ffd5c5;
+}
+
+.staff-runa-oficialreal {
+  color: #ffe9a8;
+}
+
+.staff-runa-guardareal {
+  color: #b6ffd9;
+}
+
+.staff-runa-autor {
+  color: #d6c5ff;
+}
+

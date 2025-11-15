@@ -1,0 +1,187 @@
+/* ======== FUNDO ÉPICO DO PORTAL ======== */
+.form-page-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding-top: 60px;
+
+  background: radial-gradient(circle at 50% 20%, #2b2948, #0f1020 70%);
+  background-size: cover;
+
+  position: relative;
+  overflow: hidden;
+}
+
+/* partículas sutis */
+/* ======== PARTÍCULAS ARCANAS ======== */
+.form-page-container::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+
+  /* Criando partículas mágicas com CSS (usa a cor dourada do seu tema) */
+  background-image: 
+    radial-gradient(circle at 20% 30%, rgba(255, 225, 150, 0.15) 1px, transparent 2px),
+    radial-gradient(circle at 80% 10%, rgba(255, 225, 150, 0.1) 1px, transparent 2px),
+    radial-gradient(circle at 50% 70%, rgba(255, 225, 150, 0.12) 1px, transparent 2px),
+    radial-gradient(circle at 10% 90%, rgba(255, 225, 150, 0.1) 1px, transparent 2px),
+    radial-gradient(circle at 65% 45%, rgba(255, 225, 150, 0.15) 1px, transparent 2px);
+  
+  /* Define o tamanho do "canvas" onde as partículas se repetem */
+  background-size: 200px 200px;
+  
+  /* A sua animação original de flutuação */
+  animation: floatParticles 18s linear infinite;
+}
+
+@keyframes floatParticles {
+  from { transform: translate(0, 0); }
+  to   { transform: translate(-80px, -120px); }
+}
+
+/* ======== GRIMÓRIO DO LOGIN ======== */
+.form-container {
+  background: rgba(20, 20, 35, 0.65);
+  border: 1px solid rgba(255, 225, 150, 0.25);
+  border-radius: 15px;
+  padding: 25px 35px 35px;
+
+  /* --- AJUSTE DE RESPONSIVIDADE --- */
+  max-width: 390px;  /* Define a largura máxima */
+  width: 90%;        /* Faz o grimório ocupar 90% da tela no celular */
+  margin: 0;    /* Adiciona uma margem para não colar no topo/base */
+  /* ---------------------------------- */
+
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 18px rgba(255, 215, 130, 0.15);
+  position: relative;
+}
+
+/* glow sutil nas bordas */
+.form-container::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 15px;
+  pointer-events: none;
+  box-shadow: 0 0 25px rgba(255, 220, 130, 0.18);
+}
+
+/* ======== TÍTULO ======== */
+.form-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: 3px;
+  background: linear-gradient(90deg, #fff2c4, #ffeeb0, #ffffff);
+  -webkit-background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 8px rgba(255, 228, 150, 0.25);
+  margin-bottom: 25px;
+}
+
+/* ======== CAMPOS ======== */
+.form-group label {
+  color: #e8dcb7;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 225, 150, 0.25);
+  border-radius: 10px;
+  color: #fff;
+  outline: none;
+  transition: 0.2s;
+}
+
+.form-group input:focus {
+  border-color: #ffe6a6;
+  box-shadow: 0 0 8px rgba(255, 220, 150, 0.28);
+}
+
+/* ======== BOTÃO GOOGLE ======== */
+.google-login-button {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+  padding: 10px 12px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.google-login-button:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* divisor */
+.divider span {
+  color: #c1b8a0;
+}
+
+/* ======== BOTÃO PRINCIPAL ======== */
+.cta-button {
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px;
+  background: linear-gradient(90deg, #f5cf86, #ffeabe);
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  cursor: pointer;
+  color: #1c1b29;
+  box-shadow: 0 3px 10px rgba(255, 214, 140, 0.3);
+  transition: 0.2s;
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 14px rgba(255, 228, 160, 0.5);
+}
+
+/* ======== LINK ESQUECI SENHA ======== */
+.forgot-password-link {
+  color: #e6d7ad;
+  font-size: 0.85rem;
+  text-decoration: none;
+  margin-top: -8px;
+  display: inline-block;
+}
+
+.forgot-password-link:hover {
+  text-decoration: underline;
+}
+
+/* ======== ERRO ======== */
+.error-message {
+  color: #ff8b8b;
+  margin-top: 8px;
+}
+
+/* ======== AVISO DE CAPS LOCK ======== */
+.caps-lock-warning {
+  /* 1. Começa escondido. O JavaScript (useEffect) vai mudar para 'block' */
+  display: none; 
+  
+  /* 2. Estilo "discreto porém perceptível" */
+  color: #ffc400;       /* Um tom de alerta dourado, combinando com o tema */
+  font-size: 0.8rem;     /* Pequeno */
+  font-weight: 600;
+  text-align: right;     /* Alinhado à direita do campo */
+  margin-top: 5px;       /* Um respiro abaixo da caixa de senha */
+  padding-right: 2px;
+}

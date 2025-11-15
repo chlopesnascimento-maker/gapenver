@@ -3,6 +3,30 @@ import { supabase } from "../../supabaseClient";
 import "./CidadaosdoReino.css";
 
 function CidadaosdoReino({ navigateTo, user }) {
+
+  // -----------------------------
+  // MAPA DE CARGOS FICTÍCIOS
+  // -----------------------------
+  const cargoFicticioMap = {
+    admin: { name: "Administrador", color: "#e74c3c", fontWeight: "bold" },
+    viajante: { name: "Viajante", color: "#3498db", fontWeight: "bold" },
+    oficialreal: { name: "Luminir", color: "#f39c12", fontWeight: "bold" },
+    guardareal: { name: "Mehalkir Almastri", color: "#2ecc71", fontWeight: "bold" },
+  };
+
+  const getCargoFicticio = (cargoReal) => {
+    return (
+      cargoFicticioMap[cargoReal] || {
+        name: cargoReal || "Membro",
+        color: "#ffffff",
+        fontWeight: "normal",
+      }
+    );
+  };
+
+  // -----------------------------
+  // ESTADOS
+  // -----------------------------
   const [citizens, setCitizens] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -11,9 +35,11 @@ function CidadaosdoReino({ navigateTo, user }) {
   const [totalPages, setTotalPages] = useState(1);
   const PROFILES_PER_PAGE = 10;
   
-  // MUDANÇA CRÍTICA 1: Criamos uma variável clara para saber se o usuário está logado.
   const isUserLoggedIn = user?.id;
 
+  // -----------------------------
+  // FETCH DOS CIDADÃOS
+  // -----------------------------
   useEffect(() => {
     const fetchCitizens = async () => {
       setLoading(true);
@@ -25,7 +51,6 @@ function CidadaosdoReino({ navigateTo, user }) {
         .from("profiles")
         .select("id, nome, sobrenome, foto_url, cargo, reino", { count: 'exact' });
 
-      // MUDANÇA CRÍTICA 2: Usamos nossa nova variável para a lógica.
       if (isUserLoggedIn) {
         query = query.range(from, to);
       }
@@ -41,21 +66,30 @@ function CidadaosdoReino({ navigateTo, user }) {
           setTotalPages(Math.ceil(count / PROFILES_PER_PAGE));
         }
       }
+
       setLoading(false);
     };
 
     fetchCitizens();
-  }, [page, isUserLoggedIn]); // A busca agora também reage à mudança de login/logout
+  }, [page, isUserLoggedIn]);
 
+  // -----------------------------
+  // FILTRO DE BUSCA
+  // -----------------------------
   const filteredCitizens = citizens.filter((citizen) =>
     `${citizen.nome} ${citizen.sobrenome}`
       .toLowerCase()
       .includes(searchTerm.toLowerCase())
   );
-  
-  // MUDANÇA CRÍTICA 3: A lógica do teaser agora funciona com a variável correta.
-  const profilesParaMostrar = isUserLoggedIn ? filteredCitizens : filteredCitizens.slice(0, 3);
-  const teaserProfile = !isUserLoggedIn && filteredCitizens.length > 3 ? filteredCitizens[3] : null;
+
+  const profilesParaMostrar = isUserLoggedIn
+    ? filteredCitizens
+    : filteredCitizens.slice(0, 3);
+
+  const teaserProfile =
+    !isUserLoggedIn && filteredCitizens.length > 3
+      ? filteredCitizens[3]
+      : null;
 
   if (loading) {
     return (
@@ -70,7 +104,6 @@ function CidadaosdoReino({ navigateTo, user }) {
       <h2>Cidadãos do Reino</h2>
       <p>Conheça todos os membros do nosso reino:</p>
       
-      {/* A caixa de busca só aparece para usuários logados */}
       {isUserLoggedIn && (
         <div className="search-box">
           <img 
@@ -88,40 +121,93 @@ function CidadaosdoReino({ navigateTo, user }) {
       )}
 
       <div className="citizens-grid">
-        {profilesParaMostrar.map((citizen) => (
-          <div
-            key={citizen.id}
-            className="citizen-card"
-            onClick={() => navigateTo("userProfile", { userId: citizen.id })}
-          >
-            <img
-              src={citizen.foto_url || "https://i.imgur.com/ZUQJmco.png"}
-              alt={`${citizen.nome} ${citizen.sobrenome}`}
-              className="citizen-photo"
-            />
-            <div className="citizen-info">
-              <h3>{citizen.nome} {citizen.sobrenome}</h3>
-              <span className={`citizen-role role-${citizen.cargo?.toLowerCase() || "default"}`}>
-                {citizen.cargo || "Membro"}
-              </span>
-              <p className="citizen-reino">{citizen.reino || "Reino não declarado"}</p>
-            </div>
-          </div>
-        ))}
+     {profilesParaMostrar.map((citizen) => {
+  
+  const cargo = citizen.cargo?.toLowerCase() || "default";
 
-        {/* O CARD "EMBAÇADO" PARA VISITANTES */}
+  // STAFF ROLES
+  const isStaff = ["admin", "oficialreal", "guardareal", "autor"].includes(cargo);
+
+  // BADGE ICONS
+  let badge = "";
+if (cargo === "admin")        badge = "✦";
+if (cargo === "oficialreal")  badge = "☼";
+if (cargo === "guardareal")   badge = "⚚";
+if (cargo === "autor")        badge = "✒";
+
+
+  return (
+    <div
+      key={citizen.id}
+      className={`citizen-card ${isStaff ? "staff" : ""}`}
+      onClick={() => navigateTo("userProfile", { userId: citizen.id })}
+    >
+      {/* BADGE */}
+     {isStaff && (
+  <div className={`staff-runa staff-runa-${cargo}`}>
+    {badge}
+  </div>
+)}
+
+
+      <img
+        src={citizen.foto_url || "https://i.imgur.com/ZUQJmco.png"}
+        alt={`${citizen.nome} ${citizen.sobrenome}`}
+        className="citizen-photo"
+      />
+
+      <div className="citizen-info">
+        <h3>{citizen.nome} {citizen.sobrenome}</h3>
+
+        <span
+  className={`citizen-role role-${cargo}`}
+  style={{
+    fontWeight: getCargoFicticio(cargo).fontWeight
+  }}
+>
+  {getCargoFicticio(cargo).name}
+</span>
+
+
+        <p className="citizen-reino">{citizen.reino || "Reino não declarado"}</p>
+      </div>
+    </div>
+  );
+})}
+
+
+        {/* CARD TEASER (VISITANTE) */}
         {teaserProfile && (
-          <div className="teaser-fade" onClick={() => navigateTo('register')}>
+          <div
+            className="teaser-fade"
+            onClick={() => navigateTo("register")}
+          >
             <div className="citizen-card">
-              <img src={teaserProfile.foto_url || "https://i.imgur.com/ZUQJmco.png"} alt={`${teaserProfile.nome} ${teaserProfile.sobrenome}`} className="citizen-photo"/>
+              <img
+                src={teaserProfile.foto_url || "https://i.imgur.com/ZUQJmco.png"}
+                alt={`${teaserProfile.nome} ${teaserProfile.sobrenome}`}
+                className="citizen-photo"
+              />
               <div className="citizen-info">
                 <h3>{teaserProfile.nome} {teaserProfile.sobrenome}</h3>
-                <span className={`citizen-role role-${teaserProfile.cargo?.toLowerCase() || "default"}`}>
-                  {teaserProfile.cargo || "Membro"}
+
+                {/* CARGO FICTÍCIO NO TEASER TAMBÉM */}
+                <span
+                  className="citizen-role"
+                  style={{
+                    color: getCargoFicticio(teaserProfile.cargo).color,
+                    fontWeight: getCargoFicticio(teaserProfile.cargo).fontWeight,
+                  }}
+                >
+                  {getCargoFicticio(teaserProfile.cargo).name}
                 </span>
-                <p className="citizen-reino">{teaserProfile.reino || "Reino não declarado"}</p>
+
+                <p className="citizen-reino">
+                  {teaserProfile.reino || "Reino não declarado"}
+                </p>
               </div>
             </div>
+
             <div className="cta-overlay">
               <h3>E muitos outros!</h3>
               <p>Para ver a lista completa, cadastre-se ou faça login no Reino.</p>
@@ -130,14 +216,13 @@ function CidadaosdoReino({ navigateTo, user }) {
         )}
       </div>
       
-      {/* CONTROLES DE PAGINAÇÃO PARA LOGADOS */}
       {isUserLoggedIn && totalPages > 1 && (
         <div className="pagination-controls">
           {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNumber => (
-            <button 
-              key={pageNumber} 
+            <button
+              key={pageNumber}
               onClick={() => setPage(pageNumber)}
-              className={page === pageNumber ? 'active' : ''}
+              className={page === pageNumber ? "active" : ""}
             >
               {pageNumber}
             </button>

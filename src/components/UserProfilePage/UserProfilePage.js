@@ -102,8 +102,8 @@ const getCargoInfo = (fullCargo, baseCargo) => {
   const displayNames = {
     'autor': 'Saudações',
     'admin': 'Administrador',
-    'oficialreal': 'Oficial Real',
-    'guardareal': 'Guarda Real',
+    'oficialreal': 'Luminir',
+    'guardareal': 'Mehalkir',
     'viajante': 'Viajante',
     'banido': 'Banido',
   };

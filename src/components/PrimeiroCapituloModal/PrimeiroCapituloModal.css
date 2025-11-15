@@ -152,3 +152,34 @@
     width: 100%; /* Botões ocupam largura total */
   }
 }
+
+/* Animação "vai e vem" épica para o botão principal */
+.capitulo-cta-button {
+  /* ...seus estilos existentes... */
+  
+  /* Adiciona a animação! */
+  animation: pulse-epic 2.5s infinite ease-in-out;
+}
+
+/* Remove a animação e usa o efeito de hover padrão quando o mouse está em cima */
+.capitulo-cta-button:hover {
+  animation: none; /* Para a animação de pulso */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(218, 165, 32, 0.5);
+}
+
+/* Define o que a animação "pulse-epic" faz */
+@keyframes pulse-epic {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 8px rgba(218, 165, 32, 0.5);
+  }
+  50% {
+    transform: scale(1.03); /* Aumenta levemente o tamanho */
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.9); /* Aumenta o brilho dourado */
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 8px rgba(218, 165, 32, 0.5);
+  }
+}

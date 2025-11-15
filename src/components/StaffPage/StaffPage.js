@@ -64,8 +64,8 @@ function StaffPage({ navigateTo }) {
         )}
               <span className={`staff-role staff-role-${member.cargo.toLowerCase()}`}>
                 {member.cargo === 'admin' ? 'Administrador' :
-                 member.cargo === 'oficialreal' ? 'Oficial Real' :
-                 member.cargo === 'guardareal' ? 'Guarda Real' :
+                 member.cargo === 'oficialreal' ? 'Luminir' :
+                 member.cargo === 'guardareal' ? 'Mehalkir' :
                  member.cargo}
               </span>
             </div>

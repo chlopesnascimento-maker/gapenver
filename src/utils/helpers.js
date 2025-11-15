@@ -26,10 +26,10 @@ export const getBaseCargo = (cargoCompleto) => {
   if (cargoLower.startsWith('Administrador')) {
     return 'admin';
   }
-  if (cargoLower.startsWith('Oficial Real')) {
+  if (cargoLower.startsWith('Luminir')) {
     return 'oficialreal';
   }
-  if (cargoLower.startsWith('Guarda Real')) {
+  if (cargoLower.startsWith('Mehalkir')) {
     return 'guardareal';
   }
   if (cargoLower.startsWith('Autor')) {

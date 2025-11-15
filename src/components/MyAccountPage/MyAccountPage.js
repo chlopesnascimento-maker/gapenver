@@ -136,9 +136,9 @@ function MyAccountPage({ navigateTo }) {
     } else if (primaryRole === 'viajante') {
       roleDisplay = { name: 'Viajante', style: { color: '#3498db', fontWeight: 'bold' } };
     } else if (primaryRole === 'oficialreal') {
-      roleDisplay = { name: 'Oficial Real', style: { color: '#f39c12', fontWeight: 'bold' } };
-    } else if (primaryRole === 'moderadores') {
-      roleDisplay = { name: 'Moderador', style: { color: '#2ecc71', fontWeight: 'bold' } };
+      roleDisplay = { name: 'Luminir', style: { color: '#f39c12', fontWeight: 'bold' } };
+    } else if (primaryRole === 'guardareal') {
+      roleDisplay = { name: 'Mehalkir', style: { color: '#2ecc71', fontWeight: 'bold' } };
     } else {
       roleDisplay = { name: primaryRole, style: { fontWeight: 'normal' } };
     }
