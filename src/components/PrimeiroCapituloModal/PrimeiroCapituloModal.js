@@ -1,4 +1,3 @@
-// src/components/PrimeiroCapituloModal/PrimeiroCapituloModal.js
 import React from 'react';
 import './PrimeiroCapituloModal.css';
 
@@ -7,14 +6,12 @@ function PrimeiroCapituloModal({ isOpen, onClose, user, navigateTo }) {
     return null;
   }
 
-  // Ação para o botão "Ler Agora"
   const handleLerAgora = () => {
-    // navigateTo('leitorCapitulo', { capituloId: 1 }); // Exemplo de rota
-    alert("Navegação para o leitor do Capítulo 1 ainda não implementada."); // Placeholder
+    // navigateTo('leitorCapitulo', { capituloId: 1 });
+    alert("Navegação para o leitor do Capítulo 1 ainda não implementada.");
     onClose();
   };
 
-  // Ações para os botões de não logado
   const handleCadastro = () => {
     navigateTo('register');
     onClose();
@@ -27,19 +24,25 @@ function PrimeiroCapituloModal({ isOpen, onClose, user, navigateTo }) {
   return (
     <div className="capitulo-modal-overlay" onClick={onClose}>
       <div className="capitulo-modal-content" onClick={(e) => e.stopPropagation()}>
-        {/* Adicione sua imagem de fundo aqui se desejar, via CSS ou tag <img> */}
-        <h2 className="capitulo-modal-title">Pssst... Um Segredo do Reino para Você!</h2>
-        <p className="capitulo-modal-text">
-          Opa! E aí, viajante? Chega mais... Tenho uma coisa aqui que, digamos... escorregou da prateleira dos arquivos mais... reservados. Sabe como é, desajeitado que sou! Mas olha só que sorte a sua: caiu bem no início das Crônicas de Gápenver! Falei com o Rei Lúcio, e ele concordou que um gostinho do começo não faria mal a uma alma curiosa e disposta a aprender. É o Capítulo Um, onde a aventura realmente começa a esquentar, sabe? Dá uma lida rápida aqui, com discrição... o Sacerdote Chefe tem ouvidos por toda parte, e apesar de ele ter um bom coração, digamos que ele prefere que a lore seja revelada... no tempo certo, hehe. Vai fundo, vale cada palavra!
-        </p>
+        {/* O botão fechar foi movido para fora da área de rolagem */}
+        <button className="capitulo-close-button" onClick={onClose}>&times;</button>
+        
+        {/* <-- MUDANÇA 1: Criamos um wrapper para o conteúdo que deve rolar --> */}
+        <div className="capitulo-modal-scrollable-area">
+          <h2 className="capitulo-modal-title">Um Convite do Reino: O Primeiro Capítulo</h2>
+          <p className="capitulo-modal-text">
+            As brumas ancestrais se dissipam, revelando os caminhos que deram início a tudo. As primeiras páginas das crônicas de Gápenver aguardam por você, sussurrando segredos e presságios. O Reino lhe oferece uma chave: desvende os mistérios do Capítulo Um, uma oferta gratuita para todos os viajantes dispostos a atender ao chamado.
+          </p>
+          {/* Adicione mais texto aqui se quiser testar a rolagem */}
+        </div>
+
+        {/* <-- MUDANÇA 2: A área de ações agora fica separada, no rodapé do modal --> */}
         <div className="capitulo-modal-actions">
           {user ? (
-            // Botão para usuário logado
             <button className="capitulo-cta-button" onClick={handleLerAgora}>
               Ler o Primeiro Capítulo Agora
             </button>
           ) : (
-            // Botões para usuário não logado
             <>
               <button className="capitulo-cta-button secondary" onClick={handleLogin}>
                 Já Sou Cidadão (Login)
@@ -50,7 +53,6 @@ function PrimeiroCapituloModal({ isOpen, onClose, user, navigateTo }) {
             </>
           )}
         </div>
-        <button className="capitulo-close-button" onClick={onClose}>Fechar</button>
       </div>
     </div>
   );

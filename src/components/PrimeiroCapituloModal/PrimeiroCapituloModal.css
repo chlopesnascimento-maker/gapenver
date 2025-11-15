@@ -1,27 +1,22 @@
-/* src/components/PrimeiroCapituloModal/PrimeiroCapituloModal.css */
 .capitulo-modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background-color: rgba(0, 0, 0, 0.8); /* Fundo mais escuro */
+  background-color: rgba(0, 0, 0, 0.8);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 2000;
   padding: 20px;
+  /* Garante que o padding seja calculado corretamente */
+  box-sizing: border-box; 
 }
 
 .capitulo-modal-content {
-  background-color: #17172b; /* Cor base escura */
-  /*background-image: url('/images/fundo-modal-capitulo.webp'); /* <-- SUA IMAGEM AQUI */
-  background-size: cover; /* Cobre todo o espaço */
-  background-position: center; /* Centraliza a imagem */
-  background-repeat: no-repeat; /* Não repete */
-
-  /* Opcional: Adicionar um gradiente escuro por cima da imagem para melhor legibilidade */
-  background-blend-mode: multiply; /* Mistura a cor com a imagem */
-  background-color: rgba(0, 0, 0, 0.7); /* Cor preta transparente para escurecer a imagem */
-
-  padding: 40px;
+  background-color: #000000;
+  /* Suas imagens de fundo (opcional) */
+  /* background-image: url('URL_DA_SUA_IMAGEM.webp'); ... */
+  
+  padding: 20px; /* Reduzido o padding geral */
   border-radius: 12px;
   border: 1px solid rgba(218, 165, 32, 0.4);
   width: 100%;
@@ -30,12 +25,43 @@
   text-align: center;
   position: relative;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+
+  /* ===== MUDANÇAS PRINCIPAIS ===== */
+  display: flex; /* Ativa o Flexbox */
+  flex-direction: column; /* Organiza os filhos verticalmente */
+  max-height: 90vh; /* O modal nunca passará de 90% da altura da tela */
+  height: auto; /* A altura será automática, até o limite de 90vh */
+  overflow: hidden; /* Esconde qualquer overflow do container principal */
+}
+
+/* NOVA CLASSE: A área de rolagem */
+.capitulo-modal-scrollable-area {
+  flex-grow: 1; /* Faz esta área ocupar todo o espaço disponível */
+  overflow-y: auto; /* ADICIONA A ROLAGEM SÓ AQUI */
+  padding: 20px; /* Padding interno para o texto (era 40px no geral) */
+  
+  /* Ajuste para a barra de rolagem */
+  scrollbar-width: thin;
+  scrollbar-color: #DAA520 #17172b;
+}
+
+/* Estilos para a barra de rolagem no Chrome/Safari */
+.capitulo-modal-scrollable-area::-webkit-scrollbar {
+  width: 8px;
+}
+.capitulo-modal-scrollable-area::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.2);
+  border-radius: 4px;
+}
+.capitulo-modal-scrollable-area::-webkit-scrollbar-thumb {
+  background-color: #DAA520;
+  border-radius: 4px;
 }
 
 .capitulo-modal-title {
   font-family: 'Cinzel', serif;
   color: #DAA520;
-  font-size: 2rem; /* Título maior e mais impactante */
+  font-size: 2rem;
   margin-top: 0;
   margin-bottom: 25px;
   text-shadow: 1px 1px 5px rgba(0,0,0,0.5);
@@ -44,16 +70,19 @@
 .capitulo-modal-text {
   font-size: 1.1rem;
   line-height: 1.7;
-  margin-bottom: 35px;
-  text-align: justify; /* Justificado fica mais "livro" */
+  margin-bottom: 10px; /* Reduzido, o padding da área já dá espaço */
+  text-align: justify;
 }
 
+/* Área dos botões (não rola) */
 .capitulo-modal-actions {
   display: flex;
   justify-content: center;
   gap: 20px;
-  flex-wrap: wrap; /* Para mobile */
-  margin-bottom: 20px;
+  flex-wrap: wrap;
+  padding: 20px 20px 10px 20px; /* Padding para separar da área de rolagem */
+  flex-shrink: 0; /* Impede que a área de botões encolha */
+  border-top: 1px solid rgba(218, 165, 32, 0.2); /* Linha divisória */
 }
 
 /* Botão padrão (dourado degradê) */
@@ -65,11 +94,10 @@
   cursor: pointer;
   transition: all 0.2s ease-in-out;
   background: linear-gradient(135deg, #daa520, #ffd700);
-  color: #111827; /* Cor escura para contraste */
+  color: #111827;
   font-size: 1rem;
   font-family: 'Cinzel', serif;
 }
-
 .capitulo-cta-button:hover {
   background: linear-gradient(135deg, #ffd700, #ffea70);
   transform: translateY(-2px);
@@ -79,10 +107,9 @@
 /* Botão secundário (borda dourada) */
 .capitulo-cta-button.secondary {
   background: transparent;
-  border: 2px solid #DAA520;
+  border: 1px solid #DAA520;
   color: #DAA520;
 }
-
 .capitulo-cta-button.secondary:hover {
   background: rgba(218, 165, 32, 0.1);
   color: #FFD700;
@@ -90,6 +117,7 @@
   transform: none;
 }
 
+/* Botão Fechar */
 .capitulo-close-button {
   position: absolute;
   top: 15px;
@@ -101,25 +129,26 @@
   line-height: 1;
   cursor: pointer;
   padding: 5px;
+  z-index: 10; /* Garante que fique acima da área de rolagem */
 }
 .capitulo-close-button:hover {
   color: #fff;
 }
 
-/* Ajuste para o grid da HomePage para acomodar o novo card */
-@media (min-width: 769px) { /* Aplica apenas em desktop */
-  .painel-grid {
-    grid-template-areas:
-      "atividade acoes"
-      "atividade cidadaos"
-      "capitulo capitulo"; /* O novo card ocupa a linha inferior inteira */
-  }
-  .card-capitulo { grid-area: capitulo; }
-}
-
 @media (max-width: 768px) {
-  .capitulo-modal-content { padding: 30px 20px; }
+  .capitulo-modal-content {
+    padding: 10px; /* Menos padding no mobile */
+    max-height: 95vh; /* Quase tela cheia */
+  }
+  .capitulo-modal-scrollable-area {
+    padding: 15px; /* Padding interno da área de rolagem */
+  }
   .capitulo-modal-title { font-size: 1.6rem; }
   .capitulo-modal-text { font-size: 1rem; }
-  .capitulo-modal-actions button { width: 100%; } /* Botões ocupam largura total */
+  .capitulo-modal-actions {
+    padding: 15px 15px 5px 15px;
+  }
+  .capitulo-modal-actions button {
+    width: 100%; /* Botões ocupam largura total */
+  }
 }
