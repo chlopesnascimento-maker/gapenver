@@ -18,7 +18,10 @@ function RegisterPage({ navigateTo, setLoading }) {
     hasLower: false,
     hasNumber: false,
   });
+  
+  // Estados do Turnstile
   const [captchaToken, setCaptchaToken] = useState(null);
+  const [captchaError, setCaptchaError] = useState(false);
 
   useEffect(() => {
     const validations = {
@@ -54,7 +57,7 @@ function RegisterPage({ navigateTo, setLoading }) {
       return;
     }
 
-setIsLoading(true);
+    setIsLoading(true);
     if (setLoading) setLoading(true);
 
     try {
@@ -64,7 +67,7 @@ setIsLoading(true);
         options: {
           data: { nome, sobrenome, nascimento },
           emailRedirectTo: `${window.location.origin}/login`,
-          captchaToken: captchaToken, // <-- 3. Envia o token do Turnstile
+          captchaToken: captchaToken,
         },
       });
 
@@ -72,7 +75,20 @@ setIsLoading(true);
 
       navigateTo('welcome');
     } catch (err) {
-      setError(err.message);
+      // Traduz o erro
+      const traduzErros = (msg) => {
+        if (msg.includes("Captcha verification failed")) {
+          return "Falha na verificação das Sentinelas. Tente novamente.";
+        }
+        return msg;
+      };
+      setError(traduzErros(err.message));
+      
+      // Reseta o captcha se o erro for relacionado a ele
+      if (err.message.includes("Captcha")) {
+        setCaptchaToken(null);
+        if (window.turnstile) window.turnstile.reset();
+      }
     } finally {
       setIsLoading(false);
       if (setLoading) setLoading(false);
@@ -85,7 +101,7 @@ setIsLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin // Garante o redirecionamento correto
+          redirectTo: window.location.origin
         }
     });
     if (error) {
@@ -94,7 +110,6 @@ setIsLoading(true);
         setIsLoading(false);
         if (setLoading) setLoading(false);
     }
-    // Se o login for bem-sucedido, o onAuthStateChange no App.js cuidará do redirecionamento.
   };
 
 
@@ -136,8 +151,6 @@ setIsLoading(true);
     };
   }, []);
 
-
-
    return (
     <div className="form-page-container">
       <div className="form-container">
@@ -145,13 +158,11 @@ setIsLoading(true);
           <h2 className="form-title">CADASTRE-SE</h2>
         </div>
         
-        {/* --- NOVO BOTÃO E DIVISOR --- */}
         <button className="google-login-button" onClick={handleGoogleLogin} disabled={isLoading}>
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png" alt="Google logo" className="google-logo" />
-    Criar conta com o Google
-</button>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png" alt="Google logo" className="google-logo" />
+          Criar conta com o Google
+        </button>
         <div className="divider"><span>ou cadastre-se com seu e-mail</span></div>
-        {/* --- FIM DA ADIÇÃO --- */}
 
         <form onSubmit={handleRegister}>
           <div className="form-group">
@@ -234,13 +245,36 @@ setIsLoading(true);
 
           {error && <p className="error-message">{error}</p>}
 
-           <Turnstile
+          {/* COMPONENTE TURNSTILE ATUALIZADO */}
+          <Turnstile
             sitekey="0x4AAAAAAB6zX8rwVn8Dri1a"
-            onSuccess={(token) => setCaptchaToken(token)}
+            onSuccess={(token) => {
+              setCaptchaToken(token);
+              setCaptchaError(false);
+            }}
+            onError={() => {
+              setCaptchaError(true);
+              setError("As sentinelas não puderam verificar sua identidade. Recarregue a página.");
+            }}
+            onExpire={() => {
+              setCaptchaToken(null);
+              setCaptchaError(true);
+            }}
           />
 
-          <button type="submit" disabled={isLoading || !captchaToken} className="cta-button">
-            {isLoading ? 'CADASTRANDO...' : 'CADASTRE-SE AGORA'}
+          {/* BOTÃO CORRIGIDO (Sem texto solto quebrando o código) */}
+          <button
+            type="submit"
+            className="cta-button"
+            disabled={isLoading || (!captchaToken && !captchaError)}
+          >
+            {isLoading
+              ? "CADASTRANDO..."
+              : captchaError
+              ? "ERRO - RECARREGUE A PÁGINA"
+              : !captchaToken
+              ? "AGUARDANDO SENTINELAS..."
+              : "CADASTRE-SE AGORA"}
           </button>
         </form>
       </div>

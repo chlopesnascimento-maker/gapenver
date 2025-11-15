@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../Shared/Form.css";
 import { supabase } from "../../supabaseClient";
-
+import Turnstile from "react-turnstile";
 
 // --- FUNÇÃO AUXILIAR PARA TRADUZIR ERROS ---
 const traduzErros = (mensagem) => {
@@ -9,6 +9,7 @@ const traduzErros = (mensagem) => {
     "Invalid login credentials": "Credenciais inválidas. Verifique seu e-mail e senha.",
     "Email not confirmed": "E-mail não confirmado. Por favor, verifique sua caixa de entrada.",
     "User already registered": "Este e-mail já está cadastrado.",
+    "Captcha verification failed": "Falha na verificação das Sentinelas. Tente novamente."
   };
   return mapa[mensagem] || "Ocorreu um erro inesperado. Tente novamente.";
 };
@@ -18,119 +19,64 @@ function LoginPage({ navigateTo }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Estados do Turnstile
   const [captchaToken, setCaptchaToken] = useState(null);
-  const [isCaptchaReady, setIsCaptchaReady] = useState(false);
   const [captchaError, setCaptchaError] = useState(false);
 
-
-  // --- HANDLE LOGIN OTIMIZADO ---
+  // --- LOGIN COM EMAIL E SENHA ---
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
+
+    // Verifica se o CAPTCHA já validou
+    if (!captchaToken) {
+      setError("Verificação de segurança falhou ou ainda não terminou. Por favor, aguarde ou recarregue.");
+      return;
+    }
+
+    if (!email || !password) {
+      setError('Por favor, preencha o e-mail e a senha.');
+      return;
+    }
+
     setIsLoading(true);
 
-    const t0 = performance.now();
-
     try {
-      // tenta pegar o token imediatamente
-      const token =
-        captchaToken ||
-        (window.turnstile && window.turnstile.getResponse
-          ? window.turnstile.getResponse()
-          : null);
-
-      const tBeforeSupabase = performance.now();
-      console.log("[TIMING] Captcha ready:", tBeforeSupabase - t0, "ms");
-
-      // login não bloqueante — envia mesmo sem token
+      // Envia o token junto com o login
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
         options: {
-          captchaToken: token || undefined,
+          captchaToken: captchaToken,
         },
       });
-
-      const tAfterSupabase = performance.now();
-      console.log("[TIMING] Supabase response:", tAfterSupabase - tBeforeSupabase, "ms total:", tAfterSupabase - t0, "ms");
 
       if (signInError) throw signInError;
 
       if (data.user) {
-        const userRole =
-          data.user.app_metadata?.roles?.[0]?.toLowerCase().trim() ||
-          data.user.user_metadata?.cargo?.toLowerCase().trim();
-
+        const userRole = data.user.app_metadata?.roles?.[0]?.toLowerCase().trim() || data.user.user_metadata?.cargo?.toLowerCase().trim();
         localStorage.setItem("userRole", userRole);
-
-        // Redirecionamento
+        
         if (userRole === "banidos") {
           navigateTo("bannedPage");
         } else {
           navigateTo("home");
         }
       }
-
-      
-
-// validação assíncrona (em background)
-const tryValidateTurnstile = async (uid, tok) => {
-  try {
-    const res = await fetch(
-      `${process.env.REACT_APP_SUPABASE_URL}/functions/v1/validate-turnstile`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: tok, userId: uid }),
-      }
-    );
-    const result = await res.json();
-    if (!result.success) {
-      console.warn("⚠️ CAPTCHA inválido — sessão será encerrada.");
-      await supabase.auth.signOut();
-      navigateTo("login");
-    } else {
-      console.log("✅ CAPTCHA validado com sucesso.");
-    }
-  } catch (err) {
-    console.error("Erro ao validar Turnstile:", err);
-  }
-};
-
-// Se o token já existe, valida agora
-if (token) {
-  tryValidateTurnstile(data.user.id, token);
-} else {
-  // fallback: espera até 20 segundos pro token aparecer
-  console.log("🕒 Aguardando token em background...");
-  let waited = 0;
-  const checkInterval = setInterval(() => {
-    if (window.turnstile && window.turnstile.getResponse) {
-      const tok = window.turnstile.getResponse();
-      if (tok) {
-        clearInterval(checkInterval);
-        console.log("✅ Token obtido após", waited / 1000, "s");
-        tryValidateTurnstile(data.user.id, tok);
-      }
-    }
-    waited += 2000;
-    if (waited >= 20000) {
-      clearInterval(checkInterval);
-      console.warn("⏳ Nenhum token gerado após 20s — revogando por segurança.");
-      tryValidateTurnstile(data.user.id, null);
-    }
-  }, 2000);
-}
-
-
     } catch (err) {
       setError(traduzErros(err.message));
+      // Se o erro for de CAPTCHA, reseta o token para forçar nova validação
+      if (err.message && err.message.includes("Captcha")) {
+        setCaptchaToken(null);
+        if (window.turnstile) window.turnstile.reset();
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  // --- LOGIN GOOGLE ---
+  // --- LOGIN COM GOOGLE ---
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
@@ -149,79 +95,36 @@ if (token) {
     const senhaInput = document.getElementById("login-senha");
     const togglePassword = document.getElementById("toggle-login-password");
     const capsLockWarning = document.getElementById("login-caps-lock-warning");
-    if (!senhaInput || !togglePassword || !capsLockWarning) return;
+    
+    if (!senhaInput || !togglePassword) return;
 
     const eyeIconClosed = togglePassword.querySelector(".eye-icon-closed");
     const eyeIconOpen = togglePassword.querySelector(".eye-icon-open");
 
-    const handleToggle = () => {
-      const type =
-        senhaInput.getAttribute("type") === "password" ? "text" : "password";
-      senhaInput.setAttribute("type", type);
-      eyeIconClosed.style.display = type === "password" ? "block" : "none";
-      eyeIconOpen.style.display = type === "password" ? "none" : "block";
-    };
+    if (eyeIconClosed && eyeIconOpen) {
+        const handleToggle = () => {
+        const type = senhaInput.getAttribute("type") === "password" ? "text" : "password";
+        senhaInput.setAttribute("type", type);
+        eyeIconClosed.style.display = type === "password" ? "block" : "none";
+        eyeIconOpen.style.display = type === "password" ? "none" : "block";
+        };
 
-    const handleKeyUp = (event) => {
-      capsLockWarning.style.display = event.getModifierState("CapsLock")
-        ? "block"
-        : "none";
-    };
+        togglePassword.addEventListener("click", handleToggle);
+        
+        // Cleanup function
+        return () => {
+            togglePassword.removeEventListener("click", handleToggle);
+        };
+    }
 
-    togglePassword.addEventListener("click", handleToggle);
-    senhaInput.addEventListener("keyup", handleKeyUp);
-
-    return () => {
-      togglePassword.removeEventListener("click", handleToggle);
-      senhaInput.removeEventListener("keyup", handleKeyUp);
-    };
-  }, []);
-
-  // --- INICIALIZA TURNSTILE ASSÍNCRONO E SEM BLOQUEAR ---
-  useEffect(() => {
-    const renderTurnstile = () => {
-      if (
-        !window.turnstile ||
-        document.getElementById("turnstile-container").children.length > 0
-      )
-        return;
-window.turnstile.render("#turnstile-container", {
-      sitekey: "0x4AAAAAAB6zX8rwVn8Dri1a",
-      theme: "light",
-      
-      // Chamado quando o token é gerado com sucesso
-      callback: (token) => {
-        setCaptchaToken(token);
-        setIsCaptchaReady(true);
-        setCaptchaError(false); // Limpa qualquer erro anterior
-      },
-      
-      // Chamado quando o token expira
-      "expired-callback": () => {
-        setCaptchaToken(null);
-        setIsCaptchaReady(false);
-        setCaptchaError(true); // Define o erro como verdadeiro
-        setError("Sua verificação de segurança expirou. Por favor, recarregue a página.");
-      },
-
-      // CHAMADO QUANDO O TURNSTILE FALHA EM CARREGAR
-      "error-callback": () => {
-        setCaptchaError(true);
-        setError("As sentinelas não puderam verificar sua identidade. Recarregue a página.");
-      }
-    });
-
-    };
-
-    if (window.turnstile) {
-      renderTurnstile();
-    } else {
-      const script = document.createElement("script");
-      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
-      script.async = true;
-      script.defer = true;
-      script.onload = renderTurnstile;
-      document.head.appendChild(script);
+    if (capsLockWarning) {
+        const handleKeyUp = (event) => {
+        capsLockWarning.style.display = event.getModifierState("CapsLock") ? "block" : "none";
+        };
+        senhaInput.addEventListener("keyup", handleKeyUp);
+        return () => {
+             senhaInput.removeEventListener("keyup", handleKeyUp);
+        }
     }
   }, []);
 
@@ -308,23 +211,36 @@ window.turnstile.render("#turnstile-container", {
 
           {error && <p className="error-message">{error}</p>}
 
-          {/* Contêiner oculto do Turnstile */}
-          <div id="turnstile-container" style={{ display: "none" }}></div>
+          {/* COMPONENTE TURNSTILE */}
+          <Turnstile
+            sitekey="0x4AAAAAAB6zX8rwVn8Dri1a"
+            onSuccess={(token) => {
+              setCaptchaToken(token);
+              setCaptchaError(false);
+            }}
+            onError={() => {
+              setCaptchaError(true);
+              setError("As sentinelas não puderam verificar sua identidade. Recarregue a página.");
+            }}
+            onExpire={() => {
+              setCaptchaToken(null);
+              setCaptchaError(true);
+            }}
+          />
 
-         <button
-  type="submit"
-  className="cta-button"
-  disabled={isLoading || (!isCaptchaReady && !captchaError)} // Só desativa se NÃO estiver pronto E NÃO houver erro
->
-  {isLoading
-    ? "ENTRANDO..."
-    : captchaError // Se deu erro
-    ? "ERRO - RECARREGUE A PÁGINA" 
-    : !isCaptchaReady // Se ainda está carregando
-    ? "AGUARDANDO SENTINELAS..."
-    : "ENTRAR"} 
-</button>
-
+          <button
+            type="submit"
+            className="cta-button"
+            disabled={isLoading || (!captchaToken && !captchaError)}
+          >
+            {isLoading
+              ? "ENTRANDO..."
+              : captchaError
+              ? "ERRO - RECARREGUE A PÁGINA"
+              : !captchaToken
+              ? "AGUARDANDO SENTINELAS..."
+              : "ENTRAR"}
+          </button>
         </form>
       </div>
     </div>
