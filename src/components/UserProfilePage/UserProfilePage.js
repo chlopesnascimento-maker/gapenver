@@ -31,6 +31,12 @@ const reinoAssets = {
     banner: 'https://i.imgur.com/link-banner-padrao.png',
     crest: 'https://i.imgur.com/link-brasao-madeira.png',
     background: null
+  },
+
+  'staff': {
+    banner: 'https://i.imgur.com/0Kaqfw5.png', // <-- SUBSTITUA AQUI
+    crest: 'https://i.imgur.com/COLOQUE-SEU-LINK-BRASAO-STAFF.png', // <-- SUBSTITUA AQUI
+    background: 'https://i.imgur.com/0Kaqfw5.png'           // <-- SUBSTITUA AQUI
   }
 };
 
@@ -39,7 +45,8 @@ const reinoDescriptions = {
   'saraver': 'O Império do Sol. Terras douradas de comércio e conquista, onde a ambição brilha mais forte que o aço.',
   'corvusk': 'O Ninho do Corvo. Um reino de segredos e astúcia, governado nas sombras das montanhas congeladas por aqueles que valorizam o conhecimento acima de tudo.',
   "lo'otrak": 'A Bravura dos Mares. Nascidos para a nobreza e classe, como as bonanças marítimas. Onde a coragem, força e inteligência são natas em cada um.',
-  'reinos independentes': 'Viajantes sem bandeira, cuja lealdade pertence apenas ao caminho que trilham e às histórias que coletam.'
+  'reinos independentes': 'Viajantes sem bandeira, cuja lealdade pertence apenas ao caminho que trilham e às histórias que coletam.',
+  'staff': 'Os Pilares do Reino. Guardiões da ordem e arquitetos do mundo, dedicados a manter o equilíbrio e a justiça em Gapenver.'
 };
 
 // -- ANTIGOS MAPAS DE CARGOS REMOVIDOS --
@@ -119,12 +126,38 @@ const { displayName, className: cargoClassName } = getCargoInfo(cargo, profileBa
 
 // Lógica de status e permissão
 const isAutor = profileBaseCargo === 'autor';
-const canEdit = user && profile && (callerRank < targetRank);
+
+// --- LÓGICA DE VISIBILIDADE DO BOTÃO ATUALIZADA ---
+let calculatedCanEdit = false; // Começa como falso
+  if (user && profile) { // Apenas checa se o usuário está logado e o perfil existe
+    
+    // Regra 1: Autor pode ver todos os botões
+    if (currentUserBaseCargo === 'autor') {
+      calculatedCanEdit = true;
+    } 
+    
+    // Regra 2: Admin pode ver todos, exceto Autor
+    else if (currentUserBaseCargo === 'admin') {
+      if (profileBaseCargo !== 'autor') {
+        calculatedCanEdit = true; 
+      }
+    } 
+    
+    // Regra 3 & 4: Luminir, Mehalkir e TODOS OS OUTROS
+    else {
+      // Esta é a lógica de hierarquia que cobre todos os outros casos
+      // usando seu arquivo HIERARQUIA_CARGOS
+      calculatedCanEdit = (callerRank < targetRank);
+    }
+  }
+const canEdit = calculatedCanEdit;
 const isRegularStaff = ['admin', 'oficialreal', 'guardareal'].includes(profileBaseCargo);
 
 // --- Lógica de assets ---
 const notaExpirou = nota_expires_at && new Date(nota_expires_at) < new Date();
-const reinoKey = reino?.toLowerCase() || 'reinos independentes';
+const reinoKey = isRegularStaff 
+                 ? 'staff' 
+                 : (reino?.toLowerCase() || 'reinos independentes');
 const assets = reinoAssets[reinoKey] || reinoAssets['reinos independentes'];
 const description = reinoDescriptions[reinoKey];
 

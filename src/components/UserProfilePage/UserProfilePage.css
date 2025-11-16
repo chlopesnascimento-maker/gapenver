@@ -477,3 +477,25 @@
   margin-top: 10px; /* Espaço para respirar abaixo do cargo */
   margin-bottom: 5px;
 }
+
+/* ======================================================= */
+/* --- TEMA DA STAFF --- */
+/* ======================================================= */
+
+/* 1. O brilho pulsante para o Card de Reino da Staff */
+/* Usando tons de dourado, prata e branco */
+.kingdom-card.staff::before { 
+  background: linear-gradient(45deg, #ffd700, #f8f8f8, #daa520, #c0c0c0); 
+}
+
+/* 2. O tema para os outros cards ("Sobre mim", "Conquistas") */
+.theme-staff .profile-card {
+  background-color: rgb(20 20 25 / 85%); /* Um fundo escuro e neutro */
+  border-color: rgba(218, 165, 32, 0.4); /* Borda dourada */
+}
+
+/* 3. O título dos cards no tema Staff */
+.theme-staff .profile-card h2 { 
+  color: #DAA520; /* Título dourado */
+  text-shadow: 2px 2px 0px rgb(0 0 0 / 28%);
+}

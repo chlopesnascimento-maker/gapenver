@@ -93,10 +93,13 @@ function EditUserModal({ userToEdit, currentUserRole, isOpen, onClose, onUpdateS
     roleOptions = (
       <>
         <option value="admin">Admin</option>
-        <option value="oficialreal">Oficial Real</option>
-        <option value="guardareal">Guarda Real</option>
+        <option value="oficialreal">Luminir</option>
+        <option value="guardareal">Mehalkir</option>
         <option value="viajante">Viajante</option>
-        <option value="banidos">Banido</option>
+        <option value="cidadão">Cidadão</option>
+        <option value="guardião">Guardião</option>
+        <option value="veterano">Veterano</option>
+        <option value="banido">Banido</option>
         <option value="default">Default</option>
       </>
     );
@@ -104,7 +107,10 @@ function EditUserModal({ userToEdit, currentUserRole, isOpen, onClose, onUpdateS
     roleOptions = (
       <>
         <option value="viajante">Viajante</option>
-        <option value="banidos">Banido</option>
+        <option value="banido">Banido</option>
+        <option value="cidadão">Cidadão</option>
+        <option value="guardião">Guardião</option>
+        <option value="veterano">Veterano</option>
       </>
     );
   }

@@ -82,13 +82,13 @@ serve(async (req) => {
       if (callerRole === "admin" || callerRole === "autor") {
         profileUpdates.cargo = newRoleSanitized;
       } else if (callerRole === "oficialreal") {
-        const allowed = ["guardareal", "viajante", "banidos"];
+        const allowed = ["guardareal", "viajante", "banido", "cidadão", "veterano"];
         if (allowed.includes(newRoleSanitized)) profileUpdates.cargo = newRoleSanitized;
-        else throw new Error("Oficiais Reais só podem alterar cargos para Guarda Real, Viajante ou Banidos.");
+        else throw new Error("Oficiais Reais só podem alterar cargos para Guarda Real, Cidadão, Veterano, Viajante ou Banidos.");
       } else if (callerRole === "guardareal") {
-        const allowed = ["viajante", "banidos"];
+        const allowed = ["viajante", "banido", "cidadão", "veterano"];
         if (allowed.includes(newRoleSanitized)) profileUpdates.cargo = newRoleSanitized;
-        else throw new Error("Você só tem permissão para alterar o cargo para Viajante ou Banidos.");
+        else throw new Error("Você só tem permissão para alterar o cargo para Cidadão, Veterano, Viajante ou Banidos.");
       }
     }
 
